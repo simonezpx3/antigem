@@ -1932,13 +1932,13 @@ BarWidget {
                   }
                 }
 
-                // Force Sync button (With 20px Omarchy Logo & Wordmark)
+                // Force Sync button (With 20px Omarchy Logo & Official omarchy.org Wordmark)
                 Rectangle {
                   Layout.fillWidth: true
                   height: 36
                   radius: 6
                   color: forceSyncMouse.containsMouse ? root.cardHover : root.cardFill
-                  border.color: forceSyncMouse.containsMouse ? root.primaryAccent : root.cardBorder
+                  border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
                   border.width: 1
                   scale: forceSyncMouse.pressed ? 0.95 : 1.0
 
@@ -1947,18 +1947,18 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 14
+                    spacing: 12
 
                     Text {
                       text: "\ue900"
-                      color: root.primaryAccent
+                      color: forceSyncMouse.containsMouse ? "#b4f9f8" : "#9ece6a"
                       font.family: "omarchy"
                       font.pixelSize: 20
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
                     Image {
-                      source: Qt.resolvedUrl("assets/omarchy_wordmark.svg")
+                      source: forceSyncMouse.containsMouse ? Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg") : Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
                       height: 20
                       width: Math.round(height * (1215 / 285))
                       fillMode: Image.PreserveAspectFit
