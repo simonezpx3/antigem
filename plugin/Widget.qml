@@ -408,19 +408,14 @@ BarWidget {
             anchors.margins: Style.space(6)
             spacing: Style.space(8)
 
-            // App Icon Container
-            Rectangle {
+            // App Icon Container (Frameless)
+            Item {
               width: 38
               height: 38
-              radius: 6
-              color: root.cardHover
-              border.color: root.cardBorder
-              border.width: 1
 
               Image {
                 id: heroAppLogo
                 anchors.fill: parent
-                anchors.margins: 4
                 source: root.appIconPanelPath
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
