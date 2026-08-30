@@ -469,17 +469,19 @@ BarWidget {
               Rectangle {
                 id: statusPillRect
                 height: 27
-                width: statusPillText.implicitWidth + 14
+                width: statusPillText.implicitWidth + 16
                 radius: 5
-                color: root.isWorking ? Qt.rgba(163/255, 230/255, 53/255, 0.18) : (root.isWaiting ? Qt.rgba(97/255, 213/255, 248/255, 0.18) : root.cardFill)
-                border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.cardBorder)
+                color: root.cardFill
+                border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
                 border.width: 1
+
+                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                 Text {
                   id: statusPillText
                   anchors.centerIn: parent
                   text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
-                  color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.dim)
+                  color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
                   font.bold: true
