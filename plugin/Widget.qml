@@ -249,9 +249,9 @@ BarWidget {
     root.popupOpen = false
   }
 
-  // Fast polling timer for live telemetry & turn completion
+  // Adaptive polling timer for live telemetry & turn completion (2s when active/open, 15s when idle/closed)
   Timer {
-    interval: 2000
+    interval: (root.popupOpen || root.isWorking || root.isWaiting) ? 2000 : 15000
     running: true
     repeat: true
     onTriggered: {
@@ -374,6 +374,10 @@ BarWidget {
     open: root.popupOpen
     onOpenChanged: {
       if (open !== root.popupOpen) root.popupOpen = open
+      if (open) {
+        root.requestRefresh()
+        headerOmarchyLogoBox.startLightningDischarge()
+      }
     }
     contentWidth: panel.fittedContentWidth(Style.space(560))
     contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Style.space(850))
@@ -424,7 +428,7 @@ BarWidget {
 
                 SequentialAnimation {
                   id: heroHeartbeatAnim
-                  running: root.isWorking && root.pulseEnabled
+                  running: root.isWorking && root.pulseEnabled && root.popupOpen
                   loops: Animation.Infinite
 
                   NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.30; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
