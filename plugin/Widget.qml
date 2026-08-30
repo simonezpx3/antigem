@@ -1933,11 +1933,15 @@ BarWidget {
                       syncBtnBox.lockedBlocks.push(lockRow)
                     }
 
+                    // 5-second calibrated cascade (300 frames @ 60 FPS)
                     for (var col = 0; col < 85; col++) {
+                      // Stagger columns across 0..190 frames (~3.2s)
+                      var colDelay = (col / 85.0) * 190.0 + Math.random() * 30.0
                       syncBtnBox.streams.push({
-                        headY: -(Math.random() * 8.0), // Quick staggered start
-                        speed: 0.65 + Math.random() * 0.75, // Fast 60 FPS rain speed
-                        length: 3 + Math.floor(Math.random() * 5),
+                        delay: colDelay,
+                        headY: -1.0,
+                        speed: 0.11 + Math.random() * 0.05, // Mesmerizing steady rain fall
+                        length: 3 + Math.floor(Math.random() * 4),
                         active: true
                       })
                     }
@@ -1957,10 +1961,16 @@ BarWidget {
 
                       var allDone = true
 
-                      // Fast numeric stream physics
+                      // Fast numeric stream physics across 5 seconds
                       for (var c = 0; c < 85; c++) {
                         var st = syncBtnBox.streams[c]
                         if (!st || !st.active) continue
+
+                        if (st.delay > 0) {
+                          st.delay -= 1.0
+                          allDone = false
+                          continue
+                        }
 
                         st.headY += st.speed
                         var headInt = Math.floor(st.headY)
@@ -1984,11 +1994,11 @@ BarWidget {
                         }
                       }
 
-                      // Decay white flash on locked blocks
+                      // Decay white flash on locked blocks (gentle phosphor glow)
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
                           if (syncBtnBox.lockedBlocks[r2][c2] > 0.01) {
-                            syncBtnBox.lockedBlocks[r2][c2] = Math.max(0.01, syncBtnBox.lockedBlocks[r2][c2] - 0.08)
+                            syncBtnBox.lockedBlocks[r2][c2] = Math.max(0.01, syncBtnBox.lockedBlocks[r2][c2] - 0.025)
                           }
                         }
                       }
