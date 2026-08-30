@@ -1885,14 +1885,15 @@ BarWidget {
                 spacing: Style.space(3)
 
                 // Omarchy ASCII LaserEtch Banner (Exact Video Recreation)
+                // Omarchy ASCII Banner: Koncept 3 (Quantum Plasma Forge)
                 Rectangle {
                   id: syncBtnBox
                   width: parent.width
                   height: 68
                   radius: 6
                   clip: true
-                  color: forceSyncMouse.containsMouse ? "#0a0f16" : "#05070a"
-                  border.color: forceSyncMouse.containsMouse ? "#38bdf8" : root.cardBorder
+                  color: forceSyncMouse.containsMouse ? "#120a16" : "#08050a"
+                  border.color: forceSyncMouse.containsMouse ? "#f97316" : root.cardBorder
                   border.width: 1
                   scale: forceSyncMouse.pressed ? 0.98 : 1.0
 
@@ -1904,8 +1905,9 @@ BarWidget {
                   property real penX: 0.0
                   property real penY: 25.0
                   property bool animating: false
-                  property var particles: []
-                  property var embers: []
+                  property var particles: [] // Falling sparks
+                  property var smoke: []     // Ascending plasma vapor
+                  property var embers: []    // Ground embers
                   property var heatMap: []
 
                   // Exact letter column boundaries for O-M-A-R-C-H-Y
@@ -1919,24 +1921,25 @@ BarWidget {
                     { start: 74, end: 82 }  // Y
                   ]
 
-                  // Vertical Gradient Palette across the 10 rows (White -> Cyan -> Blue -> Purple)
+                  // Koncept 3: Quantum Plasma Gradient (White -> Gold -> Plasma Orange -> Purple -> Deep Blue)
                   readonly property var rowGradient: [
                     "#ffffff", // Row 0: Pure White
-                    "#ffffff", // Row 1: Pure White
-                    "#e0f7fa", // Row 2: Ice Cyan
-                    "#67e8f9", // Row 3: Light Cyan
-                    "#38bdf8", // Row 4: Sky Cyan
-                    "#06b6d4", // Row 5: Deep Cyan
-                    "#0284c7", // Row 6: Blue
-                    "#2563eb", // Row 7: Royal Blue
-                    "#6366f1", // Row 8: Indigo
-                    "#8b5cf6"  // Row 9: Purple
+                    "#fef08a", // Row 1: Light Gold
+                    "#fde047", // Row 2: Bright Yellow Plasma
+                    "#f59e0b", // Row 3: Amber Gold
+                    "#f97316", // Row 4: Hot Plasma Orange
+                    "#ea580c", // Row 5: Deep Orange
+                    "#c084fc", // Row 6: Neon Purple
+                    "#a855f7", // Row 7: Deep Violet
+                    "#6366f1", // Row 8: Indigo Blue
+                    "#3b82f6"  // Row 9: Quantum Blue
                   ]
 
                   function startLaserEtch() {
                     syncBtnBox.activeLetterIdx = 0
                     syncBtnBox.letterProgress = 0.0
                     syncBtnBox.particles = []
+                    syncBtnBox.smoke = []
                     syncBtnBox.embers = []
                     syncBtnBox.heatMap = []
                     for (var r = 0; r < 10; r++) {
@@ -1964,7 +1967,7 @@ BarWidget {
                         var lDef = syncBtnBox.letterDefs[syncBtnBox.activeLetterIdx]
                         var letWidth = lDef.end - lDef.start + 1
 
-                        // Advance progress inside current letter (painter stroke speed)
+                        // Advance progress inside current letter
                         syncBtnBox.letterProgress += 0.065
 
                         if (syncBtnBox.letterProgress <= 1.0) {
@@ -1972,7 +1975,7 @@ BarWidget {
                           var currentIntCol = Math.floor(currentExactCol)
                           syncBtnBox.penX = currentExactCol * cw
 
-                          // Paint current column blocks & emit laser sparks
+                          // Paint current column blocks & emit plasma forge particles
                           for (var r = 0; r < 10; r++) {
                             if (currentIntCol <= 84 && syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][currentIntCol] < 0.1) {
                               syncBtnBox.heatMap[r][currentIntCol] = 1.0
@@ -1980,25 +1983,39 @@ BarWidget {
                               if (ch === "█" || ch === "▄" || ch === "▀") {
                                 syncBtnBox.penY = r * chH + chH / 2
 
-                                // Spawn painter laser sparks
-                                for (var p = 0; p < 3; p++) {
+                                // 1. Falling heavy sparks
+                                for (var p = 0; p < 2; p++) {
                                   syncBtnBox.particles.push({
                                     x: syncBtnBox.penX,
                                     y: syncBtnBox.penY,
-                                    vx: 0.6 + Math.random() * 2.5,
-                                    vy: (Math.random() - 0.5) * 2.6,
+                                    vx: 0.6 + Math.random() * 2.2,
+                                    vy: (Math.random() - 0.3) * 2.2,
                                     life: 1.0,
                                     decay: 0.05 + Math.random() * 0.06,
                                     size: 1 + Math.random() * 1.5
                                   })
                                 }
 
-                                if (Math.random() > 0.5) {
+                                // 2. Ascending plasma smoke / flame vapor
+                                for (var s = 0; s < 2; s++) {
+                                  syncBtnBox.smoke.push({
+                                    x: syncBtnBox.penX + (Math.random() - 0.5) * 3,
+                                    y: syncBtnBox.penY,
+                                    vx: (Math.random() - 0.4) * 1.2,
+                                    vy: -(0.7 + Math.random() * 1.8),
+                                    life: 1.0,
+                                    decay: 0.04 + Math.random() * 0.04,
+                                    size: 1.5 + Math.random() * 2.0
+                                  })
+                                }
+
+                                // 3. Ground embers
+                                if (Math.random() > 0.45) {
                                   syncBtnBox.embers.push({
                                     x: syncBtnBox.penX + (Math.random() - 0.5) * 6,
                                     y: asciiCanvas.height - 1 - Math.random() * 2,
                                     life: 1.0,
-                                    decay: 0.03 + Math.random() * 0.04,
+                                    decay: 0.025 + Math.random() * 0.035,
                                     size: 1 + Math.random() * 1.2
                                   })
                                 }
@@ -2006,28 +2023,28 @@ BarWidget {
                             }
                           }
                         } else if (syncBtnBox.letterProgress > 1.28) {
-                          // Brief pause / brush lift before moving to next letter
+                          // Brief pause between letters
                           syncBtnBox.activeLetterIdx++
                           syncBtnBox.letterProgress = 0.0
                         }
                       } else {
                         // All letters finished
-                        if (syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
+                        if (syncBtnBox.particles.length === 0 && syncBtnBox.smoke.length === 0 && syncBtnBox.embers.length === 0) {
                           syncBtnBox.animating = false
                           etchTimer.stop()
                         }
                       }
 
-                      // Cool down active heat map
+                      // Cool down molten heat map
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
                           if (syncBtnBox.heatMap[r2] && syncBtnBox.heatMap[r2][c2] > 0.0) {
-                            syncBtnBox.heatMap[r2][c2] = Math.max(0.0, syncBtnBox.heatMap[r2][c2] - 0.045)
+                            syncBtnBox.heatMap[r2][c2] = Math.max(0.0, syncBtnBox.heatMap[r2][c2] - 0.04)
                           }
                         }
                       }
 
-                      // Update sparks
+                      // Update falling sparks
                       for (var i = syncBtnBox.particles.length - 1; i >= 0; i--) {
                         var pt = syncBtnBox.particles[i]
                         pt.x += pt.vx
@@ -2036,6 +2053,18 @@ BarWidget {
                         pt.life -= pt.decay
                         if (pt.life <= 0) {
                           syncBtnBox.particles.splice(i, 1)
+                        }
+                      }
+
+                      // Update ascending smoke vapor
+                      for (var sm = syncBtnBox.smoke.length - 1; sm >= 0; sm--) {
+                        var sk = syncBtnBox.smoke[sm]
+                        sk.x += sk.vx
+                        sk.y += sk.vy
+                        sk.size += 0.05
+                        sk.life -= sk.decay
+                        if (sk.life <= 0) {
+                          syncBtnBox.smoke.splice(sm, 1)
                         }
                       }
 
@@ -2085,25 +2114,24 @@ BarWidget {
                       var activeLIdx = syncBtnBox.activeLetterIdx
                       var lProg = syncBtnBox.letterProgress
 
-                      // 1. Draw ASCII Character Blocks Letter-by-Letter
+                      // 1. Draw ASCII Character Blocks (Quantum Plasma Molten Cool)
                       for (var l = 0; l < lDefs.length; l++) {
                         var def = lDefs[l]
 
-                        // Determine visible columns for letter 'l'
                         var maxVisibleCol = -1
                         if (!syncBtnBox.animating || l < activeLIdx) {
-                          maxVisibleCol = def.end // Fully etched
+                          maxVisibleCol = def.end
                         } else if (l === activeLIdx) {
                           maxVisibleCol = def.start + Math.min(1.0, lProg) * (def.end - def.start + 1)
                         } else {
-                          maxVisibleCol = -1 // Not reached yet
+                          maxVisibleCol = -1
                         }
 
                         if (maxVisibleCol < def.start) continue
 
                         for (var r = 0; r < rows; r++) {
                           var line = asciiArt[r]
-                          var baseColor = syncBtnBox.rowGradient[r] || "#38bdf8"
+                          var baseColor = syncBtnBox.rowGradient[r] || "#f97316"
 
                           for (var c = def.start; c <= def.end && c <= maxVisibleCol; c++) {
                             var chChar = line.charAt(c)
@@ -2114,12 +2142,14 @@ BarWidget {
 
                             var hVal = (heat && heat[r]) ? (heat[r][c] || 0) : 0
 
-                            if (hVal > 0.6) {
-                              ctx.fillStyle = "#ffffff"
-                            } else if (hVal > 0.2) {
-                              ctx.fillStyle = "#fef08a"
+                            if (hVal > 0.65) {
+                              ctx.fillStyle = "#ffffff" // Liquid white molten heat
+                            } else if (hVal > 0.3) {
+                              ctx.fillStyle = "#fde047" // Bright yellow plasma
+                            } else if (hVal > 0.1) {
+                              ctx.fillStyle = "#f97316" // Orange heat
                             } else {
-                              ctx.fillStyle = baseColor
+                              ctx.fillStyle = baseColor // Quantum Plasma gradient
                             }
 
                             if (chChar === "█") {
@@ -2133,28 +2163,35 @@ BarWidget {
                         }
                       }
 
-                      // 2. Draw Floor Embers
+                      // 2. Draw Ascending Plasma Smoke / Flame Vapor
+                      for (var s = 0; s < syncBtnBox.smoke.length; s++) {
+                        var smk = syncBtnBox.smoke[s]
+                        ctx.fillStyle = smk.life > 0.6 ? "rgba(253, 224, 71, 0.7)" : (smk.life > 0.3 ? "rgba(249, 115, 22, 0.5)" : "rgba(192, 132, 252, 0.3)")
+                        ctx.fillRect(smk.x, smk.y, smk.size, smk.size)
+                      }
+
+                      // 3. Draw Floor Embers
                       for (var e = 0; e < syncBtnBox.embers.length; e++) {
                         var eb = syncBtnBox.embers[e]
-                        ctx.fillStyle = eb.life > 0.5 ? "#fbbf24" : "#f97316"
+                        ctx.fillStyle = eb.life > 0.5 ? "#fde047" : "#ea580c"
                         ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
                       }
 
-                      // 3. Draw Flying Spark Particles
+                      // 4. Draw Falling Sparks
                       for (var p = 0; p < syncBtnBox.particles.length; p++) {
                         var pt = syncBtnBox.particles[p]
-                        ctx.fillStyle = pt.life > 0.7 ? "#ffffff" : (pt.life > 0.35 ? "#fde047" : "#ea580c")
+                        ctx.fillStyle = pt.life > 0.7 ? "#ffffff" : (pt.life > 0.35 ? "#fde047" : "#f97316")
                         ctx.fillRect(pt.x, pt.y, pt.size, pt.size)
                       }
 
-                      // 4. Draw Painter Stylus / Laser Beam on Active Letter
+                      // 5. Draw Quantum Plasma Torch / Laser Stylus
                       if (syncBtnBox.animating && activeLIdx < lDefs.length && lProg <= 1.0) {
                         var bx = syncBtnBox.penX
                         var by = syncBtnBox.penY
 
-                        // Outer Cyan Laser Halo
-                        ctx.strokeStyle = "rgba(56, 189, 248, 0.45)"
-                        ctx.lineWidth = 5
+                        // Outer Plasma Flame Aura (Orange & Violet Glow)
+                        ctx.strokeStyle = "rgba(249, 115, 22, 0.4)"
+                        ctx.lineWidth = 6
                         ctx.beginPath()
                         ctx.moveTo(bx - 3, 0)
                         ctx.lineTo(bx + 3, height)
@@ -2168,12 +2205,12 @@ BarWidget {
                         ctx.lineTo(bx + 3, height)
                         ctx.stroke()
 
-                        // Glowing Painter Brush / Laser Pen Tip
+                        // Glowing Plasma Nozzle Head
                         ctx.fillStyle = "#ffffff"
-                        ctx.shadowColor = "#38bdf8"
-                        ctx.shadowBlur = 8
+                        ctx.shadowColor = "#f97316"
+                        ctx.shadowBlur = 10
                         ctx.beginPath()
-                        ctx.arc(bx, by, 2.5, 0, Math.PI * 2)
+                        ctx.arc(bx, by, 3.0, 0, Math.PI * 2)
                         ctx.fill()
                         ctx.shadowBlur = 0
                       }
