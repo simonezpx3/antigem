@@ -1495,11 +1495,14 @@ BarWidget {
               anchors.centerIn: parent
               spacing: Style.space(4)
 
-              RowLayout {
+              // Header Row (Title on left, Interval Pill centered in total width)
+              Item {
                 width: parent.width
-                spacing: Style.space(4)
+                implicitHeight: 22
 
                 Text {
+                  anchors.left: parent.left
+                  anchors.verticalCenter: parent.verticalCenter
                   text: "⏱️ TELEMETRY & AUTO-REFRESH"
                   color: root.foreground
                   font.family: root.fontFamily
@@ -1507,11 +1510,11 @@ BarWidget {
                   font.bold: true
                 }
 
-                Item { Layout.fillWidth: true }
-
                 Rectangle {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  anchors.verticalCenter: parent.verticalCenter
                   height: 20
-                  width: curIntText.implicitWidth + 12
+                  width: curIntText.implicitWidth + 14
                   radius: 4
                   color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
                   border.color: root.primaryAccent
