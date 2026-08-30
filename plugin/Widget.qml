@@ -2300,54 +2300,6 @@ BarWidget {
                     syncBtnBox.startLightningDischarge()
                   }
                 }
-
-                // Restart Shell Button Row
-                Rectangle {
-                  width: parent.width
-                  height: 32
-                  radius: 5
-                  color: restartShellMouse.containsMouse ? root.cardHover : root.cardFill
-                  border.color: restartShellMouse.containsMouse ? root.primaryAccent : root.cardBorder
-                  border.width: 1
-                  scale: restartShellMouse.pressed ? 0.95 : 1.0
-
-                  Behavior on scale { NumberAnimation { duration: 90 } }
-                  Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                  Row {
-                    anchors.centerIn: parent
-                    spacing: 6
-
-                    Text {
-                      text: "󰑐"
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                      text: "Restart Omarchy Shell"
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-                  }
-
-                  MouseArea {
-                    id: restartShellMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                      if (root.bar && typeof root.bar.run === "function") {
-                        root.bar.run("omarchy restart shell")
-                      }
-                    }
-                  }
-                }
               }
             }
           }
