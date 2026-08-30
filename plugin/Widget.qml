@@ -1947,7 +1947,7 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 5
+                    spacing: 6
 
                     Text {
                       text: "\ue900"
@@ -1958,11 +1958,10 @@ BarWidget {
                     }
 
                     Text {
-                      text: "Force Scanner Sync"
+                      text: "omarchy"
                       color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
+                      font.family: "omarchy"
+                      font.pixelSize: Style.font.body
                       anchors.verticalCenter: parent.verticalCenter
                     }
                   }
