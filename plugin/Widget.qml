@@ -1899,7 +1899,7 @@ BarWidget {
                   Behavior on scale { NumberAnimation { duration: 90 } }
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                  property real beamX: -5.0
+                  property real beamX: 90.0
                   property bool animating: false
                   property var particles: []
                   property var embers: []
@@ -1920,7 +1920,7 @@ BarWidget {
                   ]
 
                   function startLaserEtch() {
-                    syncBtnBox.beamX = 86.0
+                    syncBtnBox.beamX = -2.0 // Start at far left for handwriting sweep
                     syncBtnBox.particles = []
                     syncBtnBox.embers = []
                     syncBtnBox.heatMap = []
@@ -1942,8 +1942,8 @@ BarWidget {
                     onTriggered: {
                       if (!syncBtnBox.animating) return
 
-                      // Advance beam from Right to Left
-                      syncBtnBox.beamX -= 1.15
+                      // Advance beam from Left to Right (Handwriting sweep: O -> M -> A -> R -> C -> H -> Y)
+                      syncBtnBox.beamX += 1.05
 
                       var currentIntCol = Math.floor(syncBtnBox.beamX)
                       var cw = asciiCanvas.width / 85
@@ -1951,8 +1951,8 @@ BarWidget {
 
                       // Update heat map and spawn cutting sparks
                       for (var r = 0; r < 10; r++) {
-                        for (var c = 84; c >= 0; c--) {
-                          if (c >= currentIntCol) {
+                        for (var c = 0; c <= 84; c++) {
+                          if (c <= currentIntCol) {
                             if (c === currentIntCol) {
                               if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] < 0.1) {
                                 syncBtnBox.heatMap[r][c] = 1.0
@@ -1962,7 +1962,7 @@ BarWidget {
                                     syncBtnBox.particles.push({
                                       x: c * cw + cw / 2,
                                       y: r * chH + chH / 2,
-                                      vx: -(0.8 + Math.random() * 3.2),
+                                      vx: 0.5 + Math.random() * 2.8,
                                       vy: (Math.random() - 0.4) * 2.8,
                                       life: 1.0,
                                       decay: 0.04 + Math.random() * 0.05,
@@ -2013,7 +2013,7 @@ BarWidget {
 
                       asciiCanvas.requestPaint()
 
-                      if (syncBtnBox.beamX <= -4 && syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
+                      if (syncBtnBox.beamX >= 88 && syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
                         etchTimer.stop()
                         asciiCanvas.requestPaint()
@@ -2052,13 +2052,13 @@ BarWidget {
                       var activeCol = syncBtnBox.beamX
                       var heat = syncBtnBox.heatMap
 
-                      // 1. Draw ASCII Character Blocks (Revealed from Right to Left)
+                      // 1. Draw ASCII Character Blocks (Revealed progressively from Left to Right)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
                         var baseColor = syncBtnBox.rowGradient[r] || "#38bdf8"
 
                         for (var c = 0; c < cols; c++) {
-                          if (c < activeCol && syncBtnBox.animating) continue
+                          if (c > activeCol && syncBtnBox.animating) continue
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
@@ -2100,10 +2100,10 @@ BarWidget {
                         ctx.fillRect(pt.x, pt.y, pt.size, pt.size)
                       }
 
-                      // 4. Draw Angled Cutting Laser Beam
+                      // 4. Draw Angled Cutting Laser Beam (Slanted forward in writing direction)
                       if (syncBtnBox.animating && activeCol >= -2 && activeCol <= 86) {
-                        var bxTop = activeCol * cw + 6
-                        var bxBottom = activeCol * cw - 6
+                        var bxTop = activeCol * cw - 4
+                        var bxBottom = activeCol * cw + 4
 
                         // Outer Cyan Laser Halo
                         ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"
