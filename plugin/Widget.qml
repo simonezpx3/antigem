@@ -1924,24 +1924,20 @@ BarWidget {
                   function startMatrixRain() {
                     syncBtnBox.streams = []
                     syncBtnBox.lockedBlocks = []
-                    syncBtnBox.randomChars = []
 
                     for (var r = 0; r < 10; r++) {
                       var lockRow = []
-                      var charRow = []
                       for (var c = 0; c < 85; c++) {
                         lockRow.push(0.0)
-                        charRow.push(matrixGlyphs.charAt(Math.floor(Math.random() * matrixGlyphs.length)))
                       }
                       syncBtnBox.lockedBlocks.push(lockRow)
-                      syncBtnBox.randomChars.push(charRow)
                     }
 
                     for (var col = 0; col < 85; col++) {
                       syncBtnBox.streams.push({
-                        headY: -(Math.random() * 10.0), // Staggered rain cascade
-                        speed: 0.38 + Math.random() * 0.42,
-                        length: 4 + Math.floor(Math.random() * 6),
+                        headY: -(Math.random() * 8.0), // Quick staggered start
+                        speed: 0.65 + Math.random() * 0.75, // Fast 60 FPS rain speed
+                        length: 3 + Math.floor(Math.random() * 5),
                         active: true
                       })
                     }
@@ -1961,30 +1957,22 @@ BarWidget {
 
                       var allDone = true
 
-                      // Update digital rain streams
+                      // Fast numeric stream physics
                       for (var c = 0; c < 85; c++) {
                         var st = syncBtnBox.streams[c]
-                        if (!st) continue
+                        if (!st || !st.active) continue
 
                         st.headY += st.speed
-
                         var headInt = Math.floor(st.headY)
 
-                        // Mutate random glitch characters while falling
+                        // Lock in logo block when drop head passes row
                         for (var r = 0; r < 10; r++) {
-                          if (st.headY >= r && st.headY - st.length <= r) {
-                            if (Math.random() > 0.65 && syncBtnBox.randomChars[r]) {
-                              syncBtnBox.randomChars[r][c] = matrixGlyphs.charAt(Math.floor(Math.random() * matrixGlyphs.length))
-                            }
-                          }
-
-                          // Lock in logo block when drop head hits the row
-                          if (r === headInt && syncBtnBox.lockedBlocks[r] && syncBtnBox.lockedBlocks[r][c] === 0.0) {
+                          if (r <= headInt && syncBtnBox.lockedBlocks[r][c] === 0.0) {
                             var ch = asciiCanvas.asciiArt[r].charAt(c)
                             if (ch === "█" || ch === "▄" || ch === "▀") {
                               syncBtnBox.lockedBlocks[r][c] = 1.0 // Flash white!
                             } else {
-                              syncBtnBox.lockedBlocks[r][c] = 0.001 // Empty space locked
+                              syncBtnBox.lockedBlocks[r][c] = 0.001 // Empty cell locked
                             }
                           }
                         }
@@ -1996,11 +1984,11 @@ BarWidget {
                         }
                       }
 
-                      // Decay flash on locked blocks
+                      // Decay white flash on locked blocks
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
-                          if (syncBtnBox.lockedBlocks[r2] && syncBtnBox.lockedBlocks[r2][c2] > 0.01) {
-                            syncBtnBox.lockedBlocks[r2][c2] = Math.max(0.01, syncBtnBox.lockedBlocks[r2][c2] - 0.055)
+                          if (syncBtnBox.lockedBlocks[r2][c2] > 0.01) {
+                            syncBtnBox.lockedBlocks[r2][c2] = Math.max(0.01, syncBtnBox.lockedBlocks[r2][c2] - 0.08)
                           }
                         }
                       }
@@ -2044,81 +2032,74 @@ BarWidget {
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
 
-                      // 1. Draw Digital Rain Streams
+                      // 1. Ultra-fast 60 FPS Digital Rain Streams (Hardware fillRect batching)
                       if (syncBtnBox.animating) {
-                        ctx.font = Math.round(ch * 0.85) + "px monospace"
-                        ctx.textAlign = "center"
-                        ctx.textBaseline = "middle"
-
                         for (var c = 0; c < cols; c++) {
                           var st = syncBtnBox.streams[c]
                           if (!st || !st.active) continue
 
                           var head = st.headY
                           var len = st.length
-                          var x = c * cw + cw / 2
+                          var x = c * cw
 
                           for (var r = 0; r < rows; r++) {
-                            var y = r * ch + ch / 2
-                            var isLocked = syncBtnBox.lockedBlocks[r] && syncBtnBox.lockedBlocks[r][c] > 0.0
+                            if (syncBtnBox.lockedBlocks[r][c] > 0.0) continue // Already locked into logo
 
-                            // If not locked yet and within stream
-                            if (!isLocked && r <= head && r >= head - len) {
+                            if (r <= head && r >= head - len) {
                               var dist = head - r
-                              var glyph = (syncBtnBox.randomChars[r] && syncBtnBox.randomChars[r][c]) || "0"
+                              var y = r * ch
 
-                              if (dist < 1.0) {
-                                ctx.fillStyle = "#ffffff" // Glowing white head
-                                ctx.shadowColor = "#86efac"
-                                ctx.shadowBlur = 6
-                              } else if (dist < 2.5) {
-                                ctx.fillStyle = "#4ade80" // Neon green trail
-                                ctx.shadowBlur = 0
+                              if (dist < 0.9) {
+                                // Glowing Lead Drop (Head)
+                                ctx.fillStyle = "#ffffff"
+                                ctx.fillRect(x - 0.5, y, cw + 1.0, ch)
+                              } else if (dist < 2.2) {
+                                // Bright Phosphor Trail
+                                ctx.fillStyle = "#4ade80"
+                                ctx.fillRect(x, y + 1, cw - 0.2, ch - 2)
                               } else {
-                                var alpha = Math.max(0.12, 1.0 - dist / len)
+                                // Fading Tail
+                                var alpha = Math.max(0.15, 1.0 - dist / len)
                                 ctx.fillStyle = "rgba(34, 197, 94, " + alpha.toFixed(2) + ")"
-                                ctx.shadowBlur = 0
+                                ctx.fillRect(x + 0.3, y + 2, cw - 0.6, ch - 4)
                               }
-
-                              ctx.fillText(glyph, x, y)
                             }
                           }
                         }
-                        ctx.shadowBlur = 0
                       }
 
-                      // 2. Draw Materialized Omarchy Logo Blocks
+                      // 2. Materialized Omarchy Logo Blocks
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
 
                         for (var c = 0; c < cols; c++) {
-                          var lockVal = (syncBtnBox.lockedBlocks[r] && syncBtnBox.lockedBlocks[r][c]) || 0.0
-                          if (syncBtnBox.animating && lockVal === 0.0) continue // Hidden before rain hits
+                          var lockVal = syncBtnBox.lockedBlocks[r] ? syncBtnBox.lockedBlocks[r][c] : 0.0
+                          if (syncBtnBox.animating && lockVal === 0.0) continue
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
 
-                          var x = c * cw
-                          var y = r * ch
+                          var bx = c * cw
+                          var by = r * ch
 
                           if (lockVal > 0.6) {
-                            ctx.fillStyle = "#ffffff" // White flash on locking in
+                            ctx.fillStyle = "#ffffff" // White flash upon materialization
                           } else if (lockVal > 0.2) {
                             ctx.fillStyle = "#bbf7d0" // Green phosphor flash
                           } else {
                             if (isHovered) {
-                              ctx.fillStyle = "#b4f9f8" // Turquoise on hover
+                              ctx.fillStyle = "#b4f9f8"
                             } else {
-                              ctx.fillStyle = syncBtnBox.rowGradient[r] || "#22c55e" // Matrix phosphor gradient
+                              ctx.fillStyle = syncBtnBox.rowGradient[r] || "#22c55e"
                             }
                           }
 
                           if (chChar === "█") {
-                            ctx.fillRect(x, y, cw + 0.35, ch + 0.35)
+                            ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
                           } else if (chChar === "▄") {
-                            ctx.fillRect(x, y + ch / 2, cw + 0.35, ch / 2 + 0.35)
+                            ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
                           } else if (chChar === "▀") {
-                            ctx.fillRect(x, y, cw + 0.35, ch / 2 + 0.35)
+                            ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
                           }
                         }
                       }
