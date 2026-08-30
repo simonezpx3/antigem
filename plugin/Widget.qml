@@ -1899,11 +1899,25 @@ BarWidget {
                   Behavior on scale { NumberAnimation { duration: 90 } }
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                  property real beamX: 90.0
+                  property int activeLetterIdx: 7 // 0..6 while animating, 7 = finished
+                  property real letterProgress: 0.0 // 0.0 to 1.0 within active letter
+                  property real penX: 0.0
+                  property real penY: 25.0
                   property bool animating: false
                   property var particles: []
                   property var embers: []
                   property var heatMap: []
+
+                  // Exact letter column boundaries for O-M-A-R-C-H-Y
+                  readonly property var letterDefs: [
+                    { start: 0, end: 9 },   // O
+                    { start: 11, end: 26 }, // M
+                    { start: 28, end: 37 }, // A
+                    { start: 39, end: 49 }, // R
+                    { start: 51, end: 61 }, // C
+                    { start: 63, end: 72 }, // H
+                    { start: 74, end: 82 }  // Y
+                  ]
 
                   // Vertical Gradient Palette across the 10 rows (White -> Cyan -> Blue -> Purple)
                   readonly property var rowGradient: [
@@ -1920,7 +1934,8 @@ BarWidget {
                   ]
 
                   function startLaserEtch() {
-                    syncBtnBox.beamX = -2.0 // Start at far left for handwriting sweep
+                    syncBtnBox.activeLetterIdx = 0
+                    syncBtnBox.letterProgress = 0.0
                     syncBtnBox.particles = []
                     syncBtnBox.embers = []
                     syncBtnBox.heatMap = []
@@ -1935,57 +1950,79 @@ BarWidget {
 
                   Timer {
                     id: etchTimer
-                    interval: 16
+                    interval: 16 // 60 FPS
                     repeat: true
                     running: syncBtnBox.animating
 
                     onTriggered: {
                       if (!syncBtnBox.animating) return
 
-                      // Advance beam from Left to Right (Handwriting sweep: O -> M -> A -> R -> C -> H -> Y)
-                      syncBtnBox.beamX += 1.05
-
-                      var currentIntCol = Math.floor(syncBtnBox.beamX)
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Update heat map and spawn cutting sparks
-                      for (var r = 0; r < 10; r++) {
-                        for (var c = 0; c <= 84; c++) {
-                          if (c <= currentIntCol) {
-                            if (c === currentIntCol) {
-                              if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] < 0.1) {
-                                syncBtnBox.heatMap[r][c] = 1.0
-                                var ch = asciiCanvas.asciiArt[r].charAt(c)
-                                if (ch === "█" || ch === "▄" || ch === "▀") {
-                                  for (var p = 0; p < 4; p++) {
-                                    syncBtnBox.particles.push({
-                                      x: c * cw + cw / 2,
-                                      y: r * chH + chH / 2,
-                                      vx: 0.5 + Math.random() * 2.8,
-                                      vy: (Math.random() - 0.4) * 2.8,
-                                      life: 1.0,
-                                      decay: 0.04 + Math.random() * 0.05,
-                                      size: 1 + Math.random() * 1.5
-                                    })
-                                  }
+                      if (syncBtnBox.activeLetterIdx < syncBtnBox.letterDefs.length) {
+                        var lDef = syncBtnBox.letterDefs[syncBtnBox.activeLetterIdx]
+                        var letWidth = lDef.end - lDef.start + 1
 
-                                  if (Math.random() > 0.4) {
-                                    syncBtnBox.embers.push({
-                                      x: c * cw + (Math.random() - 0.5) * 8,
-                                      y: asciiCanvas.height - 1 - Math.random() * 2,
-                                      life: 1.0,
-                                      decay: 0.02 + Math.random() * 0.03,
-                                      size: 1 + Math.random() * 1.2
-                                    })
-                                  }
+                        // Advance progress inside current letter (painter stroke speed)
+                        syncBtnBox.letterProgress += 0.065
+
+                        if (syncBtnBox.letterProgress <= 1.0) {
+                          var currentExactCol = lDef.start + syncBtnBox.letterProgress * (letWidth - 0.2)
+                          var currentIntCol = Math.floor(currentExactCol)
+                          syncBtnBox.penX = currentExactCol * cw
+
+                          // Paint current column blocks & emit laser sparks
+                          for (var r = 0; r < 10; r++) {
+                            if (currentIntCol <= 84 && syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][currentIntCol] < 0.1) {
+                              syncBtnBox.heatMap[r][currentIntCol] = 1.0
+                              var ch = asciiCanvas.asciiArt[r].charAt(currentIntCol)
+                              if (ch === "█" || ch === "▄" || ch === "▀") {
+                                syncBtnBox.penY = r * chH + chH / 2
+
+                                // Spawn painter laser sparks
+                                for (var p = 0; p < 3; p++) {
+                                  syncBtnBox.particles.push({
+                                    x: syncBtnBox.penX,
+                                    y: syncBtnBox.penY,
+                                    vx: 0.6 + Math.random() * 2.5,
+                                    vy: (Math.random() - 0.5) * 2.6,
+                                    life: 1.0,
+                                    decay: 0.05 + Math.random() * 0.06,
+                                    size: 1 + Math.random() * 1.5
+                                  })
+                                }
+
+                                if (Math.random() > 0.5) {
+                                  syncBtnBox.embers.push({
+                                    x: syncBtnBox.penX + (Math.random() - 0.5) * 6,
+                                    y: asciiCanvas.height - 1 - Math.random() * 2,
+                                    life: 1.0,
+                                    decay: 0.03 + Math.random() * 0.04,
+                                    size: 1 + Math.random() * 1.2
+                                  })
                                 }
                               }
-                            } else {
-                              if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] > 0.0) {
-                                syncBtnBox.heatMap[r][c] = Math.max(0.0, syncBtnBox.heatMap[r][c] - 0.045)
-                              }
                             }
+                          }
+                        } else if (syncBtnBox.letterProgress > 1.28) {
+                          // Brief pause / brush lift before moving to next letter
+                          syncBtnBox.activeLetterIdx++
+                          syncBtnBox.letterProgress = 0.0
+                        }
+                      } else {
+                        // All letters finished
+                        if (syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
+                          syncBtnBox.animating = false
+                          etchTimer.stop()
+                        }
+                      }
+
+                      // Cool down active heat map
+                      for (var r2 = 0; r2 < 10; r2++) {
+                        for (var c2 = 0; c2 < 85; c2++) {
+                          if (syncBtnBox.heatMap[r2] && syncBtnBox.heatMap[r2][c2] > 0.0) {
+                            syncBtnBox.heatMap[r2][c2] = Math.max(0.0, syncBtnBox.heatMap[r2][c2] - 0.045)
                           }
                         }
                       }
@@ -2012,12 +2049,6 @@ BarWidget {
                       }
 
                       asciiCanvas.requestPaint()
-
-                      if (syncBtnBox.beamX >= 88 && syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
-                        syncBtnBox.animating = false
-                        etchTimer.stop()
-                        asciiCanvas.requestPaint()
-                      }
                     }
                   }
 
@@ -2049,39 +2080,55 @@ BarWidget {
                       var cw = width / cols
                       var ch = height / rows
 
-                      var activeCol = syncBtnBox.beamX
                       var heat = syncBtnBox.heatMap
+                      var lDefs = syncBtnBox.letterDefs
+                      var activeLIdx = syncBtnBox.activeLetterIdx
+                      var lProg = syncBtnBox.letterProgress
 
-                      // 1. Draw ASCII Character Blocks (Revealed progressively from Left to Right)
-                      for (var r = 0; r < rows; r++) {
-                        var line = asciiArt[r]
-                        var baseColor = syncBtnBox.rowGradient[r] || "#38bdf8"
+                      // 1. Draw ASCII Character Blocks Letter-by-Letter
+                      for (var l = 0; l < lDefs.length; l++) {
+                        var def = lDefs[l]
 
-                        for (var c = 0; c < cols; c++) {
-                          if (c > activeCol && syncBtnBox.animating) continue
+                        // Determine visible columns for letter 'l'
+                        var maxVisibleCol = -1
+                        if (!syncBtnBox.animating || l < activeLIdx) {
+                          maxVisibleCol = def.end // Fully etched
+                        } else if (l === activeLIdx) {
+                          maxVisibleCol = def.start + Math.min(1.0, lProg) * (def.end - def.start + 1)
+                        } else {
+                          maxVisibleCol = -1 // Not reached yet
+                        }
 
-                          var chChar = line.charAt(c)
-                          if (chChar === " " || chChar === "") continue
+                        if (maxVisibleCol < def.start) continue
 
-                          var x = c * cw
-                          var y = r * ch
+                        for (var r = 0; r < rows; r++) {
+                          var line = asciiArt[r]
+                          var baseColor = syncBtnBox.rowGradient[r] || "#38bdf8"
 
-                          var hVal = (heat && heat[r]) ? (heat[r][c] || 0) : 0
+                          for (var c = def.start; c <= def.end && c <= maxVisibleCol; c++) {
+                            var chChar = line.charAt(c)
+                            if (chChar === " " || chChar === "") continue
 
-                          if (hVal > 0.6) {
-                            ctx.fillStyle = "#ffffff"
-                          } else if (hVal > 0.2) {
-                            ctx.fillStyle = "#fef08a"
-                          } else {
-                            ctx.fillStyle = baseColor
-                          }
+                            var x = c * cw
+                            var y = r * ch
 
-                          if (chChar === "█") {
-                            ctx.fillRect(x, y, cw + 0.35, ch + 0.35)
-                          } else if (chChar === "▄") {
-                            ctx.fillRect(x, y + ch / 2, cw + 0.35, ch / 2 + 0.35)
-                          } else if (chChar === "▀") {
-                            ctx.fillRect(x, y, cw + 0.35, ch / 2 + 0.35)
+                            var hVal = (heat && heat[r]) ? (heat[r][c] || 0) : 0
+
+                            if (hVal > 0.6) {
+                              ctx.fillStyle = "#ffffff"
+                            } else if (hVal > 0.2) {
+                              ctx.fillStyle = "#fef08a"
+                            } else {
+                              ctx.fillStyle = baseColor
+                            }
+
+                            if (chChar === "█") {
+                              ctx.fillRect(x, y, cw + 0.35, ch + 0.35)
+                            } else if (chChar === "▄") {
+                              ctx.fillRect(x, y + ch / 2, cw + 0.35, ch / 2 + 0.35)
+                            } else if (chChar === "▀") {
+                              ctx.fillRect(x, y, cw + 0.35, ch / 2 + 0.35)
+                            }
                           }
                         }
                       }
@@ -2100,31 +2147,35 @@ BarWidget {
                         ctx.fillRect(pt.x, pt.y, pt.size, pt.size)
                       }
 
-                      // 4. Draw Angled Cutting Laser Beam (Slanted forward in writing direction)
-                      if (syncBtnBox.animating && activeCol >= -2 && activeCol <= 86) {
-                        var bxTop = activeCol * cw - 4
-                        var bxBottom = activeCol * cw + 4
+                      // 4. Draw Painter Stylus / Laser Beam on Active Letter
+                      if (syncBtnBox.animating && activeLIdx < lDefs.length && lProg <= 1.0) {
+                        var bx = syncBtnBox.penX
+                        var by = syncBtnBox.penY
 
                         // Outer Cyan Laser Halo
-                        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"
-                        ctx.lineWidth = 6
+                        ctx.strokeStyle = "rgba(56, 189, 248, 0.45)"
+                        ctx.lineWidth = 5
                         ctx.beginPath()
-                        ctx.moveTo(bxTop, 0)
-                        ctx.lineTo(bxBottom, height)
+                        ctx.moveTo(bx - 3, 0)
+                        ctx.lineTo(bx + 3, height)
                         ctx.stroke()
 
                         // Core White Laser Beam
                         ctx.strokeStyle = "#ffffff"
-                        ctx.lineWidth = 1.8
+                        ctx.lineWidth = 1.6
                         ctx.beginPath()
-                        ctx.moveTo(bxTop, 0)
-                        ctx.lineTo(bxBottom, height)
+                        ctx.moveTo(bx - 3, 0)
+                        ctx.lineTo(bx + 3, height)
                         ctx.stroke()
 
-                        // Emitter focal dots
+                        // Glowing Painter Brush / Laser Pen Tip
                         ctx.fillStyle = "#ffffff"
-                        ctx.fillRect(bxTop - 2, 0, 4, 3)
-                        ctx.fillRect(bxBottom - 2, height - 3, 4, 3)
+                        ctx.shadowColor = "#38bdf8"
+                        ctx.shadowBlur = 8
+                        ctx.beginPath()
+                        ctx.arc(bx, by, 2.5, 0, Math.PI * 2)
+                        ctx.fill()
+                        ctx.shadowBlur = 0
                       }
                     }
                   }
