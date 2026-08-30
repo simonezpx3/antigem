@@ -395,7 +395,7 @@ BarWidget {
         // 1. Panel Hero Header (System Monitor style)
         Rectangle {
           width: parent.width
-          implicitHeight: Math.max(54, headerHeroLayout.implicitHeight + Style.space(10))
+          implicitHeight: Math.max(62, headerHeroLayout.implicitHeight + Style.space(8))
           radius: 8
           color: root.cardFill
           border.color: root.cardBorder
@@ -463,11 +463,11 @@ BarWidget {
               }
             }
 
-            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo, frameless & enlarged)
+            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo, exactly identical to settings logo)
             Item {
               id: headerOmarchyLogoBox
               width: 153
-              height: 38
+              height: 50
               clip: true
               scale: headerOmarchyMouse.pressed ? 0.96 : 1.0
 
@@ -477,10 +477,11 @@ BarWidget {
               property real elapsedFrames: 0.0
               property var heatMap: []
               property var sparks: []
+              property var embers: []
               property var currentBolt: null
               property var pendingCells: []
               property real lastLaserX: 0.0
-              property real lastLaserY: 18.0
+              property real lastLaserY: 25.0
 
               readonly property var allPalettes: [
                 // 0: Omarchy Classic (Cyan -> Blue -> Purple)
@@ -522,7 +523,7 @@ BarWidget {
                 var nx = -dy / dist
                 var ny = dx / dist
 
-                var steps = 5
+                var steps = 6
                 var pts = [{ x: x1, y: y1 }]
                 var branches = []
 
@@ -530,17 +531,18 @@ BarWidget {
                   var t = i / steps
                   var bx = x1 + dx * t
                   var by = y1 + dy * t
-                  var maxJitter = Math.min(14, Math.max(5, dist * 0.20))
+                  var maxJitter = Math.min(22, Math.max(8, dist * 0.22))
                   var jitter = (Math.random() - 0.5) * 2 * maxJitter
                   var px = bx + nx * jitter
                   var py = by + ny * jitter
                   pts.push({ x: px, y: py })
 
-                  if (i === 2 || i === 3) {
-                    if (Math.random() > 0.4) {
+                  // 1-2 fractal side branches
+                  if (i === 2 || i === 4) {
+                    if (Math.random() > 0.35) {
                       var bPts = [{ x: px, y: py }]
-                      var bLen = 6 + Math.random() * 8
-                      var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 6
+                      var bLen = 10 + Math.random() * 14
+                      var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 10
                       var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
                       var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
                       bPts.push({ x: bpx, y: bpy })
@@ -563,6 +565,7 @@ BarWidget {
                 headerOmarchyLogoBox.randomizePalette()
                 headerOmarchyLogoBox.heatMap = []
                 headerOmarchyLogoBox.sparks = []
+                headerOmarchyLogoBox.embers = []
                 headerOmarchyLogoBox.currentBolt = null
                 headerOmarchyLogoBox.pendingCells = []
                 headerOmarchyLogoBox.elapsedFrames = 0.0
@@ -606,7 +609,7 @@ BarWidget {
                   var chH = headerCanvas.height / 10
 
                   if (headerOmarchyLogoBox.pendingCells.length > 0) {
-                    var clusterSize = Math.min(headerOmarchyLogoBox.pendingCells.length, 5)
+                    var clusterSize = Math.min(headerOmarchyLogoBox.pendingCells.length, 4)
                     var targetCell = headerOmarchyLogoBox.pendingCells.pop()
                     headerOmarchyLogoBox.heatMap[targetCell.r][targetCell.c] = 1.0
 
@@ -628,19 +631,29 @@ BarWidget {
                     headerOmarchyLogoBox.lastLaserX = targetX
                     headerOmarchyLogoBox.lastLaserY = targetY
 
-                    for (var p = 0; p < 2; p++) {
+                    for (var p = 0; p < 4; p++) {
                       headerOmarchyLogoBox.sparks.push({
                         x: targetX,
                         y: targetY,
-                        vx: (Math.random() - 0.5) * 3.2,
-                        vy: (Math.random() - 0.6) * 2.8,
+                        vx: (Math.random() - 0.5) * 6.5,
+                        vy: (Math.random() - 0.6) * 5.5,
                         life: 1.0,
-                        decay: 0.06 + Math.random() * 0.06,
-                        size: 1 + Math.random() * 1.2
+                        decay: 0.04 + Math.random() * 0.05,
+                        size: 1.5 + Math.random() * 2.5
+                      })
+                    }
+
+                    if (Math.random() > 0.60) {
+                      headerOmarchyLogoBox.embers.push({
+                        x: targetX + (Math.random() - 0.5) * 12,
+                        y: headerCanvas.height - 1 - Math.random() * 4,
+                        life: 1.0,
+                        decay: 0.025 + Math.random() * 0.035,
+                        size: 1.5 + Math.random() * 2.0
                       })
                     }
                   } else if (headerOmarchyLogoBox.currentBolt) {
-                    headerOmarchyLogoBox.currentBolt.life -= 0.32
+                    headerOmarchyLogoBox.currentBolt.life -= 0.28
                     if (headerOmarchyLogoBox.currentBolt.life <= 0) {
                       headerOmarchyLogoBox.currentBolt = null
                     }
@@ -650,24 +663,32 @@ BarWidget {
                     var sp = headerOmarchyLogoBox.sparks[s]
                     sp.x += sp.vx
                     sp.y += sp.vy
-                    sp.vy += 0.12
+                    sp.vy += 0.16
                     sp.life -= sp.decay
                     if (sp.life <= 0) {
                       headerOmarchyLogoBox.sparks.splice(s, 1)
                     }
                   }
 
+                  for (var e = headerOmarchyLogoBox.embers.length - 1; e >= 0; e--) {
+                    var eb = headerOmarchyLogoBox.embers[e]
+                    eb.life -= eb.decay
+                    if (eb.life <= 0) {
+                      headerOmarchyLogoBox.embers.splice(e, 1)
+                    }
+                  }
+
                   for (var r2 = 0; r2 < 10; r2++) {
                     for (var c2 = 0; c2 < 85; c2++) {
                       if (headerOmarchyLogoBox.heatMap[r2] && headerOmarchyLogoBox.heatMap[r2][c2] > 0.01) {
-                        headerOmarchyLogoBox.heatMap[r2][c2] = Math.max(0.01, headerOmarchyLogoBox.heatMap[r2][c2] - 0.05)
+                        headerOmarchyLogoBox.heatMap[r2][c2] = Math.max(0.01, headerOmarchyLogoBox.heatMap[r2][c2] - 0.045)
                       }
                     }
                   }
 
                   headerCanvas.requestPaint()
 
-                  if (headerOmarchyLogoBox.pendingCells.length === 0 && !headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.sparks.length === 0) {
+                  if (headerOmarchyLogoBox.pendingCells.length === 0 && !headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.sparks.length === 0 && headerOmarchyLogoBox.embers.length === 0) {
                     headerOmarchyLogoBox.animating = false
                     headerLaserTimer.stop()
                     headerCanvas.requestPaint()
@@ -702,10 +723,13 @@ BarWidget {
                   var rows = 10
                   var cw = width / cols
                   var ch = height / rows
+                  var isHovered = headerOmarchyMouse.containsMouse
                   var grad = headerOmarchyLogoBox.activeGradient || headerOmarchyLogoBox.allPalettes[0]
 
+                  // 1. Draw ASCII Character Blocks
                   for (var r = 0; r < rows; r++) {
                     var line = asciiArt[r]
+
                     for (var c = 0; c < cols; c++) {
                       var heatVal = (headerOmarchyLogoBox.heatMap[r] && headerOmarchyLogoBox.heatMap[r][c]) || 0.0
                       if (headerOmarchyLogoBox.animating && heatVal === 0.0) continue
@@ -725,33 +749,40 @@ BarWidget {
                       }
 
                       if (chChar === "█") {
-                        ctx.fillRect(bx, by, cw + 0.45, ch + 0.45)
+                        ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
                       } else if (chChar === "▄") {
-                        ctx.fillRect(bx, by + ch / 2, cw + 0.45, ch / 2 + 0.45)
+                        ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
                       } else if (chChar === "▀") {
-                        ctx.fillRect(bx, by, cw + 0.45, ch / 2 + 0.45)
+                        ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
                       }
                     }
                   }
 
-                  // Sparks
+                  // 2. Draw Floor Embers
+                  for (var e = 0; e < headerOmarchyLogoBox.embers.length; e++) {
+                    var eb = headerOmarchyLogoBox.embers[e]
+                    ctx.fillStyle = eb.life > 0.5 ? (grad[4] || "#38bdf8") : (grad[7] || "#8b5cf6")
+                    ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
+                  }
+
+                  // 3. Draw Electric Sparks
                   for (var spIdx = 0; spIdx < headerOmarchyLogoBox.sparks.length; spIdx++) {
                     var spk = headerOmarchyLogoBox.sparks[spIdx]
                     ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
                     ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                   }
 
-                  // Lightning Bolt
+                  // 4. Draw Exactly 1 Single Fractal Lightning Bolt Discharge
                   if (headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.currentBolt.life > 0) {
                     var bolt = headerOmarchyLogoBox.currentBolt
                     var bAlpha = Math.max(0.1, bolt.life)
                     var pts = bolt.pts
                     var branches = bolt.branches
 
-                    // Aura
+                    // A. Wide Plasma Aura
                     ctx.strokeStyle = (grad[4] || "#38bdf8")
                     ctx.globalAlpha = bAlpha * 0.45
-                    ctx.lineWidth = 5.5
+                    ctx.lineWidth = 4.8
                     ctx.beginPath()
                     ctx.moveTo(pts[0].x, pts[0].y)
                     for (var i = 1; i < pts.length; i++) {
@@ -759,10 +790,19 @@ BarWidget {
                     }
                     ctx.stroke()
 
-                    // Mid-Arc
+                    // Branches - Aura
+                    for (var br = 0; br < branches.length; br++) {
+                      var bp = branches[br]
+                      ctx.beginPath()
+                      ctx.moveTo(bp[0].x, bp[0].y)
+                      ctx.lineTo(bp[1].x, bp[1].y)
+                      ctx.stroke()
+                    }
+
+                    // B. Electric Mid-Arc
                     ctx.strokeStyle = (grad[7] || "#a855f7")
                     ctx.globalAlpha = bAlpha * 0.85
-                    ctx.lineWidth = 2.6
+                    ctx.lineWidth = 2.4
                     ctx.beginPath()
                     ctx.moveTo(pts[0].x, pts[0].y)
                     for (var j = 1; j < pts.length; j++) {
@@ -770,7 +810,33 @@ BarWidget {
                     }
                     ctx.stroke()
 
+                    // Branches - Mid-Arc
+                    for (var br2 = 0; br2 < branches.length; br2++) {
+                      var bp2 = branches[br2]
+                      ctx.beginPath()
+                      ctx.moveTo(bp2[0].x, bp2[0].y)
+                      ctx.lineTo(bp2[1].x, bp2[1].y)
+                      ctx.stroke()
+                    }
                     ctx.globalAlpha = 1.0
+
+                    // C. White-Hot Lightning Core
+                    ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
+                    ctx.lineWidth = 1.1
+                    ctx.beginPath()
+                    ctx.moveTo(pts[0].x, pts[0].y)
+                    for (var k = 1; k < pts.length; k++) {
+                      ctx.lineTo(pts[k].x, pts[k].y)
+                    }
+                    ctx.stroke()
+
+                    // D. Impact Flash Corona
+                    var tx = bolt.targetX
+                    var ty = bolt.targetY
+                    ctx.fillStyle = "rgba(255, 255, 255, " + (bAlpha * 0.9).toFixed(2) + ")"
+                    ctx.fillRect(tx - 1.5, ty - 1.5, 3, 3)
+                    ctx.fillStyle = "rgba(56, 189, 248, " + (bAlpha * 0.5).toFixed(2) + ")"
+                    ctx.fillRect(tx - 3.5, ty - 3.5, 7, 7)
                   }
                 }
               }
