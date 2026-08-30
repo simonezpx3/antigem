@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "simonez.antigem",
+  "name": "Anti/Gem",
+  "version": "1.0.0",
+  "author": "simonez",
+  "license": "MIT",
+  "description": "Antigravity & Gemini system monitor dashboard with performance tabs, quota gauges, activity history graph, session manager, and live heartbeat telemetry.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Anti/Gem",
+    "description": "System Monitor styled telemetry, quota meters, and activity monitor for Google Antigravity & Gemini AI.",
+    "category": "System",
+    "aliases": ["antigem", "anti-gem", "antigravity-monitor"],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "refreshIntervalSec": 60,
+      "pulseEnabled": true,
+      "pulseBpm": 60,
+      "defaultTab": 0
+    },
+    "schema": [
+      {
+        "key": "refreshIntervalSec",
+        "type": "number",
+        "label": "Auto-refresh Interval (s)",
+        "description": "Scan frequency for Antigravity quotas and telemetry in seconds.",
+        "defaultValue": 60,
+        "min": 5,
+        "max": 3600
+      },
+      {
+        "key": "pulseEnabled",
+        "type": "boolean",
+        "label": "Working Pulse (ON/OFF)",
+        "description": "Enables heartbeat pulse animation for logo and quota indicators while AI is generating.",
+        "defaultValue": true
+      },
+      {
+        "key": "pulseBpm",
+        "type": "number",
+        "label": "Pulse Speed (BPM)",
+        "description": "Heartbeat animation speed in beats per minute (BPM).",
+        "defaultValue": 60,
+        "min": 20,
+        "max": 240
+      }
+    ]
+  }
+}

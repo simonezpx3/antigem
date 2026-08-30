@@ -1,0 +1,65 @@
+#!/bin/bash
+# Unified Launcher for Google Antigravity CLI and IDE in Omarchy / Hyprland
+
+MODE="ide"
+CONV_ID=""
+WORKSPACE="$HOME"
+
+if [[ "$1" == "cli" || "$1" == "--cli" ]]; then
+  MODE="cli"
+  CONV_ID="$2"
+  WORKSPACE="${3:-$HOME}"
+elif [[ "$1" == "ide" || "$1" == "--ide" ]]; then
+  MODE="ide"
+  WORKSPACE="${2:-$HOME}"
+else
+  WORKSPACE="${1:-$HOME}"
+fi
+
+# Strip file:// URI prefix if present
+if [[ "$WORKSPACE" =~ ^file://(.*) ]]; then
+  WORKSPACE="${BASH_REMATCH[1]}"
+fi
+
+if [[ ! -d "$WORKSPACE" ]]; then
+  WORKSPACE="$HOME"
+fi
+
+if [[ "$MODE" == "cli" ]]; then
+  CMD="agy"
+  if [[ -n "$CONV_ID" ]]; then
+    CMD="agy --conversation \"$CONV_ID\""
+  fi
+
+  if command -v xdg-terminal-exec >/dev/null 2>&1; then
+    exec xdg-terminal-exec --dir="$WORKSPACE" bash -c "cd '$WORKSPACE' && $CMD; exec bash"
+  elif command -v foot >/dev/null 2>&1; then
+    exec foot -D "$WORKSPACE" bash -c "cd '$WORKSPACE' && $CMD; exec bash"
+  elif command -v alacritty >/dev/null 2>&1; then
+    exec alacritty --working-directory "$WORKSPACE" -e bash -c "cd '$WORKSPACE' && $CMD; exec bash"
+  elif command -v kitty >/dev/null 2>&1; then
+    exec kitty --directory "$WORKSPACE" bash -c "cd '$WORKSPACE' && $CMD; exec bash"
+  fi
+  exit 0
+fi
+
+# MODE == "ide"
+WINDOW_ADDRESS=$(hyprctl clients -j 2>/dev/null | jq -r '.[] | select((.class | test("^antigravity$"; "i")) or (.initialClass | test("^antigravity$"; "i"))) | .address' | head -n1)
+
+if [[ -n "$WINDOW_ADDRESS" && "$WINDOW_ADDRESS" != "null" ]]; then
+  hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS" >/dev/null 2>&1
+  if [[ -d "$WORKSPACE" ]]; then
+    nohup /home/simonez/.local/bin/antigravity "$WORKSPACE" >/dev/null 2>&1 &
+  fi
+  exit 0
+fi
+
+# No window mapped: clean locks and launch
+pkill -9 -x antigravity >/dev/null 2>&1 || true
+pkill -9 -f "antigravity-2.0/antigravity" >/dev/null 2>&1 || true
+pkill -9 -f "/home/simonez/.local/bin/antigravity" >/dev/null 2>&1 || true
+rm -f "$HOME/.config/Antigravity/Singleton"* 2>/dev/null 2>&1 || true
+sleep 0.1
+
+nohup /home/simonez/.local/bin/antigravity "$WORKSPACE" >/dev/null 2>&1 &
+
