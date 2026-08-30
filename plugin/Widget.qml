@@ -1104,7 +1104,7 @@ BarWidget {
               }
 
               Repeater {
-                model: (root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 6) : []
+                model: (root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 3) : []
 
                 Rectangle {
                   width: parent.width
@@ -1217,7 +1217,7 @@ BarWidget {
             }
           }
 
-          // Tools Distribution Card (Donut Pie Chart, Stats Legend & Summary)
+          // Tools Distribution Card (Enlarged Donut Pie Chart, Stats Legend & Summary)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
@@ -1255,10 +1255,11 @@ BarWidget {
                 width: parent.width
                 spacing: Style.space(6)
 
-                // 1. Donut Pie Chart
+                // 1. Large Donut Pie Chart
                 Item {
-                  width: 116
-                  height: 116
+                  width: 154
+                  height: 154
+                  Layout.alignment: Qt.AlignVCenter
 
                   Canvas {
                     id: toolDonutCanvas
@@ -1285,7 +1286,7 @@ BarWidget {
                       var cx = width / 2
                       var cy = height / 2
                       var outerR = width / 2 - 4
-                      var innerR = width / 2 - 20
+                      var innerR = width / 2 - 26
 
                       if (total <= 0 || tools.length === 0) {
                         ctx.beginPath()
@@ -1336,7 +1337,7 @@ BarWidget {
                       }
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
+                      font.pixelSize: Style.font.heading
                       font.bold: true
                       renderType: Text.NativeRendering
                     }
@@ -1346,19 +1347,20 @@ BarWidget {
                       text: "calls"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: Style.font.bodySmall
                       renderType: Text.NativeRendering
                     }
                   }
                 }
 
-                // 2. Legend & Meter Rows (Top 6 tools)
+                // 2. Legend & Meter Rows (All Top 8 tools with spacious rows)
                 Column {
                   Layout.fillWidth: true
                   spacing: Style.space(2)
+                  Layout.alignment: Qt.AlignVCenter
 
                   Repeater {
-                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 6) : []
+                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 8) : []
 
                     Column {
                       width: parent.width
@@ -1390,19 +1392,20 @@ BarWidget {
                           color: root.dim
                           font.family: root.fontFamily
                           font.pixelSize: Style.font.caption
+                          font.bold: true
                         }
                       }
 
                       Rectangle {
                         width: parent.width
-                        height: 3
-                        radius: 1.5
+                        height: 3.5
+                        radius: 1.75
                         color: root.track
 
                         Rectangle {
                           height: parent.height
                           width: Math.min(parent.width, parent.width * (Number(modelData.count) / Math.max(1, root.totalToolCalls)))
-                          radius: 1.5
+                          radius: 1.75
                           color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
                         }
                       }
