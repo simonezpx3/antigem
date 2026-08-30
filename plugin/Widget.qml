@@ -463,20 +463,15 @@ BarWidget {
               }
             }
 
-            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo)
-            Rectangle {
+            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo, frameless & enlarged)
+            Item {
               id: headerOmarchyLogoBox
-              width: 125
+              width: 153
               height: 38
-              radius: 6
               clip: true
-              color: headerOmarchyMouse.containsMouse ? "#0a101d" : root.cardFill
-              border.color: headerOmarchyMouse.containsMouse ? "#38bdf8" : root.cardBorder
-              border.width: 1
               scale: headerOmarchyMouse.pressed ? 0.96 : 1.0
 
               Behavior on scale { NumberAnimation { duration: 90 } }
-              Behavior on border.color { ColorAnimation { duration: 150 } }
 
               property bool animating: false
               property real elapsedFrames: 0.0
@@ -485,7 +480,7 @@ BarWidget {
               property var currentBolt: null
               property var pendingCells: []
               property real lastLaserX: 0.0
-              property real lastLaserY: 12.0
+              property real lastLaserY: 18.0
 
               readonly property var allPalettes: [
                 // 0: Omarchy Classic (Cyan -> Blue -> Purple)
@@ -683,8 +678,8 @@ BarWidget {
               Canvas {
                 id: headerCanvas
                 anchors.centerIn: parent
-                width: 102
-                height: 24
+                width: 153
+                height: 36
 
                 readonly property var asciiArt: [
                   "                 ▄▄▄                                                                 ",
@@ -730,11 +725,11 @@ BarWidget {
                       }
 
                       if (chChar === "█") {
-                        ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
+                        ctx.fillRect(bx, by, cw + 0.45, ch + 0.45)
                       } else if (chChar === "▄") {
-                        ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
+                        ctx.fillRect(bx, by + ch / 2, cw + 0.45, ch / 2 + 0.45)
                       } else if (chChar === "▀") {
-                        ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
+                        ctx.fillRect(bx, by, cw + 0.45, ch / 2 + 0.45)
                       }
                     }
                   }
@@ -756,7 +751,7 @@ BarWidget {
                     // Aura
                     ctx.strokeStyle = (grad[4] || "#38bdf8")
                     ctx.globalAlpha = bAlpha * 0.45
-                    ctx.lineWidth = 3.6
+                    ctx.lineWidth = 5.5
                     ctx.beginPath()
                     ctx.moveTo(pts[0].x, pts[0].y)
                     for (var i = 1; i < pts.length; i++) {
@@ -767,7 +762,7 @@ BarWidget {
                     // Mid-Arc
                     ctx.strokeStyle = (grad[7] || "#a855f7")
                     ctx.globalAlpha = bAlpha * 0.85
-                    ctx.lineWidth = 1.8
+                    ctx.lineWidth = 2.6
                     ctx.beginPath()
                     ctx.moveTo(pts[0].x, pts[0].y)
                     for (var j = 1; j < pts.length; j++) {
