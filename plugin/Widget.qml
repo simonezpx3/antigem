@@ -1901,8 +1901,13 @@ BarWidget {
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
                   property bool animating: false
+                  property real elapsedFrames: 0.0
+                  property real totalFrames: 300.0 // 5 seconds @ 60 FPS
+                  property real laserX: 0.0
+                  property real laserY: 25.0
                   property var streams: []
                   property var lockedBlocks: []
+                  property var sparks: []
 
                   // Exact omarchy.org Vertical Gradient (Pure White -> Cyan -> Blue -> Purple)
                   readonly property var rowGradient: [
@@ -1921,6 +1926,9 @@ BarWidget {
                   function startMatrixRain() {
                     syncBtnBox.streams = []
                     syncBtnBox.lockedBlocks = []
+                    syncBtnBox.sparks = []
+                    syncBtnBox.elapsedFrames = 0.0
+                    syncBtnBox.laserX = 0.0
 
                     for (var r = 0; r < 10; r++) {
                       var lockRow = []
@@ -1956,7 +1964,15 @@ BarWidget {
                     onTriggered: {
                       if (!syncBtnBox.animating) return
 
-                      var allDone = true
+                      syncBtnBox.elapsedFrames += 1.0
+                      var cw = asciiCanvas.width / 85
+                      var chH = asciiCanvas.height / 10
+
+                      // Calculate sweeping Laser Beam X across the 5 seconds
+                      var laserProg = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.85))
+                      syncBtnBox.laserX = laserProg * asciiCanvas.width
+
+                      var allDone = syncBtnBox.elapsedFrames >= syncBtnBox.totalFrames
 
                       // Fast numeric stream physics across 5 seconds
                       for (var c = 0; c < 85; c++) {
@@ -1978,6 +1994,20 @@ BarWidget {
                             var ch = asciiCanvas.asciiArt[r].charAt(c)
                             if (ch === "█" || ch === "▄" || ch === "▀") {
                               syncBtnBox.lockedBlocks[r][c] = 1.0 // Flash white!
+                              syncBtnBox.laserY = r * chH + chH / 2
+
+                              // Emit cutting laser sparks
+                              if (Math.random() > 0.4) {
+                                syncBtnBox.sparks.push({
+                                  x: c * cw,
+                                  y: syncBtnBox.laserY,
+                                  vx: 0.5 + Math.random() * 2.0,
+                                  vy: (Math.random() - 0.5) * 2.2,
+                                  life: 1.0,
+                                  decay: 0.06 + Math.random() * 0.06,
+                                  size: 1 + Math.random() * 1.5
+                                })
+                              }
                             } else {
                               syncBtnBox.lockedBlocks[r][c] = 0.001 // Empty cell locked
                             }
@@ -1988,6 +2018,18 @@ BarWidget {
                           allDone = false
                         } else {
                           st.active = false
+                        }
+                      }
+
+                      // Update sparks
+                      for (var s = syncBtnBox.sparks.length - 1; s >= 0; s--) {
+                        var sp = syncBtnBox.sparks[s]
+                        sp.x += sp.vx
+                        sp.y += sp.vy
+                        sp.vy += 0.08
+                        sp.life -= sp.decay
+                        if (sp.life <= 0) {
+                          syncBtnBox.sparks.splice(s, 1)
                         }
                       }
 
@@ -2002,7 +2044,7 @@ BarWidget {
 
                       asciiCanvas.requestPaint()
 
-                      if (allDone) {
+                      if (allDone && syncBtnBox.sparks.length === 0) {
                         syncBtnBox.animating = false
                         matrixTimer.stop()
                         asciiCanvas.requestPaint()
@@ -2109,6 +2151,41 @@ BarWidget {
                             ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
                           }
                         }
+                      }
+
+                      // 3. Draw Sparks
+                      for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
+                        var spk = syncBtnBox.sparks[spIdx]
+                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fbbf24")
+                        ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
+                      }
+
+                      // 4. Draw Cutting Laser Beam & Stylus Head
+                      if (syncBtnBox.animating && syncBtnBox.laserX < width) {
+                        var lx = syncBtnBox.laserX
+                        var ly = syncBtnBox.laserY
+
+                        // Outer Cyan Laser Aura
+                        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"
+                        ctx.lineWidth = 5.0
+                        ctx.beginPath()
+                        ctx.moveTo(lx - 2, 0)
+                        ctx.lineTo(lx + 2, height)
+                        ctx.stroke()
+
+                        // Core White Laser Beam
+                        ctx.strokeStyle = "#ffffff"
+                        ctx.lineWidth = 1.5
+                        ctx.beginPath()
+                        ctx.moveTo(lx - 2, 0)
+                        ctx.lineTo(lx + 2, height)
+                        ctx.stroke()
+
+                        // Glowing Laser Stylus Focal Head
+                        ctx.fillStyle = "#ffffff"
+                        ctx.beginPath()
+                        ctx.arc(lx, ly, 2.5, 0, Math.PI * 2)
+                        ctx.fill()
                       }
                     }
                   }
