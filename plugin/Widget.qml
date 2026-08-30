@@ -1932,11 +1932,13 @@ BarWidget {
                   }
                 }
 
-                // Force Sync button (With 20px Omarchy Logo & Official omarchy.org Wordmark)
+                // Force Sync button (With Laseretch Sweep Animation like omarchy.org)
                 Rectangle {
+                  id: syncBtnBox
                   Layout.fillWidth: true
                   height: 36
                   radius: 6
+                  clip: true
                   color: forceSyncMouse.containsMouse ? root.cardHover : root.cardFill
                   border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
                   border.width: 1
@@ -1945,26 +1947,104 @@ BarWidget {
                   Behavior on scale { NumberAnimation { duration: 90 } }
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                  Row {
-                    anchors.centerIn: parent
-                    spacing: 12
+                  property real laserProgress: 1.0
 
-                    Text {
-                      text: "\ue900"
-                      color: forceSyncMouse.containsMouse ? "#b4f9f8" : "#9ece6a"
-                      font.family: "omarchy"
-                      font.pixelSize: 20
+                  NumberAnimation {
+                    id: laserAnim
+                    target: syncBtnBox
+                    property: "laserProgress"
+                    from: 0.0
+                    to: 1.0
+                    duration: 850
+                    easing.type: Easing.OutCubic
+                  }
+
+                  // Content Holder (118px wide)
+                  Item {
+                    id: laserContentHolder
+                    anchors.centerIn: parent
+                    width: 118
+                    height: 24
+
+                    // Dim outline layer (behind the laser)
+                    Row {
                       anchors.verticalCenter: parent.verticalCenter
+                      anchors.left: parent.left
+                      spacing: 12
+                      opacity: syncBtnBox.laserProgress < 0.99 ? 0.15 : 0.0
+
+                      Text {
+                        text: "\ue900"
+                        color: "#9ece6a"
+                        font.family: "omarchy"
+                        font.pixelSize: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                      }
+
+                      Image {
+                        source: Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
+                        height: 20
+                        width: Math.round(height * (1215 / 285))
+                        fillMode: Image.PreserveAspectFit
+                        smooth: false
+                        mipmap: false
+                        anchors.verticalCenter: parent.verticalCenter
+                      }
                     }
 
-                    Image {
-                      source: forceSyncMouse.containsMouse ? Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg") : Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
-                      height: 20
-                      width: Math.round(height * (1215 / 285))
-                      fillMode: Image.PreserveAspectFit
-                      smooth: false
-                      mipmap: false
+                    // Revealed etched layer (clipped by laserProgress)
+                    Item {
+                      anchors.top: parent.top
+                      anchors.bottom: parent.bottom
+                      anchors.left: parent.left
+                      width: Math.ceil(parent.width * syncBtnBox.laserProgress)
+                      clip: true
+
+                      Row {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        spacing: 12
+
+                        Text {
+                          text: "\ue900"
+                          color: forceSyncMouse.containsMouse ? "#b4f9f8" : "#9ece6a"
+                          font.family: "omarchy"
+                          font.pixelSize: 20
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Image {
+                          source: forceSyncMouse.containsMouse ? Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg") : Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
+                          height: 20
+                          width: Math.round(height * (1215 / 285))
+                          fillMode: Image.PreserveAspectFit
+                          smooth: false
+                          mipmap: false
+                          anchors.verticalCenter: parent.verticalCenter
+                        }
+                      }
+                    }
+
+                    // Glowing Vertical Laser Sweep Line
+                    Rectangle {
+                      visible: syncBtnBox.laserProgress > 0.0 && syncBtnBox.laserProgress < 0.99
+                      x: Math.round(parent.width * syncBtnBox.laserProgress) - 1
+                      width: 2
+                      height: parent.height + 6
                       anchors.verticalCenter: parent.verticalCenter
+                      color: "#ffffff"
+                      radius: 1
+
+                      // Laser glow beam
+                      Rectangle {
+                        anchors.centerIn: parent
+                        width: 8
+                        height: parent.height + 4
+                        radius: 4
+                        color: "#b4f9f8"
+                        opacity: 0.8
+                        z: -1
+                      }
                     }
                   }
 
@@ -1973,7 +2053,19 @@ BarWidget {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.requestRefresh()
+                    onClicked: {
+                      laserAnim.restart()
+                      root.requestRefresh()
+                    }
+                  }
+
+                  Connections {
+                    target: root
+                    function onRefreshingChanged() {
+                      if (root.refreshing) {
+                        laserAnim.restart()
+                      }
+                    }
                   }
                 }
               }
