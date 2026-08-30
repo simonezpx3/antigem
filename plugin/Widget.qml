@@ -1897,11 +1897,10 @@ BarWidget {
 
                   property bool animating: false
                   property real elapsedFrames: 0.0
-                  property real totalFrames: 80.0 // Fast ~1.3s @ 60 FPS
                   property var heatMap: []
                   property var sparks: []
                   property var embers: []
-                  property var laserBeams: []
+                  property var currentBeam: null
                   property var pendingCells: []
                   property real lastLaserX: 0.0
                   property real lastLaserY: 25.0
@@ -1924,7 +1923,7 @@ BarWidget {
                     syncBtnBox.heatMap = []
                     syncBtnBox.sparks = []
                     syncBtnBox.embers = []
-                    syncBtnBox.laserBeams = []
+                    syncBtnBox.currentBeam = null
                     syncBtnBox.pendingCells = []
                     syncBtnBox.elapsedFrames = 0.0
                     syncBtnBox.lastLaserX = Math.random() * asciiCanvas.width
@@ -1967,37 +1966,39 @@ BarWidget {
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Burn multiple random zig-zag cells per frame for fast delivery (~1.3s)
-                      var cellsPerFrame = Math.max(3, Math.ceil(syncBtnBox.pendingCells.length / (syncBtnBox.totalFrames * 0.75)))
-                      var burnedInFrame = 0
+                      // Exactly 1 single laser discharge per step
+                      if (syncBtnBox.pendingCells.length > 0) {
+                        // Ignite 3-4 cluster cells per single jump for ~1.3s total duration
+                        var clusterSize = Math.min(syncBtnBox.pendingCells.length, 4)
+                        var targetCell = syncBtnBox.pendingCells.pop()
+                        syncBtnBox.heatMap[targetCell.r][targetCell.c] = 1.0
 
-                      while (syncBtnBox.pendingCells.length > 0 && burnedInFrame < cellsPerFrame) {
-                        var cell = syncBtnBox.pendingCells.pop()
-                        syncBtnBox.heatMap[cell.r][cell.c] = 1.0 // White-hot flash
-                        burnedInFrame++
+                        for (var k = 1; k < clusterSize; k++) {
+                          var extra = syncBtnBox.pendingCells.pop()
+                          syncBtnBox.heatMap[extra.r][extra.c] = 1.0
+                        }
 
-                        var targetX = cell.c * cw + cw / 2
-                        var targetY = cell.r * chH + chH / 2
+                        var targetX = targetCell.c * cw + cw / 2
+                        var targetY = targetCell.r * chH + chH / 2
 
-                        // Create Random Zig-Zag Laser Beam with mid-point lightning jitter
-                        var midJitterX = (syncBtnBox.lastLaserX + targetX) / 2 + (Math.random() - 0.5) * 22
-                        var midJitterY = (syncBtnBox.lastLaserY + targetY) / 2 + (Math.random() - 0.5) * 16
+                        // Create 1 single active Zig-Zag Laser Beam
+                        var midJitterX = (syncBtnBox.lastLaserX + targetX) / 2 + (Math.random() - 0.5) * 26
+                        var midJitterY = (syncBtnBox.lastLaserY + targetY) / 2 + (Math.random() - 0.5) * 18
 
-                        syncBtnBox.laserBeams.push({
+                        syncBtnBox.currentBeam = {
                           x1: syncBtnBox.lastLaserX,
                           y1: syncBtnBox.lastLaserY,
                           mx: midJitterX,
                           my: midJitterY,
                           x2: targetX,
                           y2: targetY,
-                          life: 1.0,
-                          decay: 0.16 + Math.random() * 0.10
-                        })
+                          life: 1.0
+                        }
 
                         syncBtnBox.lastLaserX = targetX
                         syncBtnBox.lastLaserY = targetY
 
-                        // Emit high-energy directional cutting sparks
+                        // Emit cutting sparks at laser destination
                         for (var p = 0; p < 2; p++) {
                           syncBtnBox.sparks.push({
                             x: targetX,
@@ -2019,14 +2020,10 @@ BarWidget {
                             size: 1 + Math.random() * 1.2
                           })
                         }
-                      }
-
-                      // Update zig-zag laser beams
-                      for (var b = syncBtnBox.laserBeams.length - 1; b >= 0; b--) {
-                        var beam = syncBtnBox.laserBeams[b]
-                        beam.life -= beam.decay
-                        if (beam.life <= 0) {
-                          syncBtnBox.laserBeams.splice(b, 1)
+                      } else if (syncBtnBox.currentBeam) {
+                        syncBtnBox.currentBeam.life -= 0.25
+                        if (syncBtnBox.currentBeam.life <= 0) {
+                          syncBtnBox.currentBeam = null
                         }
                       }
 
@@ -2062,7 +2059,7 @@ BarWidget {
 
                       asciiCanvas.requestPaint()
 
-                      if (syncBtnBox.pendingCells.length === 0 && syncBtnBox.laserBeams.length === 0 && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
+                      if (syncBtnBox.pendingCells.length === 0 && !syncBtnBox.currentBeam && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
                         laserTimer.stop()
                         asciiCanvas.requestPaint()
@@ -2149,14 +2146,14 @@ BarWidget {
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
-                      // 4. Draw Random Zig-Zag Laser Beams (Jagged Electric Arc)
-                      for (var bm = 0; bm < syncBtnBox.laserBeams.length; bm++) {
-                        var bObj = syncBtnBox.laserBeams[bm]
+                      // 4. Draw Exactly 1 Single Focused Zig-Zag Laser Beam
+                      if (syncBtnBox.currentBeam && syncBtnBox.currentBeam.life > 0) {
+                        var bObj = syncBtnBox.currentBeam
                         var bAlpha = Math.max(0.1, bObj.life)
 
-                        // Outer Neon Cyan Laser Glow
-                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.7).toFixed(2) + ")"
-                        ctx.lineWidth = 3.0
+                        // Outer Neon Cyan Laser Aura
+                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.8).toFixed(2) + ")"
+                        ctx.lineWidth = 3.2
                         ctx.beginPath()
                         ctx.moveTo(bObj.x1, bObj.y1)
                         ctx.lineTo(bObj.mx, bObj.my)
@@ -2165,7 +2162,7 @@ BarWidget {
 
                         // Core White-Hot Laser Beam
                         ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
-                        ctx.lineWidth = 1.2
+                        ctx.lineWidth = 1.3
                         ctx.beginPath()
                         ctx.moveTo(bObj.x1, bObj.y1)
                         ctx.lineTo(bObj.mx, bObj.my)
