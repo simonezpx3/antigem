@@ -314,9 +314,9 @@ BarWidget {
         anchors.verticalCenter: parent.verticalCenter
         width: 14
         height: 14
-        sourceSize.width: 14
-        sourceSize.height: 14
-        source: root.appIconPath
+        sourceSize.width: 32
+        sourceSize.height: 32
+        source: "assets/antigravity_app.png"
         fillMode: Image.PreserveAspectFit
         mipmap: true
         smooth: true
@@ -420,7 +420,7 @@ BarWidget {
                 id: heroAppLogo
                 anchors.fill: parent
                 anchors.margins: 4
-                source: root.appIconPanelPath
+                source: "assets/antigravity_app.png"
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
                 smooth: true
