@@ -2175,11 +2175,7 @@ BarWidget {
                           } else if (heatVal > 0.2) {
                             ctx.fillStyle = "#e0f7fa" // Ice cyan glow
                           } else {
-                            if (isHovered) {
-                              ctx.fillStyle = grad[3] || "#67e8f9"
-                            } else {
-                              ctx.fillStyle = grad[r] || "#38bdf8"
-                            }
+                            ctx.fillStyle = grad[r] || "#38bdf8"
                           }
 
                           if (chChar === "█") {
