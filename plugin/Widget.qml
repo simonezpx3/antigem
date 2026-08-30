@@ -54,8 +54,8 @@ BarWidget {
   }
 
   // Exact System Monitor Color Scheme
-  readonly property url appIconPath: Qt.resolvedUrl("assets/antigravity-dark.svg")
-  readonly property url appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
+  readonly property url appIconPath: Qt.resolvedUrl("assets/antigravity.svg")
+  readonly property url appIconPanelPath: Qt.resolvedUrl("assets/antigravity.svg")
   readonly property color foreground: (bar && bar.foreground) ? bar.foreground : Color.foreground
   readonly property color background: Color.background
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
@@ -316,7 +316,7 @@ BarWidget {
         height: 14
         sourceSize.width: 32
         sourceSize.height: 32
-        source: "assets/antigravity_app.png"
+        source: Qt.resolvedUrl("assets/antigravity.svg")
         fillMode: Image.PreserveAspectFit
         mipmap: true
         smooth: true
@@ -420,7 +420,7 @@ BarWidget {
                 id: heroAppLogo
                 anchors.fill: parent
                 anchors.margins: 4
-                source: "assets/antigravity_app.png"
+                source: Qt.resolvedUrl("assets/antigravity.svg")
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
                 smooth: true
