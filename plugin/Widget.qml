@@ -2114,8 +2114,6 @@ BarWidget {
                         ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fde047")
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
-
-                      }
                     }
                   }
 
