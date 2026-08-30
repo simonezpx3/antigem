@@ -1947,7 +1947,7 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 6
+                    spacing: 7
 
                     Text {
                       text: "\ue900"
@@ -1957,11 +1957,13 @@ BarWidget {
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Text {
-                      text: "omarchy"
-                      color: root.foreground
-                      font.family: "omarchy"
-                      font.pixelSize: Style.font.body
+                    Image {
+                      source: Qt.resolvedUrl("assets/omarchy_wordmark.svg")
+                      height: 11
+                      width: Math.round(height * (1215 / 285))
+                      fillMode: Image.PreserveAspectFit
+                      smooth: false
+                      mipmap: false
                       anchors.verticalCenter: parent.verticalCenter
                     }
                   }
