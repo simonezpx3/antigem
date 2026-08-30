@@ -1905,19 +1905,38 @@ BarWidget {
                   property real lastLaserX: 0.0
                   property real lastLaserY: 25.0
 
-                  // Exact omarchy.org Vertical Gradient (Pure White -> Cyan -> Blue -> Purple)
-                  readonly property var rowGradient: [
-                    "#ffffff", // Row 0: Pure White
-                    "#ffffff", // Row 1: Pure White
-                    "#e0f7fa", // Row 2: Ice Cyan
-                    "#67e8f9", // Row 3: Light Cyan
-                    "#38bdf8", // Row 4: Sky Cyan
-                    "#06b6d4", // Row 5: Deep Cyan
-                    "#0284c7", // Row 6: Blue
-                    "#2563eb", // Row 7: Royal Blue
-                    "#6366f1", // Row 8: Indigo
-                    "#8b5cf6"  // Row 9: Purple
+                  // Curated 10-Row Cyberpunk Gradient Palettes
+                  readonly property var allPalettes: [
+                    // 0: Omarchy Classic (Cyan -> Blue -> Purple)
+                    ["#ffffff", "#ffffff", "#e0f7fa", "#67e8f9", "#38bdf8", "#06b6d4", "#0284c7", "#2563eb", "#6366f1", "#8b5cf6"],
+                    // 1: Cyberpunk Neon (Pink -> Rose -> Magenta -> Deep Violet)
+                    ["#ffffff", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#a21caf", "#701a75"],
+                    // 2: Matrix Hacker (Ice Lime -> Emerald -> Forest Green)
+                    ["#ffffff", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534"],
+                    // 3: Solar Synthwave (White -> Yellow -> Bright Amber -> Fiery Crimson)
+                    ["#ffffff", "#fefce8", "#fef08a", "#fde047", "#facc15", "#eab308", "#f97316", "#ea580c", "#dc2626", "#991b1b"],
+                    // 4: Nord Glacier (White -> Glacial Aqua -> Deep Arctic Teal)
+                    ["#ffffff", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59"],
+                    // 5: Vaporwave Sunset (Peach -> Fuchsia -> Purple -> Midnight Indigo)
+                    ["#ffffff", "#fff1f2", "#fed7aa", "#fdba74", "#fb923c", "#f43f5e", "#d946ef", "#a855f7", "#7c3aed", "#4338ca"],
+                    // 6: Toxic Gold (White -> Electric Lime -> Golden Amber -> Bronze)
+                    ["#ffffff", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#ca8a04", "#d97706", "#b45309", "#78350f"],
+                    // 7: Electric Amethyst (White -> Lilac -> Lavender -> Deep Velvet Purple)
+                    ["#ffffff", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#581c87"],
+                    // 8: Deep Ocean Abyss (Ice Blue -> Sky -> Azure -> Ultramarine)
+                    ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0284c7", "#0369a1", "#1d4ed8", "#1e3a8a"]
                   ]
+                  property int paletteIndex: 0
+                  property var activeGradient: allPalettes[0]
+
+                  function randomizePalette() {
+                    var newIdx = Math.floor(Math.random() * syncBtnBox.allPalettes.length)
+                    if (newIdx === syncBtnBox.paletteIndex) {
+                      newIdx = (syncBtnBox.paletteIndex + 1) % syncBtnBox.allPalettes.length
+                    }
+                    syncBtnBox.paletteIndex = newIdx
+                    syncBtnBox.activeGradient = syncBtnBox.allPalettes[newIdx]
+                  }
 
                   function createLightningBolt(x1, y1, x2, y2) {
                     var dx = x2 - x1
@@ -1966,6 +1985,7 @@ BarWidget {
                   }
 
                   function startLightningDischarge() {
+                    syncBtnBox.randomizePalette()
                     syncBtnBox.heatMap = []
                     syncBtnBox.sparks = []
                     syncBtnBox.embers = []
@@ -2134,6 +2154,7 @@ BarWidget {
                       var cw = width / cols
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
+                      var grad = syncBtnBox.activeGradient || syncBtnBox.allPalettes[0]
 
                       // 1. Draw ASCII Character Blocks (Lightning Etched)
                       for (var r = 0; r < rows; r++) {
@@ -2155,9 +2176,9 @@ BarWidget {
                             ctx.fillStyle = "#e0f7fa" // Ice cyan glow
                           } else {
                             if (isHovered) {
-                              ctx.fillStyle = "#67e8f9"
+                              ctx.fillStyle = grad[3] || "#67e8f9"
                             } else {
-                              ctx.fillStyle = syncBtnBox.rowGradient[r] || "#38bdf8"
+                              ctx.fillStyle = grad[r] || "#38bdf8"
                             }
                           }
 
@@ -2174,14 +2195,14 @@ BarWidget {
                       // 2. Draw Floor Embers
                       for (var e = 0; e < syncBtnBox.embers.length; e++) {
                         var eb = syncBtnBox.embers[e]
-                        ctx.fillStyle = eb.life > 0.5 ? "#38bdf8" : "#8b5cf6"
+                        ctx.fillStyle = eb.life > 0.5 ? (grad[4] || "#38bdf8") : (grad[7] || "#8b5cf6")
                         ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
                       }
 
                       // 3. Draw Electric Sparks
                       for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
                         var spk = syncBtnBox.sparks[spIdx]
-                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#a855f7")
+                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
@@ -2192,8 +2213,9 @@ BarWidget {
                         var pts = bolt.pts
                         var branches = bolt.branches
 
-                        // A. Wide Cyan Plasma Aura
-                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.40).toFixed(2) + ")"
+                        // A. Wide Plasma Aura
+                        ctx.strokeStyle = (grad[4] || "#38bdf8")
+                        ctx.globalAlpha = bAlpha * 0.45
                         ctx.lineWidth = 4.8
                         ctx.beginPath()
                         ctx.moveTo(pts[0].x, pts[0].y)
@@ -2211,8 +2233,9 @@ BarWidget {
                           ctx.stroke()
                         }
 
-                        // B. Electric Purple/Blue Mid-Arc
-                        ctx.strokeStyle = "rgba(168, 85, 247, " + (bAlpha * 0.80).toFixed(2) + ")"
+                        // B. Electric Mid-Arc
+                        ctx.strokeStyle = (grad[7] || "#a855f7")
+                        ctx.globalAlpha = bAlpha * 0.85
                         ctx.lineWidth = 2.4
                         ctx.beginPath()
                         ctx.moveTo(pts[0].x, pts[0].y)
@@ -2229,6 +2252,7 @@ BarWidget {
                           ctx.lineTo(bp2[1].x, bp2[1].y)
                           ctx.stroke()
                         }
+                        ctx.globalAlpha = 1.0
 
                         // C. White-Hot Lightning Core
                         ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
