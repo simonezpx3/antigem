@@ -371,7 +371,7 @@ BarWidget {
     onOpenChanged: {
       if (open !== root.popupOpen) root.popupOpen = open
     }
-    contentWidth: panel.fittedContentWidth(Style.space(450))
+    contentWidth: panel.fittedContentWidth(Style.space(560))
     contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Style.space(850))
 
     Flickable {
@@ -392,13 +392,14 @@ BarWidget {
         // 1. Panel Hero Header (System Monitor style)
         Rectangle {
           width: parent.width
-          height: Style.space(54)
+          implicitHeight: Math.max(54, headerHeroLayout.implicitHeight + Style.space(10))
           radius: 8
           color: root.cardFill
           border.color: root.cardBorder
           border.width: 1
 
           RowLayout {
+            id: headerHeroLayout
             anchors.fill: parent
             anchors.margins: Style.space(6)
             spacing: Style.space(8)
@@ -719,13 +720,14 @@ BarWidget {
           // 7-Day Activity Bar Chart Card (System Monitor style with exact values)
           Rectangle {
             width: parent.width
-            height: 126
+            implicitHeight: promptChartCol.implicitHeight + Style.space(8)
             radius: 8
             color: root.cardFill
             border.color: root.cardBorder
             border.width: 1
 
             Column {
+              id: promptChartCol
               anchors.fill: parent
               anchors.margins: Style.space(4)
               spacing: Style.space(3)
@@ -1544,13 +1546,14 @@ BarWidget {
         // 6. Bottom Status & Manual Refresh Bar
         Rectangle {
           width: parent.width
-          height: 32
+          implicitHeight: Math.max(34, bottomStatusRow.implicitHeight + Style.space(8))
           radius: 6
           color: root.cardFill
           border.color: root.cardBorder
           border.width: 1
 
           RowLayout {
+            id: bottomStatusRow
             anchors.fill: parent
             anchors.margins: Style.space(4)
             spacing: Style.space(4)
