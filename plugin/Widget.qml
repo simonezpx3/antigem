@@ -441,45 +441,13 @@ BarWidget {
               Layout.fillWidth: true
               spacing: 3
 
-              Row {
-                id: headerTitleRow
-                spacing: Style.space(8)
-
-                Text {
-                  id: headerTitleText
-                  text: "Antigravity"
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.heading
-                  font.bold: true
-                }
-
-                // Status Pill
-                Rectangle {
-                  id: statusPillRect
-                  height: 20
-                  width: statusPillText.implicitWidth + 14
-                  radius: 4
-                  y: Math.round((headerTitleText.height - height) / 2) - 4
-                  color: root.isWorking ? Qt.rgba(163/255, 230/255, 53/255, 0.18) : (root.isWaiting ? Qt.rgba(97/255, 213/255, 248/255, 0.18) : root.cardHover)
-                  border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.cardBorder)
-                  border.width: 1
-
-                  Text {
-                    id: statusPillText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.verticalCenterOffset: 2
-                    text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
-                    color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.dim)
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    renderType: Text.NativeRendering
-                  }
-                }
+              Text {
+                id: headerTitleText
+                text: "Antigravity"
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.heading
+                font.bold: true
               }
 
               Text {
@@ -491,33 +459,61 @@ BarWidget {
               }
             }
 
-            // Header Action Button (Settings gear)
-            Rectangle {
-              width: 27
-              height: 27
-              radius: 5
-              color: settingsBtnMouse.containsMouse ? root.cardHover : root.cardFill
-              border.color: (root.selectedTab === 2) ? root.primaryAccent : root.cardBorder
-              border.width: 1
-              scale: settingsBtnMouse.pressed ? 0.92 : 1.0
+            // Right Actions: Status Pill + Settings Gear Button
+            Row {
+              spacing: Style.space(4)
+              Layout.alignment: Qt.AlignVCenter
 
-              Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-              Behavior on border.color { ColorAnimation { duration: 150 } }
+              // Status Pill (WORKING / WAITING / IDLE)
+              Rectangle {
+                id: statusPillRect
+                height: 27
+                width: statusPillText.implicitWidth + 14
+                radius: 5
+                color: root.isWorking ? Qt.rgba(163/255, 230/255, 53/255, 0.18) : (root.isWaiting ? Qt.rgba(97/255, 213/255, 248/255, 0.18) : root.cardFill)
+                border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.cardBorder)
+                border.width: 1
 
-              Text {
-                anchors.centerIn: parent
-                text: "󰒓"
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.title
+                Text {
+                  id: statusPillText
+                  anchors.centerIn: parent
+                  text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
+                  color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.cpuColor : root.dim)
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                  renderType: Text.NativeRendering
+                }
               }
 
-              MouseArea {
-                id: settingsBtnMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.selectedTab = (root.selectedTab === 2) ? 0 : 2
+              // Header Action Button (Settings gear)
+              Rectangle {
+                width: 27
+                height: 27
+                radius: 5
+                color: settingsBtnMouse.containsMouse ? root.cardHover : root.cardFill
+                border.color: (root.selectedTab === 2) ? root.primaryAccent : root.cardBorder
+                border.width: 1
+                scale: settingsBtnMouse.pressed ? 0.92 : 1.0
+
+                Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "󰒓"
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.title
+                }
+
+                MouseArea {
+                  id: settingsBtnMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: root.selectedTab = (root.selectedTab === 2) ? 0 : 2
+                }
               }
             }
           }
