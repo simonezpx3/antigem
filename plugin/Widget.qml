@@ -826,12 +826,14 @@ BarWidget {
               anchors.centerIn: parent
               spacing: Style.space(4)
 
-              // Header Row
-              RowLayout {
+              // Header Row (Title on left, Online/Offline Pill centered in total width)
+              Item {
                 width: parent.width
-                spacing: Style.space(4)
+                implicitHeight: 22
 
                 Text {
+                  anchors.left: parent.left
+                  anchors.verticalCenter: parent.verticalCenter
                   text: "☁️ GOOGLE CLOUD PLATFORM & APIS"
                   color: root.foreground
                   font.family: root.fontFamily
@@ -839,13 +841,12 @@ BarWidget {
                   font.bold: true
                 }
 
-                Item { Layout.fillWidth: true }
-
-                // Online/Offline Status Pill (shifted 50px left)
+                // Online/Offline Status Pill (Centered in total width)
                 Rectangle {
                   id: gcpPillBox
                   readonly property bool isOnline: (!root.gcpInfo || root.gcpInfo.status === "Online" || root.gcpInfo.status === "Operational" || (root.gcpInfo.latencyMs > 0))
-                  Layout.rightMargin: 50
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  anchors.verticalCenter: parent.verticalCenter
                   height: 20
                   width: gcpStatusRow.implicitWidth + 14
                   radius: 4
