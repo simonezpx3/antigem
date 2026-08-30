@@ -1900,7 +1900,7 @@ BarWidget {
                   property var heatMap: []
                   property var sparks: []
                   property var embers: []
-                  property var currentBeam: null
+                  property var currentBolt: null
                   property var pendingCells: []
                   property real lastLaserX: 0.0
                   property real lastLaserY: 25.0
@@ -1919,11 +1919,57 @@ BarWidget {
                     "#8b5cf6"  // Row 9: Purple
                   ]
 
-                  function startZigZagLaser() {
+                  function createLightningBolt(x1, y1, x2, y2) {
+                    var dx = x2 - x1
+                    var dy = y2 - y1
+                    var dist = Math.sqrt(dx * dx + dy * dy)
+                    if (dist < 1) dist = 1
+                    var nx = -dy / dist
+                    var ny = dx / dist
+
+                    var steps = 6
+                    var pts = [{ x: x1, y: y1 }]
+                    var branches = []
+
+                    for (var i = 1; i < steps; i++) {
+                      var t = i / steps
+                      var bx = x1 + dx * t
+                      var by = y1 + dy * t
+                      var maxJitter = Math.min(22, Math.max(8, dist * 0.22))
+                      var jitter = (Math.random() - 0.5) * 2 * maxJitter
+                      var px = bx + nx * jitter
+                      var py = by + ny * jitter
+                      pts.push({ x: px, y: py })
+
+                      // 1-2 fractal side branches
+                      if (i === 2 || i === 4) {
+                        if (Math.random() > 0.35) {
+                          var bPts = [{ x: px, y: py }]
+                          var bLen = 10 + Math.random() * 14
+                          var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 10
+                          var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
+                          var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
+                          bPts.push({ x: bpx, y: bpy })
+                          branches.push(bPts)
+                        }
+                      }
+                    }
+                    pts.push({ x: x2, y: y2 })
+
+                    return {
+                      pts: pts,
+                      branches: branches,
+                      targetX: x2,
+                      targetY: y2,
+                      life: 1.0
+                    }
+                  }
+
+                  function startLightningDischarge() {
                     syncBtnBox.heatMap = []
                     syncBtnBox.sparks = []
                     syncBtnBox.embers = []
-                    syncBtnBox.currentBeam = null
+                    syncBtnBox.currentBolt = null
                     syncBtnBox.pendingCells = []
                     syncBtnBox.elapsedFrames = 0.0
                     syncBtnBox.lastLaserX = Math.random() * asciiCanvas.width
@@ -1941,7 +1987,7 @@ BarWidget {
                       syncBtnBox.heatMap.push(row)
                     }
 
-                    // Randomize cell ignition order with zig-zag jumps
+                    // Randomize cell ignition order with lightning jumps
                     for (var i = syncBtnBox.pendingCells.length - 1; i > 0; i--) {
                       var j = Math.floor(Math.random() * (i + 1))
                       var tmp = syncBtnBox.pendingCells[i]
@@ -1966,9 +2012,8 @@ BarWidget {
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Exactly 1 single laser discharge per step
+                      // Exactly 1 single lightning bolt discharge per step
                       if (syncBtnBox.pendingCells.length > 0) {
-                        // Ignite 3-4 cluster cells per single jump for ~1.3s total duration
                         var clusterSize = Math.min(syncBtnBox.pendingCells.length, 4)
                         var targetCell = syncBtnBox.pendingCells.pop()
                         syncBtnBox.heatMap[targetCell.r][targetCell.c] = 1.0
@@ -1981,53 +2026,47 @@ BarWidget {
                         var targetX = targetCell.c * cw + cw / 2
                         var targetY = targetCell.r * chH + chH / 2
 
-                        // Create 1 single active Zig-Zag Laser Beam
-                        var midJitterX = (syncBtnBox.lastLaserX + targetX) / 2 + (Math.random() - 0.5) * 26
-                        var midJitterY = (syncBtnBox.lastLaserY + targetY) / 2 + (Math.random() - 0.5) * 18
-
-                        syncBtnBox.currentBeam = {
-                          x1: syncBtnBox.lastLaserX,
-                          y1: syncBtnBox.lastLaserY,
-                          mx: midJitterX,
-                          my: midJitterY,
-                          x2: targetX,
-                          y2: targetY,
-                          life: 1.0
-                        }
+                        // Create 1 single jagged fractal Lightning Bolt Discharge
+                        syncBtnBox.currentBolt = syncBtnBox.createLightningBolt(
+                          syncBtnBox.lastLaserX,
+                          syncBtnBox.lastLaserY,
+                          targetX,
+                          targetY
+                        )
 
                         syncBtnBox.lastLaserX = targetX
                         syncBtnBox.lastLaserY = targetY
 
-                        // Emit cutting sparks at laser destination
-                        for (var p = 0; p < 2; p++) {
+                        // Emit high-voltage electric sparks & ion discharge
+                        for (var p = 0; p < 3; p++) {
                           syncBtnBox.sparks.push({
                             x: targetX,
                             y: targetY,
-                            vx: (Math.random() - 0.5) * 3.5,
-                            vy: (Math.random() - 0.6) * 3.0,
+                            vx: (Math.random() - 0.5) * 4.2,
+                            vy: (Math.random() - 0.6) * 3.5,
                             life: 1.0,
                             decay: 0.05 + Math.random() * 0.06,
-                            size: 1 + Math.random() * 1.6
+                            size: 1 + Math.random() * 1.8
                           })
                         }
 
-                        if (Math.random() > 0.7) {
+                        if (Math.random() > 0.65) {
                           syncBtnBox.embers.push({
-                            x: targetX + (Math.random() - 0.5) * 6,
+                            x: targetX + (Math.random() - 0.5) * 8,
                             y: asciiCanvas.height - 1 - Math.random() * 2,
                             life: 1.0,
                             decay: 0.03 + Math.random() * 0.04,
                             size: 1 + Math.random() * 1.2
                           })
                         }
-                      } else if (syncBtnBox.currentBeam) {
-                        syncBtnBox.currentBeam.life -= 0.25
-                        if (syncBtnBox.currentBeam.life <= 0) {
-                          syncBtnBox.currentBeam = null
+                      } else if (syncBtnBox.currentBolt) {
+                        syncBtnBox.currentBolt.life -= 0.30
+                        if (syncBtnBox.currentBolt.life <= 0) {
+                          syncBtnBox.currentBolt = null
                         }
                       }
 
-                      // Update sparks
+                      // Update electric sparks
                       for (var s = syncBtnBox.sparks.length - 1; s >= 0; s--) {
                         var sp = syncBtnBox.sparks[s]
                         sp.x += sp.vx
@@ -2059,7 +2098,7 @@ BarWidget {
 
                       asciiCanvas.requestPaint()
 
-                      if (syncBtnBox.pendingCells.length === 0 && !syncBtnBox.currentBeam && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
+                      if (syncBtnBox.pendingCells.length === 0 && !syncBtnBox.currentBolt && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
                         laserTimer.stop()
                         asciiCanvas.requestPaint()
@@ -2096,13 +2135,13 @@ BarWidget {
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
 
-                      // 1. Draw ASCII Character Blocks (Random Zig-Zag Laser Etched)
+                      // 1. Draw ASCII Character Blocks (Lightning Etched)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
 
                         for (var c = 0; c < cols; c++) {
                           var heatVal = (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c]) || 0.0
-                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden until laser strikes
+                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden until lightning strikes
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
@@ -2139,35 +2178,75 @@ BarWidget {
                         ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
                       }
 
-                      // 3. Draw Laser Cutting Sparks
+                      // 3. Draw Electric Sparks
                       for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
                         var spk = syncBtnBox.sparks[spIdx]
-                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fde047")
+                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#a855f7")
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
-                      // 4. Draw Exactly 1 Single Focused Zig-Zag Laser Beam
-                      if (syncBtnBox.currentBeam && syncBtnBox.currentBeam.life > 0) {
-                        var bObj = syncBtnBox.currentBeam
-                        var bAlpha = Math.max(0.1, bObj.life)
+                      // 4. Draw Exactly 1 Single Fractal Lightning Bolt Discharge (Výboj blesku)
+                      if (syncBtnBox.currentBolt && syncBtnBox.currentBolt.life > 0) {
+                        var bolt = syncBtnBox.currentBolt
+                        var bAlpha = Math.max(0.1, bolt.life)
+                        var pts = bolt.pts
+                        var branches = bolt.branches
 
-                        // Outer Neon Cyan Laser Aura
-                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.8).toFixed(2) + ")"
-                        ctx.lineWidth = 3.2
+                        // A. Wide Cyan Plasma Aura
+                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.40).toFixed(2) + ")"
+                        ctx.lineWidth = 4.8
                         ctx.beginPath()
-                        ctx.moveTo(bObj.x1, bObj.y1)
-                        ctx.lineTo(bObj.mx, bObj.my)
-                        ctx.lineTo(bObj.x2, bObj.y2)
+                        ctx.moveTo(pts[0].x, pts[0].y)
+                        for (var i = 1; i < pts.length; i++) {
+                          ctx.lineTo(pts[i].x, pts[i].y)
+                        }
                         ctx.stroke()
 
-                        // Core White-Hot Laser Beam
+                        // Branches - Aura
+                        for (var br = 0; br < branches.length; br++) {
+                          var bp = branches[br]
+                          ctx.beginPath()
+                          ctx.moveTo(bp[0].x, bp[0].y)
+                          ctx.lineTo(bp[1].x, bp[1].y)
+                          ctx.stroke()
+                        }
+
+                        // B. Electric Purple/Blue Mid-Arc
+                        ctx.strokeStyle = "rgba(168, 85, 247, " + (bAlpha * 0.80).toFixed(2) + ")"
+                        ctx.lineWidth = 2.4
+                        ctx.beginPath()
+                        ctx.moveTo(pts[0].x, pts[0].y)
+                        for (var j = 1; j < pts.length; j++) {
+                          ctx.lineTo(pts[j].x, pts[j].y)
+                        }
+                        ctx.stroke()
+
+                        // Branches - Mid-Arc
+                        for (var br2 = 0; br2 < branches.length; br2++) {
+                          var bp2 = branches[br2]
+                          ctx.beginPath()
+                          ctx.moveTo(bp2[0].x, bp2[0].y)
+                          ctx.lineTo(bp2[1].x, bp2[1].y)
+                          ctx.stroke()
+                        }
+
+                        // C. White-Hot Lightning Core
                         ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
-                        ctx.lineWidth = 1.3
+                        ctx.lineWidth = 1.1
                         ctx.beginPath()
-                        ctx.moveTo(bObj.x1, bObj.y1)
-                        ctx.lineTo(bObj.mx, bObj.my)
-                        ctx.lineTo(bObj.x2, bObj.y2)
+                        ctx.moveTo(pts[0].x, pts[0].y)
+                        for (var k = 1; k < pts.length; k++) {
+                          ctx.lineTo(pts[k].x, pts[k].y)
+                        }
                         ctx.stroke()
+
+                        // D. Impact Flash Corona
+                        var tx = bolt.targetX
+                        var ty = bolt.targetY
+                        ctx.fillStyle = "rgba(255, 255, 255, " + (bAlpha * 0.9).toFixed(2) + ")"
+                        ctx.fillRect(tx - 1.5, ty - 1.5, 3, 3)
+                        ctx.fillStyle = "rgba(56, 189, 248, " + (bAlpha * 0.5).toFixed(2) + ")"
+                        ctx.fillRect(tx - 3.5, ty - 3.5, 7, 7)
                       }
                     }
                   }
@@ -2178,7 +2257,7 @@ BarWidget {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      syncBtnBox.startZigZagLaser()
+                      syncBtnBox.startLightningDischarge()
                       root.requestRefresh()
                     }
                   }
@@ -2187,18 +2266,18 @@ BarWidget {
                     target: root
                     function onRefreshingChanged() {
                       if (root.refreshing) {
-                        syncBtnBox.startZigZagLaser()
+                        syncBtnBox.startLightningDischarge()
                       }
                     }
                     function onSelectedTabChanged() {
                       if (root.selectedTab === 2) {
-                        syncBtnBox.startZigZagLaser()
+                        syncBtnBox.startLightningDischarge()
                       }
                     }
                   }
 
                   Component.onCompleted: {
-                    syncBtnBox.startZigZagLaser()
+                    syncBtnBox.startLightningDischarge()
                   }
                 }
 
