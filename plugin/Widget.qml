@@ -1480,35 +1480,62 @@ BarWidget {
           width: parent.width
           spacing: Style.space(10)
 
+          // Card 1: ⏱️ Telemetry & Auto-Refresh Engine
           Rectangle {
             width: parent.width
-            implicitHeight: settingsCardCol.implicitHeight + Style.space(8)
+            implicitHeight: refreshCardCol.implicitHeight + Style.space(8)
             radius: 8
             color: root.cardFill
             border.color: root.cardBorder
             border.width: 1
 
             Column {
-              id: settingsCardCol
+              id: refreshCardCol
               width: parent.width - Style.space(8)
               anchors.centerIn: parent
-              spacing: Style.space(5)
+              spacing: Style.space(4)
 
-              Text {
-                text: "⚙️ WIDGET & PULSE SETTINGS"
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                font.bold: true
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                Text {
+                  text: "⏱️ TELEMETRY & AUTO-REFRESH"
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Rectangle {
+                  height: 20
+                  width: curIntText.implicitWidth + 12
+                  radius: 4
+                  color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                  border.color: root.primaryAccent
+                  border.width: 1
+
+                  Text {
+                    id: curIntText
+                    anchors.centerIn: parent
+                    text: root.refreshIntervalSec + "s interval"
+                    color: root.primaryAccent
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                  }
+                }
               }
 
-              // 1. Refresh Interval Title
               Text {
-                text: "⏱ Auto-refresh Interval"
+                text: "Controls background scanning frequency for sessions, active tools, and Google AI quota resets."
                 color: root.dim
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                font.bold: true
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
               }
 
               // Quick Presets
@@ -1520,7 +1547,7 @@ BarWidget {
 
                   Rectangle {
                     height: 26
-                    width: presetText.implicitWidth + 14
+                    width: presetText.implicitWidth + 16
                     radius: 4
                     scale: presetMouse.pressed ? 0.92 : 1.0
                     color: presetMouse.containsMouse ? root.cardHover : root.cardFill
@@ -1536,7 +1563,7 @@ BarWidget {
                       text: modelData + "s"
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
+                      font.pixelSize: Style.font.bodySmall
                       font.bold: root.refreshIntervalSec === modelData
                     }
 
@@ -1551,16 +1578,16 @@ BarWidget {
                 }
               }
 
-              // Custom Input
+              // Custom Input Row
               RowLayout {
                 width: parent.width
-                spacing: Style.space(6)
+                spacing: Style.space(4)
 
                 Text {
                   text: "Custom (s):"
                   color: root.dim
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: Style.font.bodySmall
                 }
 
                 Rectangle {
@@ -1579,7 +1606,7 @@ BarWidget {
                     verticalAlignment: TextInput.AlignVCenter
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: Style.font.bodySmall
                     text: String(root.refreshIntervalSec)
                     validator: IntValidator { bottom: 5; top: 3600 }
                     selectByMouse: true
@@ -1621,24 +1648,33 @@ BarWidget {
                   }
                 }
               }
+            }
+          }
 
-              // Divider
-              Rectangle {
-                width: parent.width
-                height: 1
-                color: root.cardBorder
-              }
+          // Card 2: 💓 Working Heartbeat Pulse
+          Rectangle {
+            width: parent.width
+            implicitHeight: pulseCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
 
-              // 2. Heartbeat Pulse Jumper (OFF / ON)
+            Column {
+              id: pulseCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
               RowLayout {
                 width: parent.width
 
                 Row {
-                  spacing: Style.space(6)
+                  spacing: Style.space(4)
                   Layout.alignment: Qt.AlignVCenter
 
                   Text {
-                    text: "💓 Working Heartbeat Pulse:"
+                    text: "💓 WORKING HEARTBEAT ANIMATION"
                     color: root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
@@ -1649,30 +1685,32 @@ BarWidget {
                     text: root.pulseEnabled ? "(Active)" : "(Disabled)"
                     color: root.pulseEnabled ? root.primaryAccent : root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
                   }
                 }
 
                 Item { Layout.fillWidth: true }
 
-                // Jumper Toggle Switch (System Monitor Electric Cyan)
+                // Jumper Toggle Switch
                 Rectangle {
                   id: pulseJumper
-                  width: 26
-                  height: 14
-                  radius: 7
+                  width: 28
+                  height: 16
+                  radius: 8
                   color: root.pulseEnabled ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
                   border.color: root.pulseEnabled ? root.primaryAccent : root.cardBorder
                   border.width: 1
 
                   Behavior on color { ColorAnimation { duration: 160 } }
 
-                  // Jumper Thumb Knob
+                  // Jumper Knob
                   Rectangle {
                     id: jumperKnob
-                    width: 10
-                    height: 10
-                    radius: 5
+                    width: 12
+                    height: 12
+                    radius: 6
                     anchors.verticalCenter: parent.verticalCenter
                     x: root.pulseEnabled ? (parent.width - width - 2) : 2
                     color: root.pulseEnabled ? root.primaryAccent : root.foreground
@@ -1690,32 +1728,40 @@ BarWidget {
                 }
               }
 
-              // 3. Pulse BPM Setting (Human Heart Rate Presets)
+              Text {
+                text: "Animates the tray icon and hero logo with an anatomical heartbeat rhythm during active agent code processing."
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
+              }
+
+              // Pulse BPM Controls
               Column {
                 width: parent.width
-                spacing: Style.space(6)
+                spacing: Style.space(3)
                 visible: root.pulseEnabled
 
                 RowLayout {
                   width: parent.width
-
                   Text {
-                    text: "🎚️ Pulse Speed:"
+                    text: "🎚️ Pulse Cadence:"
                     color: root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: Style.font.bodySmall
                   }
-
+                  Item { Layout.fillWidth: true }
                   Text {
                     text: root.pulseBpm + " BPM (" + (Math.round(60000 / root.pulseBpm) / 1000).toFixed(1) + " s/beat)"
                     color: root.primaryAccent
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: Style.font.bodySmall
                     font.bold: true
                   }
                 }
 
-                // Quick BPM Presets (Human heart rates)
+                // Quick BPM Presets
                 Row {
                   spacing: Style.space(4)
 
@@ -1729,7 +1775,7 @@ BarWidget {
 
                     Rectangle {
                       height: 26
-                      width: bpmPresetText.implicitWidth + 14
+                      width: bpmPresetText.implicitWidth + 16
                       radius: 4
                       scale: bpmPresetMouse.pressed ? 0.92 : 1.0
                       color: bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill
@@ -1763,13 +1809,13 @@ BarWidget {
                 // Custom BPM Input
                 RowLayout {
                   width: parent.width
-                  spacing: Style.space(6)
+                  spacing: Style.space(4)
 
                   Text {
                     text: "Custom BPM:"
                     color: root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: Style.font.bodySmall
                   }
 
                   Rectangle {
@@ -1780,57 +1826,286 @@ BarWidget {
                     border.color: bpmCustomInput.activeFocus ? root.primaryAccent : root.cardBorder
                     border.width: 1
 
-                  TextInput {
-                    id: bpmCustomInput
-                    anchors.fill: parent
-                    anchors.leftMargin: 6
-                    anchors.rightMargin: 6
-                    verticalAlignment: TextInput.AlignVCenter
-                    color: root.foreground
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                    text: String(root.pulseBpm)
-                    validator: IntValidator { bottom: 20; top: 240 }
-                    selectByMouse: true
+                    TextInput {
+                      id: bpmCustomInput
+                      anchors.fill: parent
+                      anchors.leftMargin: 6
+                      anchors.rightMargin: 6
+                      verticalAlignment: TextInput.AlignVCenter
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      text: String(root.pulseBpm)
+                      validator: IntValidator { bottom: 20; top: 240 }
+                      selectByMouse: true
 
-                    onAccepted: root.setPulseBpm(text)
-                  }
-                }
-
-                Rectangle {
-                  id: saveBpmBtn
-                  property bool isCustomActive: !([40, 60, 85, 130].includes(root.pulseBpm)) || saveBpmMouse.pressed
-                  height: 26
-                  width: bpmSaveText.implicitWidth + 14
-                  radius: 4
-                  scale: saveBpmMouse.pressed ? 0.92 : 1.0
-                  color: saveBpmMouse.containsMouse ? root.cardHover : root.cardFill
-                  border.color: isCustomActive ? root.primaryAccent : root.cardBorder
-                  border.width: 1
-
-                  Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                  Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                  Text {
-                    id: bpmSaveText
-                    anchors.centerIn: parent
-                    text: "Save"
-                    color: root.foreground
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                    font.bold: saveBpmBtn.isCustomActive
+                      onAccepted: root.setPulseBpm(text)
+                    }
                   }
 
-                  MouseArea {
-                    id: saveBpmMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.setPulseBpm(bpmCustomInput.text)
+                  Rectangle {
+                    id: saveBpmBtn
+                    property bool isCustomActive: !([40, 60, 85, 130].includes(root.pulseBpm)) || saveBpmMouse.pressed
+                    height: 26
+                    width: bpmSaveText.implicitWidth + 14
+                    radius: 4
+                    scale: saveBpmMouse.pressed ? 0.92 : 1.0
+                    color: saveBpmMouse.containsMouse ? root.cardHover : root.cardFill
+                    border.color: isCustomActive ? root.primaryAccent : root.cardBorder
+                    border.width: 1
+
+                    Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                    Text {
+                      id: bpmSaveText
+                      anchors.centerIn: parent
+                      text: "Save"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: saveBpmBtn.isCustomActive
+                    }
+
+                    MouseArea {
+                      id: saveBpmMouse
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: root.setPulseBpm(bpmCustomInput.text)
+                    }
                   }
                 }
               }
             }
+          }
+
+          // Card 3: 🔧 System & Environment Integration
+          Rectangle {
+            width: parent.width
+            implicitHeight: sysInfoCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: sysInfoCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+
+                Text {
+                  text: "🔧 SYSTEM & PLUGIN ENVIRONMENT"
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Text {
+                  text: "v1.1 · Stable"
+                  color: root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                }
+              }
+
+              // Metadata 3-col grid
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.tierLabel
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: "Plan Tier"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
+                }
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.currentModel
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: "Active Model"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
+                }
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: "QuickShell"
+                      color: root.uploadColor
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: "Shell Host"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
+                }
+              }
+
+              // Actions Row
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                // Restart Shell button
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 28
+                  radius: 4
+                  color: restartShellMouse.containsMouse ? root.cardHover : root.cardFill
+                  border.color: restartShellMouse.containsMouse ? root.primaryAccent : root.cardBorder
+                  border.width: 1
+                  scale: restartShellMouse.pressed ? 0.95 : 1.0
+
+                  Behavior on scale { NumberAnimation { duration: 90 } }
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                  Row {
+                    anchors.centerIn: parent
+                    spacing: 4
+
+                    Text {
+                      text: "󰑐"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                      text: "Restart Omarchy Shell"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+                  }
+
+                  MouseArea {
+                    id: restartShellMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (root.bar && typeof root.bar.run === "function") {
+                        root.bar.run("omarchy restart shell")
+                      }
+                    }
+                  }
+                }
+
+                // Force Sync button
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 28
+                  radius: 4
+                  color: forceSyncMouse.containsMouse ? root.cardHover : root.cardFill
+                  border.color: forceSyncMouse.containsMouse ? root.primaryAccent : root.cardBorder
+                  border.width: 1
+                  scale: forceSyncMouse.pressed ? 0.95 : 1.0
+
+                  Behavior on scale { NumberAnimation { duration: 90 } }
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                  Row {
+                    anchors.centerIn: parent
+                    spacing: 4
+
+                    Text {
+                      text: "󰄲"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                      text: "Force Scanner Sync"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+                  }
+
+                  MouseArea {
+                    id: forceSyncMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.requestRefresh()
+                  }
+                }
+              }
             }
           }
         }
