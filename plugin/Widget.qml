@@ -1884,33 +1884,49 @@ BarWidget {
                 width: parent.width
                 spacing: Style.space(3)
 
-                // Omarchy ASCII Laseretch Banner (Authentic omarchy.org LaserEtch)
+                // Omarchy ASCII LaserEtch Banner (Exact Video Recreation)
                 Rectangle {
                   id: syncBtnBox
                   width: parent.width
-                  height: 80
+                  height: 86
                   radius: 6
                   clip: true
-                  color: forceSyncMouse.containsMouse ? "#0a110c" : "#050806"
-                  border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
+                  color: forceSyncMouse.containsMouse ? "#0a0f16" : "#05070a"
+                  border.color: forceSyncMouse.containsMouse ? "#38bdf8" : root.cardBorder
                   border.width: 1
                   scale: forceSyncMouse.pressed ? 0.98 : 1.0
 
                   Behavior on scale { NumberAnimation { duration: 90 } }
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                  property real beamX: 81.0
+                  property real beamX: -5.0
                   property bool animating: false
                   property var particles: []
+                  property var embers: []
                   property var heatMap: []
 
+                  // Vertical Gradient Palette across the 10 rows (White -> Cyan -> Blue -> Purple)
+                  readonly property var rowGradient: [
+                    "#ffffff", // Row 0: Pure White
+                    "#ffffff", // Row 1: Pure White
+                    "#e0f7fa", // Row 2: Ice Cyan
+                    "#67e8f9", // Row 3: Light Cyan
+                    "#38bdf8", // Row 4: Sky Cyan
+                    "#06b6d4", // Row 5: Deep Cyan
+                    "#0284c7", // Row 6: Blue
+                    "#2563eb", // Row 7: Royal Blue
+                    "#6366f1", // Row 8: Indigo
+                    "#8b5cf6"  // Row 9: Purple
+                  ]
+
                   function startLaserEtch() {
-                    syncBtnBox.beamX = 0.0
+                    syncBtnBox.beamX = 86.0
                     syncBtnBox.particles = []
+                    syncBtnBox.embers = []
                     syncBtnBox.heatMap = []
                     for (var r = 0; r < 10; r++) {
                       var row = []
-                      for (var c = 0; c < 81; c++) row.push(0.0)
+                      for (var c = 0; c < 85; c++) row.push(0.0)
                       syncBtnBox.heatMap.push(row)
                     }
                     syncBtnBox.animating = true
@@ -1926,57 +1942,78 @@ BarWidget {
                     onTriggered: {
                       if (!syncBtnBox.animating) return
 
-                      syncBtnBox.beamX += 1.35
-                      var currentIntCol = Math.floor(syncBtnBox.beamX)
+                      // Advance beam from Right to Left
+                      syncBtnBox.beamX -= 1.15
 
-                      // Update heat map and spawn particles
+                      var currentIntCol = Math.floor(syncBtnBox.beamX)
+                      var cw = asciiCanvas.width / 85
+                      var chH = asciiCanvas.height / 10
+
+                      // Update heat map and spawn cutting sparks
                       for (var r = 0; r < 10; r++) {
-                        for (var c = 0; c < 81; c++) {
-                          if (c <= currentIntCol) {
+                        for (var c = 84; c >= 0; c--) {
+                          if (c >= currentIntCol) {
                             if (c === currentIntCol) {
                               if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] < 0.1) {
                                 syncBtnBox.heatMap[r][c] = 1.0
                                 var ch = asciiCanvas.asciiArt[r].charAt(c)
                                 if (ch === "█" || ch === "▄" || ch === "▀") {
-                                  var cw = asciiCanvas.width / 81
-                                  var chH = asciiCanvas.height / 10
-                                  for (var p = 0; p < 3; p++) {
+                                  for (var p = 0; p < 4; p++) {
                                     syncBtnBox.particles.push({
                                       x: c * cw + cw / 2,
                                       y: r * chH + chH / 2,
-                                      vx: (Math.random() - 0.3) * 3.5,
-                                      vy: (Math.random() - 0.5) * 3.0,
+                                      vx: -(0.8 + Math.random() * 3.2),
+                                      vy: (Math.random() - 0.4) * 2.8,
                                       life: 1.0,
-                                      decay: 0.06 + Math.random() * 0.06,
+                                      decay: 0.04 + Math.random() * 0.05,
                                       size: 1 + Math.random() * 1.5
+                                    })
+                                  }
+
+                                  if (Math.random() > 0.4) {
+                                    syncBtnBox.embers.push({
+                                      x: c * cw + (Math.random() - 0.5) * 8,
+                                      y: asciiCanvas.height - 1 - Math.random() * 2,
+                                      life: 1.0,
+                                      decay: 0.02 + Math.random() * 0.03,
+                                      size: 1 + Math.random() * 1.2
                                     })
                                   }
                                 }
                               }
                             } else {
                               if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] > 0.0) {
-                                syncBtnBox.heatMap[r][c] = Math.max(0.0, syncBtnBox.heatMap[r][c] - 0.04)
+                                syncBtnBox.heatMap[r][c] = Math.max(0.0, syncBtnBox.heatMap[r][c] - 0.045)
                               }
                             }
                           }
                         }
                       }
 
-                      // Update particles
+                      // Update sparks
                       for (var i = syncBtnBox.particles.length - 1; i >= 0; i--) {
                         var pt = syncBtnBox.particles[i]
                         pt.x += pt.vx
                         pt.y += pt.vy
-                        pt.vy += 0.08
+                        pt.vy += 0.09
                         pt.life -= pt.decay
                         if (pt.life <= 0) {
                           syncBtnBox.particles.splice(i, 1)
                         }
                       }
 
+                      // Update floor embers
+                      for (var e = syncBtnBox.embers.length - 1; e >= 0; e--) {
+                        var eb = syncBtnBox.embers[e]
+                        eb.life -= eb.decay
+                        if (eb.life <= 0) {
+                          syncBtnBox.embers.splice(e, 1)
+                        }
+                      }
+
                       asciiCanvas.requestPaint()
 
-                      if (syncBtnBox.beamX >= 84 && syncBtnBox.particles.length === 0) {
+                      if (syncBtnBox.beamX <= -4 && syncBtnBox.particles.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
                         etchTimer.stop()
                         asciiCanvas.requestPaint()
@@ -1987,8 +2024,8 @@ BarWidget {
                   Canvas {
                     id: asciiCanvas
                     anchors.centerIn: parent
-                    width: Math.min(parent.width - 20, 420)
-                    height: 58
+                    width: Math.min(parent.width - 24, 430)
+                    height: 64
 
                     readonly property var asciiArt: [
                       "                 ▄▄▄                                                                 ",
@@ -2007,19 +2044,21 @@ BarWidget {
                       var ctx = getContext("2d")
                       ctx.clearRect(0, 0, width, height)
 
-                      var cols = 81
+                      var cols = 85
                       var rows = 10
                       var cw = width / cols
                       var ch = height / rows
 
                       var activeCol = syncBtnBox.beamX
-                      var isHovered = forceSyncMouse.containsMouse
                       var heat = syncBtnBox.heatMap
 
+                      // 1. Draw ASCII Character Blocks (Revealed from Right to Left)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
+                        var baseColor = syncBtnBox.rowGradient[r] || "#38bdf8"
+
                         for (var c = 0; c < cols; c++) {
-                          if (c > activeCol && syncBtnBox.animating) continue
+                          if (c < activeCol && syncBtnBox.animating) continue
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
@@ -2029,55 +2068,63 @@ BarWidget {
 
                           var hVal = (heat && heat[r]) ? (heat[r][c] || 0) : 0
 
-                          if (hVal > 0.65) {
+                          if (hVal > 0.6) {
                             ctx.fillStyle = "#ffffff"
-                          } else if (hVal > 0.25) {
-                            ctx.fillStyle = "#b4f9f8"
+                          } else if (hVal > 0.2) {
+                            ctx.fillStyle = "#fef08a"
                           } else {
-                            ctx.fillStyle = isHovered ? "#b4f9f8" : "#9ece6a"
+                            ctx.fillStyle = baseColor
                           }
 
                           if (chChar === "█") {
-                            ctx.fillRect(x, y, cw + 0.3, ch + 0.3)
+                            ctx.fillRect(x, y, cw + 0.35, ch + 0.35)
                           } else if (chChar === "▄") {
-                            ctx.fillRect(x, y + ch / 2, cw + 0.3, ch / 2 + 0.3)
+                            ctx.fillRect(x, y + ch / 2, cw + 0.35, ch / 2 + 0.35)
                           } else if (chChar === "▀") {
-                            ctx.fillRect(x, y, cw + 0.3, ch / 2 + 0.3)
+                            ctx.fillRect(x, y, cw + 0.35, ch / 2 + 0.35)
                           }
                         }
                       }
 
-                      // Draw Spark Particles
+                      // 2. Draw Floor Embers
+                      for (var e = 0; e < syncBtnBox.embers.length; e++) {
+                        var eb = syncBtnBox.embers[e]
+                        ctx.fillStyle = eb.life > 0.5 ? "#fbbf24" : "#f97316"
+                        ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
+                      }
+
+                      // 3. Draw Flying Spark Particles
                       for (var p = 0; p < syncBtnBox.particles.length; p++) {
                         var pt = syncBtnBox.particles[p]
-                        ctx.fillStyle = pt.life > 0.6 ? "#ffffff" : (pt.life > 0.3 ? "#b4f9f8" : "#fbbf24")
+                        ctx.fillStyle = pt.life > 0.7 ? "#ffffff" : (pt.life > 0.35 ? "#fde047" : "#ea580c")
                         ctx.fillRect(pt.x, pt.y, pt.size, pt.size)
                       }
 
-                      // Draw Laser Beam
-                      if (syncBtnBox.animating && activeCol >= 0 && activeCol <= 81) {
-                        var bx = activeCol * cw
+                      // 4. Draw Angled Cutting Laser Beam
+                      if (syncBtnBox.animating && activeCol >= -2 && activeCol <= 86) {
+                        var bxTop = activeCol * cw + 6
+                        var bxBottom = activeCol * cw - 6
 
-                        // Outer Glow
-                        ctx.strokeStyle = "rgba(180, 249, 248, 0.35)"
+                        // Outer Cyan Laser Halo
+                        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"
                         ctx.lineWidth = 6
                         ctx.beginPath()
-                        ctx.moveTo(bx, 0)
-                        ctx.lineTo(bx, height)
+                        ctx.moveTo(bxTop, 0)
+                        ctx.lineTo(bxBottom, height)
                         ctx.stroke()
 
-                        // Core Beam
+                        // Core White Laser Beam
                         ctx.strokeStyle = "#ffffff"
                         ctx.lineWidth = 1.8
                         ctx.beginPath()
-                        ctx.moveTo(bx, 0)
-                        ctx.lineTo(bx, height)
+                        ctx.moveTo(bxTop, 0)
+                        ctx.lineTo(bxBottom, height)
                         ctx.stroke()
 
-                        // Emitters
+                        // Emitter focal dots
                         ctx.fillStyle = "#ffffff"
-                        ctx.fillRect(bx - 2, 0, 4, 3)
-                        ctx.fillRect(bx - 2, height - 3, 4, 3)
+                        ctx.fillRect(bxTop - 2, 0, 4, 3)
+                        ctx.fillRect(bxBottom - 2, height - 3, 4, 3)
                       }
                     }
                   }
