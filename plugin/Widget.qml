@@ -1887,8 +1887,8 @@ BarWidget {
                 // Restart Shell button
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 28
-                  radius: 4
+                  height: 36
+                  radius: 6
                   color: restartShellMouse.containsMouse ? root.cardHover : root.cardFill
                   border.color: restartShellMouse.containsMouse ? root.primaryAccent : root.cardBorder
                   border.width: 1
@@ -1899,13 +1899,13 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 4
+                    spacing: Style.space(3)
 
                     Text {
                       text: "󰑐"
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: 18
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -1932,11 +1932,11 @@ BarWidget {
                   }
                 }
 
-                // Force Sync button
+                // Force Sync button (With 20px Omarchy Logo & Wordmark)
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 28
-                  radius: 4
+                  height: 36
+                  radius: 6
                   color: forceSyncMouse.containsMouse ? root.cardHover : root.cardFill
                   border.color: forceSyncMouse.containsMouse ? root.primaryAccent : root.cardBorder
                   border.width: 1
@@ -1947,19 +1947,19 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 7
+                    spacing: Style.space(3)
 
                     Text {
                       text: "\ue900"
                       color: root.primaryAccent
                       font.family: "omarchy"
-                      font.pixelSize: Style.font.body
+                      font.pixelSize: 20
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
                     Image {
                       source: Qt.resolvedUrl("assets/omarchy_wordmark.svg")
-                      height: 11
+                      height: 20
                       width: Math.round(height * (1215 / 285))
                       fillMode: Image.PreserveAspectFit
                       smooth: false
