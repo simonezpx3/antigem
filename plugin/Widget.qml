@@ -87,10 +87,11 @@ BarWidget {
   property int selectedTab: 0 // 0: Performance & Limits, 1: Sessions & Tools, 2: Settings
 
   // Python Scanner process
+  readonly property string scannerScriptPath: Qt.resolvedUrl("scripts/antigravity_scanner.py").toString().replace(/^file:\/\//, "")
   property bool refreshing: false
   Process {
     id: scannerProcess
-    command: ["python3", "/home/simonez/.config/omarchy/plugins/simonez.antigem/scripts/antigravity_scanner.py"]
+    command: ["python3", root.scannerScriptPath]
 
     stdout: StdioCollector {
       waitForEnd: true
@@ -1546,7 +1547,7 @@ BarWidget {
                       spacing: 2
 
                       Text {
-                        text: modelData.title || modelData.preview || (modelData.workspace ? String(modelData.workspace).replace("/home/simonez", "~") : "Session")
+                        text: modelData.title || modelData.preview || (modelData.workspace ? String(modelData.workspace).replace(/^\/home\/[^\/]+/, "~") : "Session")
                         color: root.foreground
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.bodySmall

@@ -44,12 +44,13 @@ if [[ "$MODE" == "cli" ]]; then
 fi
 
 # MODE == "ide"
+ANTIGRAVITY_BIN="$(command -v antigravity || echo "${HOME}/.local/bin/antigravity")"
 WINDOW_ADDRESS=$(hyprctl clients -j 2>/dev/null | jq -r '.[] | select((.class | test("^antigravity$"; "i")) or (.initialClass | test("^antigravity$"; "i"))) | .address' | head -n1)
 
 if [[ -n "$WINDOW_ADDRESS" && "$WINDOW_ADDRESS" != "null" ]]; then
   hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS" >/dev/null 2>&1
   if [[ -d "$WORKSPACE" ]]; then
-    nohup /home/simonez/.local/bin/antigravity "$WORKSPACE" >/dev/null 2>&1 &
+    nohup "$ANTIGRAVITY_BIN" "$WORKSPACE" >/dev/null 2>&1 &
   fi
   exit 0
 fi
@@ -57,9 +58,9 @@ fi
 # No window mapped: clean locks and launch
 pkill -9 -x antigravity >/dev/null 2>&1 || true
 pkill -9 -f "antigravity-2.0/antigravity" >/dev/null 2>&1 || true
-pkill -9 -f "/home/simonez/.local/bin/antigravity" >/dev/null 2>&1 || true
+pkill -9 -f "bin/antigravity" >/dev/null 2>&1 || true
 rm -f "$HOME/.config/Antigravity/Singleton"* 2>/dev/null 2>&1 || true
 sleep 0.1
 
-nohup /home/simonez/.local/bin/antigravity "$WORKSPACE" >/dev/null 2>&1 &
+nohup "$ANTIGRAVITY_BIN" "$WORKSPACE" >/dev/null 2>&1 &
 
