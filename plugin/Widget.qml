@@ -460,11 +460,11 @@ BarWidget {
               }
             }
 
-            // Status Pill (WORKING / WAITING / IDLE) shifted 100px from right edge
+            // Status Pill (WORKING / WAITING / IDLE) shifted 50px from right edge
             Rectangle {
               id: statusPillRect
               Layout.alignment: Qt.AlignVCenter
-              Layout.rightMargin: 100
+              Layout.rightMargin: 50
               height: 27
               width: statusPillText.implicitWidth + 16
               radius: 5
