@@ -83,14 +83,14 @@ omarchy-antigravity/
 
 ### Method 1: Using Omarchy Plugin Manager (Recommended)
 ```bash
-omarchy plugin add https://github.com/simonez/omarchy-antigravity.git --enable
+omarchy plugin add https://github.com/simonezpx3/antigem-omarchy.git --enable
 ```
 
 ### Method 2: Manual Local Installation
 1. Clone the repository and run the installer:
 ```bash
-git clone https://github.com/simonez/omarchy-antigravity.git
-cd omarchy-antigravity
+git clone https://github.com/simonezpx3/antigem-omarchy.git
+cd antigem-omarchy
 ./install.sh
 ```
 2. In `~/.config/omarchy/shell.json`, add `"simonez.antigem"` to `bar.layout.right`:
