@@ -1892,8 +1892,8 @@ BarWidget {
                   height: 68
                   radius: 6
                   clip: true
-                  color: forceSyncMouse.containsMouse ? "#051107" : "#020703"
-                  border.color: forceSyncMouse.containsMouse ? "#22c55e" : root.cardBorder
+                  color: forceSyncMouse.containsMouse ? "#0a101d" : "#050811"
+                  border.color: forceSyncMouse.containsMouse ? "#38bdf8" : root.cardBorder
                   border.width: 1
                   scale: forceSyncMouse.pressed ? 0.98 : 1.0
 
@@ -1903,22 +1903,19 @@ BarWidget {
                   property bool animating: false
                   property var streams: []
                   property var lockedBlocks: []
-                  property var randomChars: []
 
-                  readonly property string matrixGlyphs: "0123456789ABCDEFｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ#$%*+=<>"
-
-                  // Matrix Green Gradient across rows (Ice White -> Neon Green -> Deep Forest Matrix)
+                  // Exact omarchy.org Vertical Gradient (Pure White -> Cyan -> Blue -> Purple)
                   readonly property var rowGradient: [
-                    "#f0fdf4", // Row 0: White-Green
-                    "#dcfce7", // Row 1: Light Phosphor
-                    "#bbf7d0", // Row 2: Phosphor Green
-                    "#86efac", // Row 3: Bright Matrix Green
-                    "#4ade80", // Row 4: Neon Green
-                    "#22c55e", // Row 5: Vibrant Green
-                    "#16a34a", // Row 6: Terminal Green
-                    "#15803d", // Row 7: Deep Green
-                    "#166534", // Row 8: Forest Green
-                    "#14532d"  // Row 9: Matrix Root
+                    "#ffffff", // Row 0: Pure White
+                    "#ffffff", // Row 1: Pure White
+                    "#e0f7fa", // Row 2: Ice Cyan
+                    "#67e8f9", // Row 3: Light Cyan
+                    "#38bdf8", // Row 4: Sky Cyan
+                    "#06b6d4", // Row 5: Deep Cyan
+                    "#0284c7", // Row 6: Blue
+                    "#2563eb", // Row 7: Royal Blue
+                    "#6366f1", // Row 8: Indigo
+                    "#8b5cf6"  // Row 9: Purple
                   ]
 
                   function startMatrixRain() {
@@ -1994,7 +1991,7 @@ BarWidget {
                         }
                       }
 
-                      // Decay white flash on locked blocks (gentle phosphor glow)
+                      // Decay white flash on locked blocks (gentle ice glow)
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
                           if (syncBtnBox.lockedBlocks[r2][c2] > 0.01) {
@@ -2042,7 +2039,7 @@ BarWidget {
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
 
-                      // 1. Ultra-fast 60 FPS Digital Rain Streams (Hardware fillRect batching)
+                      // 1. Ultra-fast 60 FPS Digital Rain Streams (omarchy.org Ice Cyan / Blue / Purple)
                       if (syncBtnBox.animating) {
                         for (var c = 0; c < cols; c++) {
                           var st = syncBtnBox.streams[c]
@@ -2060,17 +2057,17 @@ BarWidget {
                               var y = r * ch
 
                               if (dist < 0.9) {
-                                // Glowing Lead Drop (Head)
+                                // Glowing Lead Drop (Pure White)
                                 ctx.fillStyle = "#ffffff"
                                 ctx.fillRect(x - 0.5, y, cw + 1.0, ch)
                               } else if (dist < 2.2) {
-                                // Bright Phosphor Trail
-                                ctx.fillStyle = "#4ade80"
+                                // Ice Sky Cyan Trail
+                                ctx.fillStyle = "#38bdf8"
                                 ctx.fillRect(x, y + 1, cw - 0.2, ch - 2)
                               } else {
-                                // Fading Tail
+                                // Fading Indigo / Purple Tail
                                 var alpha = Math.max(0.15, 1.0 - dist / len)
-                                ctx.fillStyle = "rgba(34, 197, 94, " + alpha.toFixed(2) + ")"
+                                ctx.fillStyle = "rgba(139, 92, 246, " + alpha.toFixed(2) + ")"
                                 ctx.fillRect(x + 0.3, y + 2, cw - 0.6, ch - 4)
                               }
                             }
@@ -2078,7 +2075,7 @@ BarWidget {
                         }
                       }
 
-                      // 2. Materialized Omarchy Logo Blocks
+                      // 2. Materialized Omarchy Logo Blocks (Exact omarchy.org Vertical Gradient)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
 
@@ -2093,14 +2090,14 @@ BarWidget {
                           var by = r * ch
 
                           if (lockVal > 0.6) {
-                            ctx.fillStyle = "#ffffff" // White flash upon materialization
+                            ctx.fillStyle = "#ffffff" // Pure white flash upon materialization
                           } else if (lockVal > 0.2) {
-                            ctx.fillStyle = "#bbf7d0" // Green phosphor flash
+                            ctx.fillStyle = "#e0f7fa" // Ice cyan glow
                           } else {
                             if (isHovered) {
-                              ctx.fillStyle = "#b4f9f8"
+                              ctx.fillStyle = "#67e8f9"
                             } else {
-                              ctx.fillStyle = syncBtnBox.rowGradient[r] || "#22c55e"
+                              ctx.fillStyle = syncBtnBox.rowGradient[r] || "#38bdf8"
                             }
                           }
 
