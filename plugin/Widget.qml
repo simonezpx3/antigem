@@ -1884,14 +1884,14 @@ BarWidget {
                 width: parent.width
                 spacing: Style.space(3)
 
-                // Omarchy ASCII Laseretch Banner (Exact omarchy.org style)
+                // Omarchy ASCII Laseretch Banner (Authentic omarchy.org LaserEtch)
                 Rectangle {
                   id: syncBtnBox
                   width: parent.width
-                  height: 76
+                  height: 80
                   radius: 6
                   clip: true
-                  color: forceSyncMouse.containsMouse ? "#0f1610" : "#070b08"
+                  color: forceSyncMouse.containsMouse ? "#0a110c" : "#050806"
                   border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
                   border.width: 1
                   scale: forceSyncMouse.pressed ? 0.98 : 1.0
@@ -1899,24 +1899,96 @@ BarWidget {
                   Behavior on scale { NumberAnimation { duration: 90 } }
                   Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                  property real laserProgress: 1.0
+                  property real beamX: 81.0
+                  property bool animating: false
+                  property var particles: []
+                  property var heatMap: []
 
-                  NumberAnimation {
-                    id: laserAnim
-                    target: syncBtnBox
-                    property: "laserProgress"
-                    from: 0.0
-                    to: 1.0
-                    duration: 1100
-                    easing.type: Easing.OutCubic
-                    onRunningChanged: asciiCanvas.requestPaint()
+                  function startLaserEtch() {
+                    syncBtnBox.beamX = 0.0
+                    syncBtnBox.particles = []
+                    syncBtnBox.heatMap = []
+                    for (var r = 0; r < 10; r++) {
+                      var row = []
+                      for (var c = 0; c < 81; c++) row.push(0.0)
+                      syncBtnBox.heatMap.push(row)
+                    }
+                    syncBtnBox.animating = true
+                    etchTimer.restart()
+                  }
+
+                  Timer {
+                    id: etchTimer
+                    interval: 16
+                    repeat: true
+                    running: syncBtnBox.animating
+
+                    onTriggered: {
+                      if (!syncBtnBox.animating) return
+
+                      syncBtnBox.beamX += 1.35
+                      var currentIntCol = Math.floor(syncBtnBox.beamX)
+
+                      // Update heat map and spawn particles
+                      for (var r = 0; r < 10; r++) {
+                        for (var c = 0; c < 81; c++) {
+                          if (c <= currentIntCol) {
+                            if (c === currentIntCol) {
+                              if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] < 0.1) {
+                                syncBtnBox.heatMap[r][c] = 1.0
+                                var ch = asciiCanvas.asciiArt[r].charAt(c)
+                                if (ch === "█" || ch === "▄" || ch === "▀") {
+                                  var cw = asciiCanvas.width / 81
+                                  var chH = asciiCanvas.height / 10
+                                  for (var p = 0; p < 3; p++) {
+                                    syncBtnBox.particles.push({
+                                      x: c * cw + cw / 2,
+                                      y: r * chH + chH / 2,
+                                      vx: (Math.random() - 0.3) * 3.5,
+                                      vy: (Math.random() - 0.5) * 3.0,
+                                      life: 1.0,
+                                      decay: 0.06 + Math.random() * 0.06,
+                                      size: 1 + Math.random() * 1.5
+                                    })
+                                  }
+                                }
+                              }
+                            } else {
+                              if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] > 0.0) {
+                                syncBtnBox.heatMap[r][c] = Math.max(0.0, syncBtnBox.heatMap[r][c] - 0.04)
+                              }
+                            }
+                          }
+                        }
+                      }
+
+                      // Update particles
+                      for (var i = syncBtnBox.particles.length - 1; i >= 0; i--) {
+                        var pt = syncBtnBox.particles[i]
+                        pt.x += pt.vx
+                        pt.y += pt.vy
+                        pt.vy += 0.08
+                        pt.life -= pt.decay
+                        if (pt.life <= 0) {
+                          syncBtnBox.particles.splice(i, 1)
+                        }
+                      }
+
+                      asciiCanvas.requestPaint()
+
+                      if (syncBtnBox.beamX >= 84 && syncBtnBox.particles.length === 0) {
+                        syncBtnBox.animating = false
+                        etchTimer.stop()
+                        asciiCanvas.requestPaint()
+                      }
+                    }
                   }
 
                   Canvas {
                     id: asciiCanvas
                     anchors.centerIn: parent
-                    width: Math.min(parent.width - 24, 420)
-                    height: 56
+                    width: Math.min(parent.width - 20, 420)
+                    height: 58
 
                     readonly property var asciiArt: [
                       "                 ▄▄▄                                                                 ",
@@ -1940,21 +2012,26 @@ BarWidget {
                       var cw = width / cols
                       var ch = height / rows
 
-                      var activeCol = Math.min(cols, Math.floor(syncBtnBox.laserProgress * cols))
+                      var activeCol = syncBtnBox.beamX
                       var isHovered = forceSyncMouse.containsMouse
+                      var heat = syncBtnBox.heatMap
 
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
-                        for (var c = 0; c <= activeCol && c < cols; c++) {
+                        for (var c = 0; c < cols; c++) {
+                          if (c > activeCol && syncBtnBox.animating) continue
+
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
 
                           var x = c * cw
                           var y = r * ch
 
-                          if (c === activeCol && syncBtnBox.laserProgress < 0.99) {
+                          var hVal = (heat && heat[r]) ? (heat[r][c] || 0) : 0
+
+                          if (hVal > 0.65) {
                             ctx.fillStyle = "#ffffff"
-                          } else if (c >= activeCol - 3 && syncBtnBox.laserProgress < 0.99) {
+                          } else if (hVal > 0.25) {
                             ctx.fillStyle = "#b4f9f8"
                           } else {
                             ctx.fillStyle = isHovered ? "#b4f9f8" : "#9ece6a"
@@ -1970,28 +2047,38 @@ BarWidget {
                         }
                       }
 
-                      // Laser Beam Lead Line
-                      if (syncBtnBox.laserProgress > 0.01 && syncBtnBox.laserProgress < 0.99) {
-                        var beamX = activeCol * cw
-                        ctx.strokeStyle = "rgba(180, 249, 248, 0.45)"
+                      // Draw Spark Particles
+                      for (var p = 0; p < syncBtnBox.particles.length; p++) {
+                        var pt = syncBtnBox.particles[p]
+                        ctx.fillStyle = pt.life > 0.6 ? "#ffffff" : (pt.life > 0.3 ? "#b4f9f8" : "#fbbf24")
+                        ctx.fillRect(pt.x, pt.y, pt.size, pt.size)
+                      }
+
+                      // Draw Laser Beam
+                      if (syncBtnBox.animating && activeCol >= 0 && activeCol <= 81) {
+                        var bx = activeCol * cw
+
+                        // Outer Glow
+                        ctx.strokeStyle = "rgba(180, 249, 248, 0.35)"
                         ctx.lineWidth = 6
                         ctx.beginPath()
-                        ctx.moveTo(beamX, 0)
-                        ctx.lineTo(beamX, height)
+                        ctx.moveTo(bx, 0)
+                        ctx.lineTo(bx, height)
                         ctx.stroke()
 
+                        // Core Beam
                         ctx.strokeStyle = "#ffffff"
-                        ctx.lineWidth = 1.5
+                        ctx.lineWidth = 1.8
                         ctx.beginPath()
-                        ctx.moveTo(beamX, 0)
-                        ctx.lineTo(beamX, height)
+                        ctx.moveTo(bx, 0)
+                        ctx.lineTo(bx, height)
                         ctx.stroke()
-                      }
-                    }
 
-                    Connections {
-                      target: syncBtnBox
-                      function onLaserProgressChanged() { asciiCanvas.requestPaint() }
+                        // Emitters
+                        ctx.fillStyle = "#ffffff"
+                        ctx.fillRect(bx - 2, 0, 4, 3)
+                        ctx.fillRect(bx - 2, height - 3, 4, 3)
+                      }
                     }
                   }
 
@@ -2001,7 +2088,7 @@ BarWidget {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      laserAnim.restart()
+                      syncBtnBox.startLaserEtch()
                       root.requestRefresh()
                     }
                   }
@@ -2010,14 +2097,18 @@ BarWidget {
                     target: root
                     function onRefreshingChanged() {
                       if (root.refreshing) {
-                        laserAnim.restart()
+                        syncBtnBox.startLaserEtch()
                       }
                     }
                     function onSelectedTabChanged() {
                       if (root.selectedTab === 2) {
-                        laserAnim.restart()
+                        syncBtnBox.startLaserEtch()
                       }
                     }
+                  }
+
+                  Component.onCompleted: {
+                    syncBtnBox.startLaserEtch()
                   }
                 }
 
