@@ -1903,12 +1903,11 @@ BarWidget {
                   property bool animating: false
                   property real elapsedFrames: 0.0
                   property real totalFrames: 300.0 // 5 seconds @ 60 FPS
-                  property real plasmaX: 0.0
-                  property real plasmaY: 25.0
-                  property real targetPlasmaY: 25.0
-                  property var streams: []
-                  property var lockedBlocks: []
+                  property real laserX: 0.0
+                  property real laserY: 25.0
+                  property var heatMap: []
                   property var sparks: []
+                  property var embers: []
 
                   // Exact omarchy.org Vertical Gradient (Pure White -> Cyan -> Blue -> Purple)
                   readonly property var rowGradient: [
@@ -1924,42 +1923,28 @@ BarWidget {
                     "#8b5cf6"  // Row 9: Purple
                   ]
 
-                  function startMatrixRain() {
-                    syncBtnBox.streams = []
-                    syncBtnBox.lockedBlocks = []
+                  function startLaserEtch() {
+                    syncBtnBox.heatMap = []
                     syncBtnBox.sparks = []
+                    syncBtnBox.embers = []
                     syncBtnBox.elapsedFrames = 0.0
-                    syncBtnBox.plasmaX = 0.0
-                    syncBtnBox.plasmaY = 25.0
-                    syncBtnBox.targetPlasmaY = 25.0
+                    syncBtnBox.laserX = 0.0
+                    syncBtnBox.laserY = 25.0
 
                     for (var r = 0; r < 10; r++) {
-                      var lockRow = []
+                      var row = []
                       for (var c = 0; c < 85; c++) {
-                        lockRow.push(0.0)
+                        row.push(0.0)
                       }
-                      syncBtnBox.lockedBlocks.push(lockRow)
-                    }
-
-                    // 5-second calibrated cascade (300 frames @ 60 FPS)
-                    for (var col = 0; col < 85; col++) {
-                      // Stagger columns across 0..190 frames (~3.2s)
-                      var colDelay = (col / 85.0) * 190.0 + Math.random() * 30.0
-                      syncBtnBox.streams.push({
-                        delay: colDelay,
-                        headY: -1.0,
-                        speed: 0.11 + Math.random() * 0.05, // Mesmerizing steady rain fall
-                        length: 3 + Math.floor(Math.random() * 4),
-                        active: true
-                      })
+                      syncBtnBox.heatMap.push(row)
                     }
 
                     syncBtnBox.animating = true
-                    matrixTimer.restart()
+                    laserTimer.restart()
                   }
 
                   Timer {
-                    id: matrixTimer
+                    id: laserTimer
                     interval: 16 // 60 FPS
                     repeat: true
                     running: syncBtnBox.animating
@@ -1971,57 +1956,48 @@ BarWidget {
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Calculate sweeping Plasma Bod X & Y across the 5 seconds
-                      var plasmaProg = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.85))
-                      syncBtnBox.plasmaX = plasmaProg * asciiCanvas.width
-                      syncBtnBox.plasmaY += (syncBtnBox.targetPlasmaY - syncBtnBox.plasmaY) * 0.15
+                      // Progress across 85 columns over 5.0 seconds (300 frames)
+                      var progress = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.9))
+                      var exactCol = progress * 84.0
+                      var targetCol = Math.floor(exactCol)
 
-                      var allDone = syncBtnBox.elapsedFrames >= syncBtnBox.totalFrames
+                      syncBtnBox.laserX = exactCol * cw
 
-                      // Fast numeric stream physics across 5 seconds
-                      for (var c = 0; c < 85; c++) {
-                        var st = syncBtnBox.streams[c]
-                        if (!st || !st.active) continue
-
-                        if (st.delay > 0) {
-                          st.delay -= 1.0
-                          allDone = false
-                          continue
-                        }
-
-                        st.headY += st.speed
-                        var headInt = Math.floor(st.headY)
-
-                        // Lock in logo block when drop head passes row
+                      // Burn blocks up to targetCol
+                      for (var c = 0; c <= targetCol && c < 85; c++) {
                         for (var r = 0; r < 10; r++) {
-                          if (r <= headInt && syncBtnBox.lockedBlocks[r][c] === 0.0) {
+                          if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] === 0.0) {
                             var ch = asciiCanvas.asciiArt[r].charAt(c)
                             if (ch === "█" || ch === "▄" || ch === "▀") {
-                              syncBtnBox.lockedBlocks[r][c] = 1.0 // Flash white!
-                              syncBtnBox.targetPlasmaY = r * chH + chH / 2
+                              syncBtnBox.heatMap[r][c] = 1.0 // Flash white-hot!
+                              syncBtnBox.laserY = r * chH + chH / 2
 
-                              // Emit plasma sparks radiating from the plasma point
-                              if (Math.random() > 0.35) {
+                              // Emit laser cutting sparks
+                              for (var p = 0; p < 2; p++) {
                                 syncBtnBox.sparks.push({
-                                  x: c * cw,
-                                  y: r * chH + chH / 2,
-                                  vx: (Math.random() - 0.3) * 2.5,
-                                  vy: (Math.random() - 0.5) * 2.5,
+                                  x: syncBtnBox.laserX,
+                                  y: syncBtnBox.laserY,
+                                  vx: 0.6 + Math.random() * 2.2,
+                                  vy: (Math.random() - 0.5) * 2.4,
                                   life: 1.0,
-                                  decay: 0.05 + Math.random() * 0.05,
+                                  decay: 0.04 + Math.random() * 0.05,
                                   size: 1 + Math.random() * 1.5
                                 })
                               }
+
+                              if (Math.random() > 0.6) {
+                                syncBtnBox.embers.push({
+                                  x: syncBtnBox.laserX + (Math.random() - 0.5) * 4,
+                                  y: asciiCanvas.height - 1 - Math.random() * 2,
+                                  life: 1.0,
+                                  decay: 0.02 + Math.random() * 0.03,
+                                  size: 1 + Math.random() * 1.0
+                                })
+                              }
                             } else {
-                              syncBtnBox.lockedBlocks[r][c] = 0.001 // Empty cell locked
+                              syncBtnBox.heatMap[r][c] = 0.001 // Empty space
                             }
                           }
-                        }
-
-                        if (st.headY - st.length < 11) {
-                          allDone = false
-                        } else {
-                          st.active = false
                         }
                       }
 
@@ -2030,26 +2006,36 @@ BarWidget {
                         var sp = syncBtnBox.sparks[s]
                         sp.x += sp.vx
                         sp.y += sp.vy
+                        sp.vy += 0.08
                         sp.life -= sp.decay
                         if (sp.life <= 0) {
                           syncBtnBox.sparks.splice(s, 1)
                         }
                       }
 
-                      // Decay white flash on locked blocks (gentle ice glow)
+                      // Update floor embers
+                      for (var e = syncBtnBox.embers.length - 1; e >= 0; e--) {
+                        var eb = syncBtnBox.embers[e]
+                        eb.life -= eb.decay
+                        if (eb.life <= 0) {
+                          syncBtnBox.embers.splice(e, 1)
+                        }
+                      }
+
+                      // Cool down heat map from white-hot to settled gradient
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
-                          if (syncBtnBox.lockedBlocks[r2][c2] > 0.01) {
-                            syncBtnBox.lockedBlocks[r2][c2] = Math.max(0.01, syncBtnBox.lockedBlocks[r2][c2] - 0.025)
+                          if (syncBtnBox.heatMap[r2] && syncBtnBox.heatMap[r2][c2] > 0.01) {
+                            syncBtnBox.heatMap[r2][c2] = Math.max(0.01, syncBtnBox.heatMap[r2][c2] - 0.035)
                           }
                         }
                       }
 
                       asciiCanvas.requestPaint()
 
-                      if (allDone && syncBtnBox.sparks.length === 0) {
+                      if (syncBtnBox.elapsedFrames >= syncBtnBox.totalFrames && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
-                        matrixTimer.stop()
+                        laserTimer.stop()
                         asciiCanvas.requestPaint()
                       }
                     }
@@ -2084,49 +2070,13 @@ BarWidget {
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
 
-                      // 1. Ultra-fast 60 FPS Digital Rain Streams (omarchy.org Ice Cyan / Blue / Purple)
-                      if (syncBtnBox.animating) {
-                        for (var c = 0; c < cols; c++) {
-                          var st = syncBtnBox.streams[c]
-                          if (!st || !st.active) continue
-
-                          var head = st.headY
-                          var len = st.length
-                          var x = c * cw
-
-                          for (var r = 0; r < rows; r++) {
-                            if (syncBtnBox.lockedBlocks[r][c] > 0.0) continue // Already locked into logo
-
-                            if (r <= head && r >= head - len) {
-                              var dist = head - r
-                              var y = r * ch
-
-                              if (dist < 0.9) {
-                                // Glowing Lead Drop (Pure White)
-                                ctx.fillStyle = "#ffffff"
-                                ctx.fillRect(x - 0.5, y, cw + 1.0, ch)
-                              } else if (dist < 2.2) {
-                                // Ice Sky Cyan Trail
-                                ctx.fillStyle = "#38bdf8"
-                                ctx.fillRect(x, y + 1, cw - 0.2, ch - 2)
-                              } else {
-                                // Fading Indigo / Purple Tail
-                                var alpha = Math.max(0.15, 1.0 - dist / len)
-                                ctx.fillStyle = "rgba(139, 92, 246, " + alpha.toFixed(2) + ")"
-                                ctx.fillRect(x + 0.3, y + 2, cw - 0.6, ch - 4)
-                              }
-                            }
-                          }
-                        }
-                      }
-
-                      // 2. Materialized Omarchy Logo Blocks (Exact omarchy.org Vertical Gradient)
+                      // 1. Draw ASCII Character Blocks (Laser Bod Etched)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
 
                         for (var c = 0; c < cols; c++) {
-                          var lockVal = syncBtnBox.lockedBlocks[r] ? syncBtnBox.lockedBlocks[r][c] : 0.0
-                          if (syncBtnBox.animating && lockVal === 0.0) continue
+                          var heatVal = (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c]) || 0.0
+                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden before laser reaches here
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
@@ -2134,9 +2084,9 @@ BarWidget {
                           var bx = c * cw
                           var by = r * ch
 
-                          if (lockVal > 0.6) {
-                            ctx.fillStyle = "#ffffff" // Pure white flash upon materialization
-                          } else if (lockVal > 0.2) {
+                          if (heatVal > 0.6) {
+                            ctx.fillStyle = "#ffffff" // White-hot molten flash
+                          } else if (heatVal > 0.2) {
                             ctx.fillStyle = "#e0f7fa" // Ice cyan glow
                           } else {
                             if (isHovered) {
@@ -2156,6 +2106,13 @@ BarWidget {
                         }
                       }
 
+                      // 2. Draw Floor Embers
+                      for (var e = 0; e < syncBtnBox.embers.length; e++) {
+                        var eb = syncBtnBox.embers[e]
+                        ctx.fillStyle = eb.life > 0.5 ? "#38bdf8" : "#8b5cf6"
+                        ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
+                      }
+
                       // 3. Draw Laser Cutting Sparks
                       for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
                         var spk = syncBtnBox.sparks[spIdx]
@@ -2164,42 +2121,42 @@ BarWidget {
                       }
 
                       // 4. Draw Ultra-Sharp Laser Bod (Focused Laser Dot + Lens Flare)
-                      if (syncBtnBox.animating && syncBtnBox.plasmaX < width) {
-                        var lx = syncBtnBox.plasmaX
-                        var ly = syncBtnBox.plasmaY
+                      if (syncBtnBox.animating && syncBtnBox.laserX < width) {
+                        var lx = syncBtnBox.laserX
+                        var ly = syncBtnBox.laserY
 
                         // Layer 1: Outer Diffuse Cyan Glow
-                        ctx.fillStyle = "rgba(56, 189, 248, 0.3)"
+                        ctx.fillStyle = "rgba(56, 189, 248, 0.35)"
                         ctx.beginPath()
-                        ctx.arc(lx, ly, 7.0, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 8.0, 0, Math.PI * 2)
                         ctx.fill()
 
                         // Layer 2: Sharp Laser Ring
-                        ctx.fillStyle = "rgba(56, 189, 248, 0.9)"
+                        ctx.fillStyle = "rgba(56, 189, 248, 0.95)"
                         ctx.beginPath()
-                        ctx.arc(lx, ly, 3.2, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 3.5, 0, Math.PI * 2)
                         ctx.fill()
 
                         // Layer 3: Ultra-Bright White Laser Core
                         ctx.fillStyle = "#ffffff"
                         ctx.beginPath()
-                        ctx.arc(lx, ly, 1.6, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 1.8, 0, Math.PI * 2)
                         ctx.fill()
 
                         // Layer 4: Horizontal Laser Flare Ray (Anamorphic Streak)
-                        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"
-                        ctx.lineWidth = 1.0
+                        ctx.strokeStyle = "rgba(255, 255, 255, 0.9)"
+                        ctx.lineWidth = 1.2
                         ctx.beginPath()
-                        ctx.moveTo(lx - 7, ly)
-                        ctx.lineTo(lx + 7, ly)
+                        ctx.moveTo(lx - 9, ly)
+                        ctx.lineTo(lx + 9, ly)
                         ctx.stroke()
 
                         // Layer 5: Vertical Laser Cross Flare
-                        ctx.strokeStyle = "rgba(56, 189, 248, 0.75)"
+                        ctx.strokeStyle = "rgba(56, 189, 248, 0.8)"
                         ctx.lineWidth = 1.0
                         ctx.beginPath()
-                        ctx.moveTo(lx, ly - 4)
-                        ctx.lineTo(lx, ly + 4)
+                        ctx.moveTo(lx, ly - 5)
+                        ctx.lineTo(lx, ly + 5)
                         ctx.stroke()
                       }
                     }
@@ -2211,7 +2168,7 @@ BarWidget {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      syncBtnBox.startMatrixRain()
+                      syncBtnBox.startLaserEtch()
                       root.requestRefresh()
                     }
                   }
@@ -2220,18 +2177,18 @@ BarWidget {
                     target: root
                     function onRefreshingChanged() {
                       if (root.refreshing) {
-                        syncBtnBox.startMatrixRain()
+                        syncBtnBox.startLaserEtch()
                       }
                     }
                     function onSelectedTabChanged() {
                       if (root.selectedTab === 2) {
-                        syncBtnBox.startMatrixRain()
+                        syncBtnBox.startLaserEtch()
                       }
                     }
                   }
 
                   Component.onCompleted: {
-                    syncBtnBox.startMatrixRain()
+                    syncBtnBox.startLaserEtch()
                   }
                 }
 
