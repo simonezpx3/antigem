@@ -2156,44 +2156,50 @@ BarWidget {
                         }
                       }
 
-                      // 3. Draw Plasma Sparks
+                      // 3. Draw Laser Cutting Sparks
                       for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
                         var spk = syncBtnBox.sparks[spIdx]
-                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#a855f7")
+                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fde047")
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
-                      // 4. Draw Glowing Concentrated Plasma Bod (Multi-Layer Corona)
+                      // 4. Draw Ultra-Sharp Laser Bod (Focused Laser Dot + Lens Flare)
                       if (syncBtnBox.animating && syncBtnBox.plasmaX < width) {
-                        var px = syncBtnBox.plasmaX
-                        var py = syncBtnBox.plasmaY
+                        var lx = syncBtnBox.plasmaX
+                        var ly = syncBtnBox.plasmaY
 
-                        // Layer 1: Outer Purple Plasma Field
-                        ctx.fillStyle = "rgba(139, 92, 246, 0.25)"
+                        // Layer 1: Outer Diffuse Cyan Glow
+                        ctx.fillStyle = "rgba(56, 189, 248, 0.3)"
                         ctx.beginPath()
-                        ctx.arc(px, py, 11.0, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 7.0, 0, Math.PI * 2)
                         ctx.fill()
 
-                        // Layer 2: Mid Neon Cyan Halo
-                        ctx.fillStyle = "rgba(56, 189, 248, 0.55)"
+                        // Layer 2: Sharp Laser Ring
+                        ctx.fillStyle = "rgba(56, 189, 248, 0.9)"
                         ctx.beginPath()
-                        ctx.arc(px, py, 6.0, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 3.2, 0, Math.PI * 2)
                         ctx.fill()
 
-                        // Layer 3: Hot White Plasma Core
+                        // Layer 3: Ultra-Bright White Laser Core
                         ctx.fillStyle = "#ffffff"
                         ctx.beginPath()
-                        ctx.arc(px, py, 2.5, 0, Math.PI * 2)
+                        ctx.arc(lx, ly, 1.6, 0, Math.PI * 2)
                         ctx.fill()
 
-                        // Layer 4: Electric Micro Flares
-                        ctx.strokeStyle = "rgba(224, 247, 250, 0.8)"
+                        // Layer 4: Horizontal Laser Flare Ray (Anamorphic Streak)
+                        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"
                         ctx.lineWidth = 1.0
                         ctx.beginPath()
-                        ctx.moveTo(px - 4, py)
-                        ctx.lineTo(px + 4, py)
-                        ctx.moveTo(px, py - 4)
-                        ctx.lineTo(px, py + 4)
+                        ctx.moveTo(lx - 7, ly)
+                        ctx.lineTo(lx + 7, ly)
+                        ctx.stroke()
+
+                        // Layer 5: Vertical Laser Cross Flare
+                        ctx.strokeStyle = "rgba(56, 189, 248, 0.75)"
+                        ctx.lineWidth = 1.0
+                        ctx.beginPath()
+                        ctx.moveTo(lx, ly - 4)
+                        ctx.lineTo(lx, ly + 4)
                         ctx.stroke()
                       }
                     }
