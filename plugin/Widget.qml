@@ -2120,44 +2120,6 @@ BarWidget {
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
-                      // 4. Draw Ultra-Sharp Laser Bod (Focused Laser Dot + Lens Flare)
-                      if (syncBtnBox.animating && syncBtnBox.laserX < width) {
-                        var lx = syncBtnBox.laserX
-                        var ly = syncBtnBox.laserY
-
-                        // Layer 1: Outer Diffuse Cyan Glow
-                        ctx.fillStyle = "rgba(56, 189, 248, 0.35)"
-                        ctx.beginPath()
-                        ctx.arc(lx, ly, 8.0, 0, Math.PI * 2)
-                        ctx.fill()
-
-                        // Layer 2: Sharp Laser Ring
-                        ctx.fillStyle = "rgba(56, 189, 248, 0.95)"
-                        ctx.beginPath()
-                        ctx.arc(lx, ly, 3.5, 0, Math.PI * 2)
-                        ctx.fill()
-
-                        // Layer 3: Ultra-Bright White Laser Core
-                        ctx.fillStyle = "#ffffff"
-                        ctx.beginPath()
-                        ctx.arc(lx, ly, 1.8, 0, Math.PI * 2)
-                        ctx.fill()
-
-                        // Layer 4: Horizontal Laser Flare Ray (Anamorphic Streak)
-                        ctx.strokeStyle = "rgba(255, 255, 255, 0.9)"
-                        ctx.lineWidth = 1.2
-                        ctx.beginPath()
-                        ctx.moveTo(lx - 9, ly)
-                        ctx.lineTo(lx + 9, ly)
-                        ctx.stroke()
-
-                        // Layer 5: Vertical Laser Cross Flare
-                        ctx.strokeStyle = "rgba(56, 189, 248, 0.8)"
-                        ctx.lineWidth = 1.0
-                        ctx.beginPath()
-                        ctx.moveTo(lx, ly - 5)
-                        ctx.lineTo(lx, ly + 5)
-                        ctx.stroke()
                       }
                     }
                   }
