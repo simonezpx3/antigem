@@ -2258,7 +2258,7 @@ BarWidget {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                       syncBtnBox.startLightningDischarge()
-                      root.requestRefresh()
+                      Qt.openUrlExternally("https://omarchy.org/")
                     }
                   }
 
