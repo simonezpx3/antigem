@@ -1879,16 +1879,153 @@ BarWidget {
                 }
               }
 
-              // Actions Row
-              RowLayout {
+              // Actions: Omarchy ASCII Laseretch Banner & Restart Shell
+              Column {
                 width: parent.width
-                spacing: Style.space(4)
+                spacing: Style.space(3)
 
-                // Restart Shell button
+                // Omarchy ASCII Laseretch Banner (Exact omarchy.org style)
                 Rectangle {
-                  Layout.fillWidth: true
-                  height: 36
+                  id: syncBtnBox
+                  width: parent.width
+                  height: 76
                   radius: 6
+                  clip: true
+                  color: forceSyncMouse.containsMouse ? "#0f1610" : "#070b08"
+                  border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
+                  border.width: 1
+                  scale: forceSyncMouse.pressed ? 0.98 : 1.0
+
+                  Behavior on scale { NumberAnimation { duration: 90 } }
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                  property real laserProgress: 1.0
+
+                  NumberAnimation {
+                    id: laserAnim
+                    target: syncBtnBox
+                    property: "laserProgress"
+                    from: 0.0
+                    to: 1.0
+                    duration: 1100
+                    easing.type: Easing.OutCubic
+                    onRunningChanged: asciiCanvas.requestPaint()
+                  }
+
+                  Canvas {
+                    id: asciiCanvas
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width - 24, 420)
+                    height: 56
+
+                    readonly property var asciiArt: [
+                      "                 ▄▄▄                                                                 ",
+                      " ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄     ",
+                      "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                      "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███    ",
+                      "███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███    ",
+                      "███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███    ",
+                      "███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███    ",
+                      "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                      " ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀     ",
+                      "                                       ███   █▀                                      "
+                    ]
+
+                    onPaint: {
+                      var ctx = getContext("2d")
+                      ctx.clearRect(0, 0, width, height)
+
+                      var cols = 81
+                      var rows = 10
+                      var cw = width / cols
+                      var ch = height / rows
+
+                      var activeCol = Math.min(cols, Math.floor(syncBtnBox.laserProgress * cols))
+                      var isHovered = forceSyncMouse.containsMouse
+
+                      for (var r = 0; r < rows; r++) {
+                        var line = asciiArt[r]
+                        for (var c = 0; c <= activeCol && c < cols; c++) {
+                          var chChar = line.charAt(c)
+                          if (chChar === " " || chChar === "") continue
+
+                          var x = c * cw
+                          var y = r * ch
+
+                          if (c === activeCol && syncBtnBox.laserProgress < 0.99) {
+                            ctx.fillStyle = "#ffffff"
+                          } else if (c >= activeCol - 3 && syncBtnBox.laserProgress < 0.99) {
+                            ctx.fillStyle = "#b4f9f8"
+                          } else {
+                            ctx.fillStyle = isHovered ? "#b4f9f8" : "#9ece6a"
+                          }
+
+                          if (chChar === "█") {
+                            ctx.fillRect(x, y, cw + 0.3, ch + 0.3)
+                          } else if (chChar === "▄") {
+                            ctx.fillRect(x, y + ch / 2, cw + 0.3, ch / 2 + 0.3)
+                          } else if (chChar === "▀") {
+                            ctx.fillRect(x, y, cw + 0.3, ch / 2 + 0.3)
+                          }
+                        }
+                      }
+
+                      // Laser Beam Lead Line
+                      if (syncBtnBox.laserProgress > 0.01 && syncBtnBox.laserProgress < 0.99) {
+                        var beamX = activeCol * cw
+                        ctx.strokeStyle = "rgba(180, 249, 248, 0.45)"
+                        ctx.lineWidth = 6
+                        ctx.beginPath()
+                        ctx.moveTo(beamX, 0)
+                        ctx.lineTo(beamX, height)
+                        ctx.stroke()
+
+                        ctx.strokeStyle = "#ffffff"
+                        ctx.lineWidth = 1.5
+                        ctx.beginPath()
+                        ctx.moveTo(beamX, 0)
+                        ctx.lineTo(beamX, height)
+                        ctx.stroke()
+                      }
+                    }
+
+                    Connections {
+                      target: syncBtnBox
+                      function onLaserProgressChanged() { asciiCanvas.requestPaint() }
+                    }
+                  }
+
+                  MouseArea {
+                    id: forceSyncMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      laserAnim.restart()
+                      root.requestRefresh()
+                    }
+                  }
+
+                  Connections {
+                    target: root
+                    function onRefreshingChanged() {
+                      if (root.refreshing) {
+                        laserAnim.restart()
+                      }
+                    }
+                    function onSelectedTabChanged() {
+                      if (root.selectedTab === 2) {
+                        laserAnim.restart()
+                      }
+                    }
+                  }
+                }
+
+                // Restart Shell Button Row
+                Rectangle {
+                  width: parent.width
+                  height: 32
+                  radius: 5
                   color: restartShellMouse.containsMouse ? root.cardHover : root.cardFill
                   border.color: restartShellMouse.containsMouse ? root.primaryAccent : root.cardBorder
                   border.width: 1
@@ -1899,13 +2036,13 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: Style.space(3)
+                    spacing: 6
 
                     Text {
                       text: "󰑐"
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: 18
+                      font.pixelSize: Style.font.bodySmall
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -1927,143 +2064,6 @@ BarWidget {
                     onClicked: {
                       if (root.bar && typeof root.bar.run === "function") {
                         root.bar.run("omarchy restart shell")
-                      }
-                    }
-                  }
-                }
-
-                // Force Sync button (With Laseretch Sweep Animation like omarchy.org)
-                Rectangle {
-                  id: syncBtnBox
-                  Layout.fillWidth: true
-                  height: 36
-                  radius: 6
-                  clip: true
-                  color: forceSyncMouse.containsMouse ? root.cardHover : root.cardFill
-                  border.color: forceSyncMouse.containsMouse ? "#9ece6a" : root.cardBorder
-                  border.width: 1
-                  scale: forceSyncMouse.pressed ? 0.95 : 1.0
-
-                  Behavior on scale { NumberAnimation { duration: 90 } }
-                  Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                  property real laserProgress: 1.0
-
-                  NumberAnimation {
-                    id: laserAnim
-                    target: syncBtnBox
-                    property: "laserProgress"
-                    from: 0.0
-                    to: 1.0
-                    duration: 850
-                    easing.type: Easing.OutCubic
-                  }
-
-                  // Content Holder (118px wide)
-                  Item {
-                    id: laserContentHolder
-                    anchors.centerIn: parent
-                    width: 118
-                    height: 24
-
-                    // Dim outline layer (behind the laser)
-                    Row {
-                      anchors.verticalCenter: parent.verticalCenter
-                      anchors.left: parent.left
-                      spacing: 12
-                      opacity: syncBtnBox.laserProgress < 0.99 ? 0.15 : 0.0
-
-                      Text {
-                        text: "\ue900"
-                        color: "#9ece6a"
-                        font.family: "omarchy"
-                        font.pixelSize: 20
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-
-                      Image {
-                        source: Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
-                        height: 20
-                        width: Math.round(height * (1215 / 285))
-                        fillMode: Image.PreserveAspectFit
-                        smooth: false
-                        mipmap: false
-                        anchors.verticalCenter: parent.verticalCenter
-                      }
-                    }
-
-                    // Revealed etched layer (clipped by laserProgress)
-                    Item {
-                      anchors.top: parent.top
-                      anchors.bottom: parent.bottom
-                      anchors.left: parent.left
-                      width: Math.ceil(parent.width * syncBtnBox.laserProgress)
-                      clip: true
-
-                      Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                        spacing: 12
-
-                        Text {
-                          text: "\ue900"
-                          color: forceSyncMouse.containsMouse ? "#b4f9f8" : "#9ece6a"
-                          font.family: "omarchy"
-                          font.pixelSize: 20
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Image {
-                          source: forceSyncMouse.containsMouse ? Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg") : Qt.resolvedUrl("assets/omarchy_wordmark_green.svg")
-                          height: 20
-                          width: Math.round(height * (1215 / 285))
-                          fillMode: Image.PreserveAspectFit
-                          smooth: false
-                          mipmap: false
-                          anchors.verticalCenter: parent.verticalCenter
-                        }
-                      }
-                    }
-
-                    // Glowing Vertical Laser Sweep Line
-                    Rectangle {
-                      visible: syncBtnBox.laserProgress > 0.0 && syncBtnBox.laserProgress < 0.99
-                      x: Math.round(parent.width * syncBtnBox.laserProgress) - 1
-                      width: 2
-                      height: parent.height + 6
-                      anchors.verticalCenter: parent.verticalCenter
-                      color: "#ffffff"
-                      radius: 1
-
-                      // Laser glow beam
-                      Rectangle {
-                        anchors.centerIn: parent
-                        width: 8
-                        height: parent.height + 4
-                        radius: 4
-                        color: "#b4f9f8"
-                        opacity: 0.8
-                        z: -1
-                      }
-                    }
-                  }
-
-                  MouseArea {
-                    id: forceSyncMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                      laserAnim.restart()
-                      root.requestRefresh()
-                    }
-                  }
-
-                  Connections {
-                    target: root
-                    function onRefreshingChanged() {
-                      if (root.refreshing) {
-                        laserAnim.restart()
                       }
                     }
                   }
