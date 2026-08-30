@@ -1884,7 +1884,7 @@ BarWidget {
                 Rectangle {
                   id: syncBtnBox
                   width: parent.width
-                  height: 68
+                  height: 50
                   radius: 6
                   clip: true
                   color: forceSyncMouse.containsMouse ? "#0a101d" : "#050811"
@@ -2109,8 +2109,8 @@ BarWidget {
                   Canvas {
                     id: asciiCanvas
                     anchors.centerIn: parent
-                    width: Math.min(parent.width - 24, 336)
-                    height: 50
+                    width: Math.min(parent.width - 24, 235)
+                    height: 35
 
                     readonly property var asciiArt: [
                       "                 ▄▄▄                                                                 ",
