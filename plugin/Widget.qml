@@ -462,6 +462,40 @@ BarWidget {
                 font.bold: true
               }
             }
+
+            // Omarchy Logo Container (Right side, level with Antigravity logo)
+            Rectangle {
+              id: headerOmarchyLogoBox
+              width: 72
+              height: 38
+              radius: 6
+              color: omarchyHeroMouse.containsMouse ? root.cardHover : root.cardFill
+              border.color: omarchyHeroMouse.containsMouse ? "#38bdf8" : root.cardBorder
+              border.width: 1
+              scale: omarchyHeroMouse.pressed ? 0.95 : 1.0
+
+              Behavior on scale { NumberAnimation { duration: 90 } }
+              Behavior on border.color { ColorAnimation { duration: 150 } }
+
+              Image {
+                anchors.fill: parent
+                anchors.margins: 6
+                source: Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg")
+                fillMode: Image.PreserveAspectFit
+                mipmap: true
+                smooth: true
+              }
+
+              MouseArea {
+                id: omarchyHeroMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                  Qt.openUrlExternally("https://omarchy.org/")
+                }
+              }
+            }
           }
 
           // Status Pill (Working / Waiting / Idle) - Centered horizontally & shifted 10px up
