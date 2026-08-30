@@ -463,37 +463,344 @@ BarWidget {
               }
             }
 
-            // Omarchy Logo Container (Right side, level with Antigravity logo)
+            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo)
             Rectangle {
               id: headerOmarchyLogoBox
-              width: 72
+              width: 125
               height: 38
               radius: 6
-              color: omarchyHeroMouse.containsMouse ? root.cardHover : root.cardFill
-              border.color: omarchyHeroMouse.containsMouse ? "#38bdf8" : root.cardBorder
+              clip: true
+              color: headerOmarchyMouse.containsMouse ? "#0a101d" : root.cardFill
+              border.color: headerOmarchyMouse.containsMouse ? "#38bdf8" : root.cardBorder
               border.width: 1
-              scale: omarchyHeroMouse.pressed ? 0.95 : 1.0
+              scale: headerOmarchyMouse.pressed ? 0.96 : 1.0
 
               Behavior on scale { NumberAnimation { duration: 90 } }
               Behavior on border.color { ColorAnimation { duration: 150 } }
 
-              Image {
-                anchors.fill: parent
-                anchors.margins: 6
-                source: Qt.resolvedUrl("assets/omarchy_wordmark_cyan.svg")
-                fillMode: Image.PreserveAspectFit
-                mipmap: true
-                smooth: true
+              property bool animating: false
+              property real elapsedFrames: 0.0
+              property var heatMap: []
+              property var sparks: []
+              property var currentBolt: null
+              property var pendingCells: []
+              property real lastLaserX: 0.0
+              property real lastLaserY: 12.0
+
+              readonly property var allPalettes: [
+                // 0: Omarchy Classic (Cyan -> Blue -> Purple)
+                ["#ffffff", "#ffffff", "#e0f7fa", "#67e8f9", "#38bdf8", "#06b6d4", "#0284c7", "#2563eb", "#6366f1", "#8b5cf6"],
+                // 1: Cyberpunk Neon (Pink -> Rose -> Magenta -> Deep Violet)
+                ["#ffffff", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#a21caf", "#701a75"],
+                // 2: Matrix Hacker (Ice Lime -> Emerald -> Forest Green)
+                ["#ffffff", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534"],
+                // 3: Solar Synthwave (White -> Yellow -> Bright Amber -> Fiery Crimson)
+                ["#ffffff", "#fefce8", "#fef08a", "#fde047", "#facc15", "#eab308", "#f97316", "#ea580c", "#dc2626", "#991b1b"],
+                // 4: Nord Glacier (White -> Glacial Aqua -> Deep Arctic Teal)
+                ["#ffffff", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59"],
+                // 5: Vaporwave Sunset (Peach -> Fuchsia -> Purple -> Midnight Indigo)
+                ["#ffffff", "#fff1f2", "#fed7aa", "#fdba74", "#fb923c", "#f43f5e", "#d946ef", "#a855f7", "#7c3aed", "#4338ca"],
+                // 6: Toxic Gold (White -> Electric Lime -> Golden Amber -> Bronze)
+                ["#ffffff", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#ca8a04", "#d97706", "#b45309", "#78350f"],
+                // 7: Electric Amethyst (White -> Lilac -> Lavender -> Deep Velvet Purple)
+                ["#ffffff", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#581c87"],
+                // 8: Deep Ocean Abyss (Ice Blue -> Sky -> Azure -> Ultramarine)
+                ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0284c7", "#0369a1", "#1d4ed8", "#1e3a8a"]
+              ]
+              property int paletteIndex: 0
+              property var activeGradient: allPalettes[0]
+
+              function randomizePalette() {
+                var newIdx = Math.floor(Math.random() * headerOmarchyLogoBox.allPalettes.length)
+                if (newIdx === headerOmarchyLogoBox.paletteIndex) {
+                  newIdx = (headerOmarchyLogoBox.paletteIndex + 1) % headerOmarchyLogoBox.allPalettes.length
+                }
+                headerOmarchyLogoBox.paletteIndex = newIdx
+                headerOmarchyLogoBox.activeGradient = headerOmarchyLogoBox.allPalettes[newIdx]
+              }
+
+              function createLightningBolt(x1, y1, x2, y2) {
+                var dx = x2 - x1
+                var dy = y2 - y1
+                var dist = Math.sqrt(dx * dx + dy * dy)
+                if (dist < 1) dist = 1
+                var nx = -dy / dist
+                var ny = dx / dist
+
+                var steps = 5
+                var pts = [{ x: x1, y: y1 }]
+                var branches = []
+
+                for (var i = 1; i < steps; i++) {
+                  var t = i / steps
+                  var bx = x1 + dx * t
+                  var by = y1 + dy * t
+                  var maxJitter = Math.min(14, Math.max(5, dist * 0.20))
+                  var jitter = (Math.random() - 0.5) * 2 * maxJitter
+                  var px = bx + nx * jitter
+                  var py = by + ny * jitter
+                  pts.push({ x: px, y: py })
+
+                  if (i === 2 || i === 3) {
+                    if (Math.random() > 0.4) {
+                      var bPts = [{ x: px, y: py }]
+                      var bLen = 6 + Math.random() * 8
+                      var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 6
+                      var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
+                      var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
+                      bPts.push({ x: bpx, y: bpy })
+                      branches.push(bPts)
+                    }
+                  }
+                }
+                pts.push({ x: x2, y: y2 })
+
+                return {
+                  pts: pts,
+                  branches: branches,
+                  targetX: x2,
+                  targetY: y2,
+                  life: 1.0
+                }
+              }
+
+              function startLightningDischarge() {
+                headerOmarchyLogoBox.randomizePalette()
+                headerOmarchyLogoBox.heatMap = []
+                headerOmarchyLogoBox.sparks = []
+                headerOmarchyLogoBox.currentBolt = null
+                headerOmarchyLogoBox.pendingCells = []
+                headerOmarchyLogoBox.elapsedFrames = 0.0
+                headerOmarchyLogoBox.lastLaserX = Math.random() * headerCanvas.width
+                headerOmarchyLogoBox.lastLaserY = Math.random() * headerCanvas.height
+
+                for (var r = 0; r < 10; r++) {
+                  var row = []
+                  for (var c = 0; c < 85; c++) {
+                    row.push(0.0)
+                    var ch = headerCanvas.asciiArt[r].charAt(c)
+                    if (ch === "█" || ch === "▄" || ch === "▀") {
+                      headerOmarchyLogoBox.pendingCells.push({ r: r, c: c })
+                    }
+                  }
+                  headerOmarchyLogoBox.heatMap.push(row)
+                }
+
+                for (var i = headerOmarchyLogoBox.pendingCells.length - 1; i > 0; i--) {
+                  var j = Math.floor(Math.random() * (i + 1))
+                  var tmp = headerOmarchyLogoBox.pendingCells[i]
+                  headerOmarchyLogoBox.pendingCells[i] = headerOmarchyLogoBox.pendingCells[j]
+                  headerOmarchyLogoBox.pendingCells[j] = tmp
+                }
+
+                headerOmarchyLogoBox.animating = true
+                headerLaserTimer.restart()
+              }
+
+              Timer {
+                id: headerLaserTimer
+                interval: 16
+                repeat: true
+                running: headerOmarchyLogoBox.animating
+
+                onTriggered: {
+                  if (!headerOmarchyLogoBox.animating) return
+
+                  headerOmarchyLogoBox.elapsedFrames += 1.0
+                  var cw = headerCanvas.width / 85
+                  var chH = headerCanvas.height / 10
+
+                  if (headerOmarchyLogoBox.pendingCells.length > 0) {
+                    var clusterSize = Math.min(headerOmarchyLogoBox.pendingCells.length, 5)
+                    var targetCell = headerOmarchyLogoBox.pendingCells.pop()
+                    headerOmarchyLogoBox.heatMap[targetCell.r][targetCell.c] = 1.0
+
+                    for (var k = 1; k < clusterSize; k++) {
+                      var extra = headerOmarchyLogoBox.pendingCells.pop()
+                      headerOmarchyLogoBox.heatMap[extra.r][extra.c] = 1.0
+                    }
+
+                    var targetX = targetCell.c * cw + cw / 2
+                    var targetY = targetCell.r * chH + chH / 2
+
+                    headerOmarchyLogoBox.currentBolt = headerOmarchyLogoBox.createLightningBolt(
+                      headerOmarchyLogoBox.lastLaserX,
+                      headerOmarchyLogoBox.lastLaserY,
+                      targetX,
+                      targetY
+                    )
+
+                    headerOmarchyLogoBox.lastLaserX = targetX
+                    headerOmarchyLogoBox.lastLaserY = targetY
+
+                    for (var p = 0; p < 2; p++) {
+                      headerOmarchyLogoBox.sparks.push({
+                        x: targetX,
+                        y: targetY,
+                        vx: (Math.random() - 0.5) * 3.2,
+                        vy: (Math.random() - 0.6) * 2.8,
+                        life: 1.0,
+                        decay: 0.06 + Math.random() * 0.06,
+                        size: 1 + Math.random() * 1.2
+                      })
+                    }
+                  } else if (headerOmarchyLogoBox.currentBolt) {
+                    headerOmarchyLogoBox.currentBolt.life -= 0.32
+                    if (headerOmarchyLogoBox.currentBolt.life <= 0) {
+                      headerOmarchyLogoBox.currentBolt = null
+                    }
+                  }
+
+                  for (var s = headerOmarchyLogoBox.sparks.length - 1; s >= 0; s--) {
+                    var sp = headerOmarchyLogoBox.sparks[s]
+                    sp.x += sp.vx
+                    sp.y += sp.vy
+                    sp.vy += 0.12
+                    sp.life -= sp.decay
+                    if (sp.life <= 0) {
+                      headerOmarchyLogoBox.sparks.splice(s, 1)
+                    }
+                  }
+
+                  for (var r2 = 0; r2 < 10; r2++) {
+                    for (var c2 = 0; c2 < 85; c2++) {
+                      if (headerOmarchyLogoBox.heatMap[r2] && headerOmarchyLogoBox.heatMap[r2][c2] > 0.01) {
+                        headerOmarchyLogoBox.heatMap[r2][c2] = Math.max(0.01, headerOmarchyLogoBox.heatMap[r2][c2] - 0.05)
+                      }
+                    }
+                  }
+
+                  headerCanvas.requestPaint()
+
+                  if (headerOmarchyLogoBox.pendingCells.length === 0 && !headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.sparks.length === 0) {
+                    headerOmarchyLogoBox.animating = false
+                    headerLaserTimer.stop()
+                    headerCanvas.requestPaint()
+                  }
+                }
+              }
+
+              Canvas {
+                id: headerCanvas
+                anchors.centerIn: parent
+                width: 102
+                height: 24
+
+                readonly property var asciiArt: [
+                  "                 ▄▄▄                                                                 ",
+                  " ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄     ",
+                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███    ",
+                  "███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███    ",
+                  "███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███    ",
+                  "███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███    ",
+                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                  " ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀     ",
+                  "                                       ███   █▀                                      "
+                ]
+
+                onPaint: {
+                  var ctx = getContext("2d")
+                  ctx.clearRect(0, 0, width, height)
+
+                  var cols = 85
+                  var rows = 10
+                  var cw = width / cols
+                  var ch = height / rows
+                  var grad = headerOmarchyLogoBox.activeGradient || headerOmarchyLogoBox.allPalettes[0]
+
+                  for (var r = 0; r < rows; r++) {
+                    var line = asciiArt[r]
+                    for (var c = 0; c < cols; c++) {
+                      var heatVal = (headerOmarchyLogoBox.heatMap[r] && headerOmarchyLogoBox.heatMap[r][c]) || 0.0
+                      if (headerOmarchyLogoBox.animating && heatVal === 0.0) continue
+
+                      var chChar = line.charAt(c)
+                      if (chChar === " " || chChar === "") continue
+
+                      var bx = c * cw
+                      var by = r * ch
+
+                      if (heatVal > 0.6) {
+                        ctx.fillStyle = "#ffffff"
+                      } else if (heatVal > 0.2) {
+                        ctx.fillStyle = "#e0f7fa"
+                      } else {
+                        ctx.fillStyle = grad[r] || "#38bdf8"
+                      }
+
+                      if (chChar === "█") {
+                        ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
+                      } else if (chChar === "▄") {
+                        ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
+                      } else if (chChar === "▀") {
+                        ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
+                      }
+                    }
+                  }
+
+                  // Sparks
+                  for (var spIdx = 0; spIdx < headerOmarchyLogoBox.sparks.length; spIdx++) {
+                    var spk = headerOmarchyLogoBox.sparks[spIdx]
+                    ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
+                    ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
+                  }
+
+                  // Lightning Bolt
+                  if (headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.currentBolt.life > 0) {
+                    var bolt = headerOmarchyLogoBox.currentBolt
+                    var bAlpha = Math.max(0.1, bolt.life)
+                    var pts = bolt.pts
+                    var branches = bolt.branches
+
+                    // Aura
+                    ctx.strokeStyle = (grad[4] || "#38bdf8")
+                    ctx.globalAlpha = bAlpha * 0.45
+                    ctx.lineWidth = 3.6
+                    ctx.beginPath()
+                    ctx.moveTo(pts[0].x, pts[0].y)
+                    for (var i = 1; i < pts.length; i++) {
+                      ctx.lineTo(pts[i].x, pts[i].y)
+                    }
+                    ctx.stroke()
+
+                    // Mid-Arc
+                    ctx.strokeStyle = (grad[7] || "#a855f7")
+                    ctx.globalAlpha = bAlpha * 0.85
+                    ctx.lineWidth = 1.8
+                    ctx.beginPath()
+                    ctx.moveTo(pts[0].x, pts[0].y)
+                    for (var j = 1; j < pts.length; j++) {
+                      ctx.lineTo(pts[j].x, pts[j].y)
+                    }
+                    ctx.stroke()
+
+                    ctx.globalAlpha = 1.0
+                  }
+                }
               }
 
               MouseArea {
-                id: omarchyHeroMouse
+                id: headerOmarchyMouse
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                  Qt.openUrlExternally("https://omarchy.org/")
+                  headerOmarchyLogoBox.startLightningDischarge()
                 }
+              }
+
+              Connections {
+                target: root
+                function onRefreshingChanged() {
+                  if (root.refreshing) {
+                    headerOmarchyLogoBox.startLightningDischarge()
+                  }
+                }
+              }
+
+              Component.onCompleted: {
+                headerOmarchyLogoBox.startLightningDischarge()
               }
             }
           }
