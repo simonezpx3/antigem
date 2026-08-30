@@ -1947,13 +1947,13 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: 4
+                    spacing: 5
 
                     Text {
-                      text: "󰄲"
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      text: "\ue900"
+                      color: root.primaryAccent
+                      font.family: "omarchy"
+                      font.pixelSize: Style.font.body
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
