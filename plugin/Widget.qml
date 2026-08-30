@@ -463,11 +463,12 @@ BarWidget {
             }
           }
 
-          // Status Pill (Working / Waiting / Idle) - Centered horizontally (aligning vertically with Online pill)
+          // Status Pill (Working / Waiting / Idle) - Centered horizontally & shifted 10px up
           Rectangle {
             id: statusPillRect
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: -10
             height: 20
             width: statusPillRow.implicitWidth + 14
             radius: 4
