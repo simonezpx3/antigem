@@ -172,9 +172,11 @@ BarWidget {
         if (key !== "id") entry[key] = root.settings[key]
       }
     }
-    entry.pulseEnabled = enabled
+    entry["pulseEnabled"] = enabled
+    root.settings = entry
+
     if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
-      root.bar.shell.updateEntryInline(entry)
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
     }
   }
 
@@ -190,9 +192,11 @@ BarWidget {
         if (key !== "id") entry[key] = root.settings[key]
       }
     }
-    entry.pulseBpm = val
+    entry["pulseBpm"] = val
+    root.settings = entry
+
     if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
-      root.bar.shell.updateEntryInline(entry)
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
     }
   }
 
@@ -210,9 +214,11 @@ BarWidget {
         if (key !== "id") entry[key] = root.settings[key]
       }
     }
-    entry.refreshIntervalSec = val
+    entry["refreshIntervalSec"] = val
+    root.settings = entry
+
     if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
-      root.bar.shell.updateEntryInline(entry)
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
     }
   }
 
