@@ -1947,7 +1947,7 @@ BarWidget {
 
                   Row {
                     anchors.centerIn: parent
-                    spacing: Style.space(3)
+                    spacing: 14
 
                     Text {
                       text: "\ue900"
