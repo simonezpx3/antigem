@@ -1098,11 +1098,11 @@ BarWidget {
               }
 
               Repeater {
-                model: (root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 4) : []
+                model: (root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 6) : []
 
                 Rectangle {
                   width: parent.width
-                  height: 38
+                  height: 42
                   radius: 6
                   color: sessionMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
                   border.color: root.cardBorder
@@ -1115,9 +1115,9 @@ BarWidget {
 
                     // Type Icon Badge (GPU Pink #f472b6 for IDE, CPU Cyan #61d5f8 for CLI)
                     Rectangle {
-                      width: 28
-                      height: 28
-                      radius: 4
+                      width: 30
+                      height: 30
+                      radius: 5
                       color: modelData.type === "ide" ? Qt.rgba(244/255, 114/255, 182/255, 0.2) : Qt.rgba(97/255, 213/255, 248/255, 0.2)
                       border.color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
                       border.width: 1
@@ -1134,13 +1134,13 @@ BarWidget {
                     // Session Details
                     Column {
                       Layout.fillWidth: true
-                      spacing: 1
+                      spacing: 2
 
                       Text {
                         text: modelData.title || modelData.preview || (modelData.workspace ? String(modelData.workspace).replace("/home/simonez", "~") : "Session")
                         color: root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.body
+                        font.pixelSize: Style.font.bodySmall
                         font.bold: true
                         elide: Text.ElideRight
                         width: parent.width
@@ -1211,7 +1211,7 @@ BarWidget {
             }
           }
 
-          // Tools Distribution Card (Donut Pie Chart & Stats Legend)
+          // Tools Distribution Card (Donut Pie Chart, Stats Legend & Summary)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
@@ -1251,8 +1251,8 @@ BarWidget {
 
                 // 1. Donut Pie Chart
                 Item {
-                  width: 104
-                  height: 104
+                  width: 116
+                  height: 116
 
                   Canvas {
                     id: toolDonutCanvas
@@ -1279,7 +1279,7 @@ BarWidget {
                       var cx = width / 2
                       var cy = height / 2
                       var outerR = width / 2 - 4
-                      var innerR = width / 2 - 18
+                      var innerR = width / 2 - 20
 
                       if (total <= 0 || tools.length === 0) {
                         ctx.beginPath()
@@ -1346,13 +1346,13 @@ BarWidget {
                   }
                 }
 
-                // 2. Legend & Meter Rows
+                // 2. Legend & Meter Rows (Top 6 tools)
                 Column {
                   Layout.fillWidth: true
                   spacing: Style.space(2)
 
                   Repeater {
-                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 5) : []
+                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 6) : []
 
                     Column {
                       width: parent.width
@@ -1400,6 +1400,72 @@ BarWidget {
                           color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
                         }
                       }
+                    }
+                  }
+                }
+              }
+
+              // 3. Bottom Tool Summary Badges Row
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 32
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: Style.space(3)
+                    spacing: Style.space(3)
+
+                    Text {
+                      text: "Top Tool:"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                    Text {
+                      text: (root.toolsList && root.toolsList.length > 0) ? (root.toolsList[0].name + " (" + root.toolsList[0].count + ")") : "—"
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                      elide: Text.ElideRight
+                      Layout.fillWidth: true
+                    }
+                  }
+                }
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 32
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: Style.space(3)
+                    spacing: Style.space(3)
+
+                    Text {
+                      text: "Unique Tools:"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                    Text {
+                      text: String(root.toolsList ? root.toolsList.length : 0) + " types"
+                      color: root.uploadColor
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
                     }
                   }
                 }
