@@ -2,7 +2,19 @@
 
 A native, high-performance telemetry dashboard and quota monitor for **Google Antigravity** and **Gemini AI**, built for **Omarchy Linux** (Quickshell / Hyprland).
 
+<p align="center">
+  <img src="preview.png" alt="Anti/Gem Dashboard Preview" width="560">
+</p>
+
 Designed following the visual language, palette tokens, and 3-tab UX structure of **System Monitor** (`bitr0t.system-monitor`).
+
+---
+
+## 📸 Screenshots & Tabs
+
+| ⚡ 1. Performance & Quotas | 📂 2. Sessions & Tools | ⚙️ 3. Settings & Controls |
+| :---: | :---: | :---: |
+| <img src="screenshots/performance.png" alt="Performance Tab" width="280"> | <img src="screenshots/sessions.png" alt="Sessions Tab" width="280"> | <img src="screenshots/settings.png" alt="Settings Tab" width="280"> |
 
 ---
 
