@@ -52,24 +52,35 @@ Designed following the visual language, palette tokens, and 3-tab UX structure o
 ## 📦 Project Structure
 
 ```
-Antigravity1.1/
+omarchy-antigravity/
+├── manifest.json                # Plugin definition & schema
+├── Widget.qml                   # Main QML Bar Widget & Dashboard panel
+├── assets/                      # Antigravity & Omarchy logos (PNG/SVG)
+├── scripts/
+│   └── antigravity_scanner.py   # High-performance telemetry scanner (< 25ms)
 ├── bin/
-│   └── omarchy-launch-antigravity   # Session restorer & workspace launcher
-├── plugin/
-│   ├── assets/                      # Antigravity logos and icons (PNG/SVG)
-│   ├── scripts/
-│   │   └── antigravity_scanner.py   # Telemetry and quota scanner
-│   ├── manifest.json                # Plugin definition & schema
-│   └── Widget.qml                   # QML Widget and Dashboard panel
-├── install.sh                       # 1-click installer
-└── README.md                        # Documentation
+│   └── omarchy-launch-antigravity # Session restorer & workspace launcher
+├── install.sh                   # Local 1-click installer
+├── LICENSE                      # MIT License
+└── README.md                    # Documentation
 ```
 
 ---
 
 ## 🚀 Installation & Usage
 
-1. Run `./install.sh` from this directory.
+### Method 1: Using Omarchy Plugin Manager (Recommended)
+```bash
+omarchy plugin add https://github.com/simonez/omarchy-antigravity.git --enable
+```
+
+### Method 2: Manual Local Installation
+1. Clone the repository and run the installer:
+```bash
+git clone https://github.com/simonez/omarchy-antigravity.git
+cd omarchy-antigravity
+./install.sh
+```
 2. In `~/.config/omarchy/shell.json`, add `"simonez.antigem"` to `bar.layout.right`:
 ```json
 {
