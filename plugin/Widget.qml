@@ -460,63 +460,28 @@ BarWidget {
               }
             }
 
-            // Right Actions: Status Pill + Settings Gear Button
-            Row {
-              spacing: Style.space(4) + 70
+            // Status Pill (WORKING / WAITING / IDLE) on the right edge
+            Rectangle {
+              id: statusPillRect
               Layout.alignment: Qt.AlignVCenter
+              height: 27
+              width: statusPillText.implicitWidth + 16
+              radius: 5
+              color: root.cardFill
+              border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
+              border.width: 1
 
-              // Status Pill (WORKING / WAITING / IDLE)
-              Rectangle {
-                id: statusPillRect
-                height: 27
-                width: statusPillText.implicitWidth + 16
-                radius: 5
-                color: root.cardFill
-                border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
-                border.width: 1
+              Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                Text {
-                  id: statusPillText
-                  anchors.centerIn: parent
-                  text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
-                  font.bold: true
-                  renderType: Text.NativeRendering
-                }
-              }
-
-              // Header Action Button (Settings gear)
-              Rectangle {
-                width: 27
-                height: 27
-                radius: 5
-                color: settingsBtnMouse.containsMouse ? root.cardHover : root.cardFill
-                border.color: (root.selectedTab === 2) ? root.primaryAccent : root.cardBorder
-                border.width: 1
-                scale: settingsBtnMouse.pressed ? 0.92 : 1.0
-
-                Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                Text {
-                  anchors.centerIn: parent
-                  text: "󰒓"
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.title
-                }
-
-                MouseArea {
-                  id: settingsBtnMouse
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: root.selectedTab = (root.selectedTab === 2) ? 0 : 2
-                }
+              Text {
+                id: statusPillText
+                anchors.centerIn: parent
+                text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
+                color: root.foreground
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                font.bold: true
+                renderType: Text.NativeRendering
               }
             }
           }
