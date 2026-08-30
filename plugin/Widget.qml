@@ -56,6 +56,7 @@ BarWidget {
   // Exact System Monitor Color Scheme
   readonly property url appIconPath: Qt.resolvedUrl("assets/antigravity_logo.png")
   readonly property url appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
+  readonly property url omarchyIconPath: Qt.resolvedUrl("assets/omarchy.png")
   readonly property color foreground: (bar && bar.foreground) ? bar.foreground : Color.foreground
   readonly property color background: Color.background
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
@@ -2282,430 +2283,88 @@ BarWidget {
                 }
               }
 
-              // Actions: Omarchy ASCII Laseretch Banner & Restart Shell
-              Column {
+              // Actions: Omarchy Logo Card (from dashboardicons.com)
+              Rectangle {
+                id: omarchyHeroCard
                 width: parent.width
-                spacing: Style.space(3)
+                implicitHeight: Math.max(48, omarchyHeroLayout.implicitHeight + Style.space(8))
+                radius: 6
+                color: omarchyMouse.containsMouse ? "#0a101d" : "#050811"
+                border.color: omarchyMouse.containsMouse ? "#38bdf8" : root.cardBorder
+                border.width: 1
+                scale: omarchyMouse.pressed ? 0.98 : 1.0
 
-                // Omarchy ASCII LaserEtch Banner (Exact Video Recreation)
-                // Omarchy ASCII Banner: ASCII Matrix Rain
-                Rectangle {
-                  id: syncBtnBox
-                  width: parent.width
-                  height: 50
-                  radius: 6
-                  clip: true
-                  color: forceSyncMouse.containsMouse ? "#0a101d" : "#050811"
-                  border.color: forceSyncMouse.containsMouse ? "#38bdf8" : root.cardBorder
-                  border.width: 1
-                  scale: forceSyncMouse.pressed ? 0.98 : 1.0
+                Behavior on scale { NumberAnimation { duration: 90 } }
+                Behavior on border.color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: 150 } }
 
-                  Behavior on scale { NumberAnimation { duration: 90 } }
-                  Behavior on border.color { ColorAnimation { duration: 150 } }
+                RowLayout {
+                  id: omarchyHeroLayout
+                  anchors.fill: parent
+                  anchors.margins: Style.space(6)
+                  spacing: Style.space(8)
 
-                  property bool animating: false
-                  property real elapsedFrames: 0.0
-                  property var heatMap: []
-                  property var sparks: []
-                  property var embers: []
-                  property var currentBolt: null
-                  property var pendingCells: []
-                  property real lastLaserX: 0.0
-                  property real lastLaserY: 25.0
+                  // Omarchy Logo Icon (from dashboardicons.com)
+                  Rectangle {
+                    width: 34
+                    height: 34
+                    radius: 6
+                    color: root.cardHover
+                    border.color: omarchyMouse.containsMouse ? "#38bdf8" : root.cardBorder
+                    border.width: 1
 
-                  // Curated 10-Row Cyberpunk Gradient Palettes
-                  readonly property var allPalettes: [
-                    // 0: Omarchy Classic (Cyan -> Blue -> Purple)
-                    ["#ffffff", "#ffffff", "#e0f7fa", "#67e8f9", "#38bdf8", "#06b6d4", "#0284c7", "#2563eb", "#6366f1", "#8b5cf6"],
-                    // 1: Cyberpunk Neon (Pink -> Rose -> Magenta -> Deep Violet)
-                    ["#ffffff", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#a21caf", "#701a75"],
-                    // 2: Matrix Hacker (Ice Lime -> Emerald -> Forest Green)
-                    ["#ffffff", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534"],
-                    // 3: Solar Synthwave (White -> Yellow -> Bright Amber -> Fiery Crimson)
-                    ["#ffffff", "#fefce8", "#fef08a", "#fde047", "#facc15", "#eab308", "#f97316", "#ea580c", "#dc2626", "#991b1b"],
-                    // 4: Nord Glacier (White -> Glacial Aqua -> Deep Arctic Teal)
-                    ["#ffffff", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59"],
-                    // 5: Vaporwave Sunset (Peach -> Fuchsia -> Purple -> Midnight Indigo)
-                    ["#ffffff", "#fff1f2", "#fed7aa", "#fdba74", "#fb923c", "#f43f5e", "#d946ef", "#a855f7", "#7c3aed", "#4338ca"],
-                    // 6: Toxic Gold (White -> Electric Lime -> Golden Amber -> Bronze)
-                    ["#ffffff", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#ca8a04", "#d97706", "#b45309", "#78350f"],
-                    // 7: Electric Amethyst (White -> Lilac -> Lavender -> Deep Velvet Purple)
-                    ["#ffffff", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#581c87"],
-                    // 8: Deep Ocean Abyss (Ice Blue -> Sky -> Azure -> Ultramarine)
-                    ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0284c7", "#0369a1", "#1d4ed8", "#1e3a8a"]
-                  ]
-                  property int paletteIndex: 0
-                  property var activeGradient: allPalettes[0]
-
-                  function randomizePalette() {
-                    var newIdx = Math.floor(Math.random() * syncBtnBox.allPalettes.length)
-                    if (newIdx === syncBtnBox.paletteIndex) {
-                      newIdx = (syncBtnBox.paletteIndex + 1) % syncBtnBox.allPalettes.length
-                    }
-                    syncBtnBox.paletteIndex = newIdx
-                    syncBtnBox.activeGradient = syncBtnBox.allPalettes[newIdx]
-                  }
-
-                  function createLightningBolt(x1, y1, x2, y2) {
-                    var dx = x2 - x1
-                    var dy = y2 - y1
-                    var dist = Math.sqrt(dx * dx + dy * dy)
-                    if (dist < 1) dist = 1
-                    var nx = -dy / dist
-                    var ny = dx / dist
-
-                    var steps = 6
-                    var pts = [{ x: x1, y: y1 }]
-                    var branches = []
-
-                    for (var i = 1; i < steps; i++) {
-                      var t = i / steps
-                      var bx = x1 + dx * t
-                      var by = y1 + dy * t
-                      var maxJitter = Math.min(22, Math.max(8, dist * 0.22))
-                      var jitter = (Math.random() - 0.5) * 2 * maxJitter
-                      var px = bx + nx * jitter
-                      var py = by + ny * jitter
-                      pts.push({ x: px, y: py })
-
-                      // 1-2 fractal side branches
-                      if (i === 2 || i === 4) {
-                        if (Math.random() > 0.35) {
-                          var bPts = [{ x: px, y: py }]
-                          var bLen = 10 + Math.random() * 14
-                          var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 10
-                          var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
-                          var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
-                          bPts.push({ x: bpx, y: bpy })
-                          branches.push(bPts)
-                        }
-                      }
-                    }
-                    pts.push({ x: x2, y: y2 })
-
-                    return {
-                      pts: pts,
-                      branches: branches,
-                      targetX: x2,
-                      targetY: y2,
-                      life: 1.0
+                    Image {
+                      id: omarchyLogoImg
+                      anchors.fill: parent
+                      anchors.margins: 4
+                      source: root.omarchyIconPath
+                      fillMode: Image.PreserveAspectFit
+                      mipmap: true
+                      smooth: true
                     }
                   }
 
-                  function startLightningDischarge() {
-                    syncBtnBox.randomizePalette()
-                    syncBtnBox.heatMap = []
-                    syncBtnBox.sparks = []
-                    syncBtnBox.embers = []
-                    syncBtnBox.currentBolt = null
-                    syncBtnBox.pendingCells = []
-                    syncBtnBox.elapsedFrames = 0.0
-                    syncBtnBox.lastLaserX = Math.random() * asciiCanvas.width
-                    syncBtnBox.lastLaserY = Math.random() * asciiCanvas.height
+                  // Titles & Tagline
+                  Column {
+                    Layout.fillWidth: true
+                    spacing: 1
 
-                    for (var r = 0; r < 10; r++) {
-                      var row = []
-                      for (var c = 0; c < 85; c++) {
-                        row.push(0.0)
-                        var ch = asciiCanvas.asciiArt[r].charAt(c)
-                        if (ch === "█" || ch === "▄" || ch === "▀") {
-                          syncBtnBox.pendingCells.push({ r: r, c: c })
-                        }
-                      }
-                      syncBtnBox.heatMap.push(row)
+                    Text {
+                      text: "Omarchy"
+                      color: omarchyMouse.containsMouse ? "#38bdf8" : root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
                     }
 
-                    // Randomize cell ignition order with lightning jumps
-                    for (var i = syncBtnBox.pendingCells.length - 1; i > 0; i--) {
-                      var j = Math.floor(Math.random() * (i + 1))
-                      var tmp = syncBtnBox.pendingCells[i]
-                      syncBtnBox.pendingCells[i] = syncBtnBox.pendingCells[j]
-                      syncBtnBox.pendingCells[j] = tmp
-                    }
-
-                    syncBtnBox.animating = true
-                    laserTimer.restart()
-                  }
-
-                  Timer {
-                    id: laserTimer
-                    interval: 16 // 60 FPS
-                    repeat: true
-                    running: syncBtnBox.animating
-
-                    onTriggered: {
-                      if (!syncBtnBox.animating) return
-
-                      syncBtnBox.elapsedFrames += 1.0
-                      var cw = asciiCanvas.width / 85
-                      var chH = asciiCanvas.height / 10
-
-                      // Exactly 1 single lightning bolt discharge per step
-                      if (syncBtnBox.pendingCells.length > 0) {
-                        var clusterSize = Math.min(syncBtnBox.pendingCells.length, 4)
-                        var targetCell = syncBtnBox.pendingCells.pop()
-                        syncBtnBox.heatMap[targetCell.r][targetCell.c] = 1.0
-
-                        for (var k = 1; k < clusterSize; k++) {
-                          var extra = syncBtnBox.pendingCells.pop()
-                          syncBtnBox.heatMap[extra.r][extra.c] = 1.0
-                        }
-
-                        var targetX = targetCell.c * cw + cw / 2
-                        var targetY = targetCell.r * chH + chH / 2
-
-                        // Create 1 single jagged fractal Lightning Bolt Discharge
-                        syncBtnBox.currentBolt = syncBtnBox.createLightningBolt(
-                          syncBtnBox.lastLaserX,
-                          syncBtnBox.lastLaserY,
-                          targetX,
-                          targetY
-                        )
-
-                        syncBtnBox.lastLaserX = targetX
-                        syncBtnBox.lastLaserY = targetY
-
-                        // Emit high-voltage electric sparks & ion discharge
-                        for (var p = 0; p < 3; p++) {
-                          syncBtnBox.sparks.push({
-                            x: targetX,
-                            y: targetY,
-                            vx: (Math.random() - 0.5) * 4.2,
-                            vy: (Math.random() - 0.6) * 3.5,
-                            life: 1.0,
-                            decay: 0.05 + Math.random() * 0.06,
-                            size: 1 + Math.random() * 1.8
-                          })
-                        }
-
-                        if (Math.random() > 0.65) {
-                          syncBtnBox.embers.push({
-                            x: targetX + (Math.random() - 0.5) * 8,
-                            y: asciiCanvas.height - 1 - Math.random() * 2,
-                            life: 1.0,
-                            decay: 0.03 + Math.random() * 0.04,
-                            size: 1 + Math.random() * 1.2
-                          })
-                        }
-                      } else if (syncBtnBox.currentBolt) {
-                        syncBtnBox.currentBolt.life -= 0.30
-                        if (syncBtnBox.currentBolt.life <= 0) {
-                          syncBtnBox.currentBolt = null
-                        }
-                      }
-
-                      // Update electric sparks
-                      for (var s = syncBtnBox.sparks.length - 1; s >= 0; s--) {
-                        var sp = syncBtnBox.sparks[s]
-                        sp.x += sp.vx
-                        sp.y += sp.vy
-                        sp.vy += 0.12
-                        sp.life -= sp.decay
-                        if (sp.life <= 0) {
-                          syncBtnBox.sparks.splice(s, 1)
-                        }
-                      }
-
-                      // Update floor embers
-                      for (var e = syncBtnBox.embers.length - 1; e >= 0; e--) {
-                        var eb = syncBtnBox.embers[e]
-                        eb.life -= eb.decay
-                        if (eb.life <= 0) {
-                          syncBtnBox.embers.splice(e, 1)
-                        }
-                      }
-
-                      // Cool down heat map from white-hot to settled gradient
-                      for (var r2 = 0; r2 < 10; r2++) {
-                        for (var c2 = 0; c2 < 85; c2++) {
-                          if (syncBtnBox.heatMap[r2] && syncBtnBox.heatMap[r2][c2] > 0.01) {
-                            syncBtnBox.heatMap[r2][c2] = Math.max(0.01, syncBtnBox.heatMap[r2][c2] - 0.045)
-                          }
-                        }
-                      }
-
-                      asciiCanvas.requestPaint()
-
-                      if (syncBtnBox.pendingCells.length === 0 && !syncBtnBox.currentBolt && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
-                        syncBtnBox.animating = false
-                        laserTimer.stop()
-                        asciiCanvas.requestPaint()
-                      }
+                    Text {
+                      text: "The R is silent. · Beautiful, Fun & Opinionated Linux"
+                      color: root.muted
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      elide: Text.ElideRight
+                      width: parent.width
                     }
                   }
 
-                  Canvas {
-                    id: asciiCanvas
-                    anchors.centerIn: parent
-                    width: Math.min(parent.width - 24, 153)
-                    height: 36
-
-                    readonly property var asciiArt: [
-                      "                                                                                     ",
-                      "  ▄█████▄ █   █ █████   ██████▄  ██ ▄█████▄   ▄█████▄ ██ █     █████ █   █ ▄█████▄   ",
-                      "    ███   █   █ ██      ██   ██  ██ ███       ███     ██ █     ██    ██  █   ███   ▄▄",
-                      "    ███   █   █ ████    ██   ██  ██ ▀████▄    ▀████▄  ██ █     ████  ██  █   ███   ██",
-                      "    ███   █████ ██      ██████▀  ██   ▀███▄     ▀███▄ ██ █     ██    ███ █   ███     ",
-                      "    ███   █   █ ██      ██  ██   ██     ███       ███ ██ █     ██    █ ███   ███     ",
-                      "    ███   █   █ ██      ██   ██  ██ ▄   ███   ▄   ███ ██ █     ██    █  ██   ███   ▄▄",
-                      "    ███   █   █ █████   ██   ██  ██ ▀█████▀   ▀█████▀ ██ █████ █████ █   █   ███   ██",
-                      "                                                                                     ",
-                      "                                                                                     "
-                    ]
-
-                    onPaint: {
-                      var ctx = getContext("2d")
-                      ctx.clearRect(0, 0, width, height)
-
-                      var cols = 85
-                      var rows = 10
-                      var cw = width / cols
-                      var ch = height / rows
-                      var isHovered = forceSyncMouse.containsMouse
-                      var grad = syncBtnBox.activeGradient || syncBtnBox.allPalettes[0]
-
-                      // 1. Draw ASCII Character Blocks (Lightning Etched)
-                      for (var r = 0; r < rows; r++) {
-                        var line = asciiArt[r]
-
-                        for (var c = 0; c < cols; c++) {
-                          var heatVal = (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c]) || 0.0
-                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden until lightning strikes
-
-                          var chChar = line.charAt(c)
-                          if (chChar === " " || chChar === "") continue
-
-                          var bx = c * cw
-                          var by = r * ch
-
-                          if (heatVal > 0.6) {
-                            ctx.fillStyle = "#ffffff" // White-hot molten flash
-                          } else if (heatVal > 0.2) {
-                            ctx.fillStyle = "#e0f7fa" // Ice cyan glow
-                          } else {
-                            ctx.fillStyle = grad[r] || "#38bdf8"
-                          }
-
-                          if (chChar === "█") {
-                            ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
-                          } else if (chChar === "▄") {
-                            ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
-                          } else if (chChar === "▀") {
-                            ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
-                          }
-                        }
-                      }
-
-                      // 2. Draw Floor Embers
-                      for (var e = 0; e < syncBtnBox.embers.length; e++) {
-                        var eb = syncBtnBox.embers[e]
-                        ctx.fillStyle = eb.life > 0.5 ? (grad[4] || "#38bdf8") : (grad[7] || "#8b5cf6")
-                        ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
-                      }
-
-                      // 3. Draw Electric Sparks
-                      for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
-                        var spk = syncBtnBox.sparks[spIdx]
-                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
-                        ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
-                      }
-
-                      // 4. Draw Exactly 1 Single Fractal Lightning Bolt Discharge (Výboj blesku)
-                      if (syncBtnBox.currentBolt && syncBtnBox.currentBolt.life > 0) {
-                        var bolt = syncBtnBox.currentBolt
-                        var bAlpha = Math.max(0.1, bolt.life)
-                        var pts = bolt.pts
-                        var branches = bolt.branches
-
-                        // A. Wide Plasma Aura
-                        ctx.strokeStyle = (grad[4] || "#38bdf8")
-                        ctx.globalAlpha = bAlpha * 0.45
-                        ctx.lineWidth = 4.8
-                        ctx.beginPath()
-                        ctx.moveTo(pts[0].x, pts[0].y)
-                        for (var i = 1; i < pts.length; i++) {
-                          ctx.lineTo(pts[i].x, pts[i].y)
-                        }
-                        ctx.stroke()
-
-                        // Branches - Aura
-                        for (var br = 0; br < branches.length; br++) {
-                          var bp = branches[br]
-                          ctx.beginPath()
-                          ctx.moveTo(bp[0].x, bp[0].y)
-                          ctx.lineTo(bp[1].x, bp[1].y)
-                          ctx.stroke()
-                        }
-
-                        // B. Electric Mid-Arc
-                        ctx.strokeStyle = (grad[7] || "#a855f7")
-                        ctx.globalAlpha = bAlpha * 0.85
-                        ctx.lineWidth = 2.4
-                        ctx.beginPath()
-                        ctx.moveTo(pts[0].x, pts[0].y)
-                        for (var j = 1; j < pts.length; j++) {
-                          ctx.lineTo(pts[j].x, pts[j].y)
-                        }
-                        ctx.stroke()
-
-                        // Branches - Mid-Arc
-                        for (var br2 = 0; br2 < branches.length; br2++) {
-                          var bp2 = branches[br2]
-                          ctx.beginPath()
-                          ctx.moveTo(bp2[0].x, bp2[0].y)
-                          ctx.lineTo(bp2[1].x, bp2[1].y)
-                          ctx.stroke()
-                        }
-                        ctx.globalAlpha = 1.0
-
-                        // C. White-Hot Lightning Core
-                        ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
-                        ctx.lineWidth = 1.1
-                        ctx.beginPath()
-                        ctx.moveTo(pts[0].x, pts[0].y)
-                        for (var k = 1; k < pts.length; k++) {
-                          ctx.lineTo(pts[k].x, pts[k].y)
-                        }
-                        ctx.stroke()
-
-                        // D. Impact Flash Corona
-                        var tx = bolt.targetX
-                        var ty = bolt.targetY
-                        ctx.fillStyle = "rgba(255, 255, 255, " + (bAlpha * 0.9).toFixed(2) + ")"
-                        ctx.fillRect(tx - 1.5, ty - 1.5, 3, 3)
-                        ctx.fillStyle = "rgba(56, 189, 248, " + (bAlpha * 0.5).toFixed(2) + ")"
-                        ctx.fillRect(tx - 3.5, ty - 3.5, 7, 7)
-                      }
-                    }
+                  // External Link Icon
+                  Text {
+                    text: "󰌹"
+                    font.family: root.iconFont
+                    font.pixelSize: Style.font.bodySmall
+                    color: omarchyMouse.containsMouse ? "#38bdf8" : root.muted
+                    anchors.verticalCenter: parent.verticalCenter
+                    rightPadding: Style.space(4)
                   }
+                }
 
-                  MouseArea {
-                    id: forceSyncMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                      syncBtnBox.startLightningDischarge()
-                      Qt.openUrlExternally("https://omarchy.org/")
-                    }
-                  }
-
-                  Connections {
-                    target: root
-                    function onRefreshingChanged() {
-                      if (root.refreshing) {
-                        syncBtnBox.startLightningDischarge()
-                      }
-                    }
-                    function onSelectedTabChanged() {
-                      if (root.selectedTab === 2) {
-                        syncBtnBox.startLightningDischarge()
-                      }
-                    }
-                  }
-
-                  Component.onCompleted: {
-                    syncBtnBox.startLightningDischarge()
+                MouseArea {
+                  id: omarchyMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: {
+                    Qt.openUrlExternally("https://omarchy.org/")
                   }
                 }
               }
