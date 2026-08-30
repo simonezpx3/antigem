@@ -797,6 +797,9 @@ BarWidget {
                     headerOmarchyLogoBox.startLightningDischarge()
                   }
                 }
+                function onSelectedTabChanged() {
+                  headerOmarchyLogoBox.startLightningDischarge()
+                }
               }
 
               Component.onCompleted: {
@@ -890,7 +893,10 @@ BarWidget {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.selectedTab = modelData.tabIndex
+                onClicked: {
+                  root.selectedTab = modelData.tabIndex
+                  headerOmarchyLogoBox.startLightningDischarge()
+                }
               }
             }
           }
