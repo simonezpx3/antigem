@@ -54,8 +54,8 @@ BarWidget {
   }
 
   // Exact System Monitor Color Scheme
-  readonly property string appIconPath: Qt.resolvedUrl("assets/antigravity_logo.png")
-  readonly property string appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
+  readonly property url appIconPath: Qt.resolvedUrl("assets/antigravity-dark.svg")
+  readonly property url appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
   readonly property color foreground: (bar && bar.foreground) ? bar.foreground : Color.foreground
   readonly property color background: Color.background
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
@@ -309,36 +309,29 @@ BarWidget {
       spacing: Style.space(4)
 
       // 1. Antigravity Logo with Heartbeat Pulse
-      Item {
-        id: logoContainer
+      Image {
+        id: barAppLogo
+        anchors.verticalCenter: parent.verticalCenter
         width: 14
         height: 14
-        anchors.verticalCenter: parent.verticalCenter
+        sourceSize.width: 14
+        sourceSize.height: 14
+        source: root.appIconPath
+        fillMode: Image.PreserveAspectFit
+        mipmap: true
+        smooth: true
+        transformOrigin: Item.Center
 
-        Image {
-          id: barAppLogo
-          anchors.centerIn: parent
-          width: 14
-          height: 14
-          sourceSize.width: 32
-          sourceSize.height: 32
-          source: root.appIconPath
-          fillMode: Image.PreserveAspectFit
-          mipmap: true
-          smooth: true
-          transformOrigin: Item.Center
+        SequentialAnimation {
+          id: barHeartbeatAnim
+          running: root.isWorking && root.pulseEnabled
+          loops: Animation.Infinite
 
-          SequentialAnimation {
-            id: barHeartbeatAnim
-            running: root.isWorking && root.pulseEnabled
-            loops: Animation.Infinite
-
-            NumberAnimation { target: barAppLogo; property: "scale"; to: 1.35; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
-            NumberAnimation { target: barAppLogo; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
-            NumberAnimation { target: barAppLogo; property: "scale"; to: 1.25; duration: root.pulseT2Up; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
-            NumberAnimation { target: barAppLogo; property: "scale"; to: 1.0; duration: root.pulseT2Down; easing.type: Easing.InOutQuad }
-            PauseAnimation { duration: root.pulsePause }
-          }
+          NumberAnimation { target: barAppLogo; property: "scale"; to: 1.35; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
+          NumberAnimation { target: barAppLogo; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
+          NumberAnimation { target: barAppLogo; property: "scale"; to: 1.25; duration: root.pulseT2Up; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+          NumberAnimation { target: barAppLogo; property: "scale"; to: 1.0; duration: root.pulseT2Down; easing.type: Easing.InOutQuad }
+          PauseAnimation { duration: root.pulsePause }
         }
       }
 
