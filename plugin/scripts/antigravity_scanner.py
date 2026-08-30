@@ -167,7 +167,7 @@ def check_gcp_api_status() -> dict[str, Any]:
         operational = False
         latency_ms = 0
 
-    status_str = "Operational" if operational else "Degraded"
+    status_str = "Online" if operational else "Offline"
     return {
         "status": status_str,
         "latencyMs": latency_ms,
@@ -192,7 +192,7 @@ def check_gcp_api_status() -> dict[str, Any]:
             {
                 "name": "Google Grounding & Search",
                 "endpoint": "google.com/search/api",
-                "status": "Operational",
+                "status": "Online" if operational else "Offline",
                 "latency": f"{max(12, latency_ms - 3)} ms" if operational else "—",
                 "tag": "Live Web Index"
             },

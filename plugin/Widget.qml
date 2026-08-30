@@ -841,13 +841,16 @@ BarWidget {
 
                 Item { Layout.fillWidth: true }
 
-                // Operational Status Pill (green dot)
+                // Online/Offline Status Pill (shifted 50px left)
                 Rectangle {
+                  id: gcpPillBox
+                  readonly property bool isOnline: (!root.gcpInfo || root.gcpInfo.status === "Online" || root.gcpInfo.status === "Operational" || (root.gcpInfo.latencyMs > 0))
+                  Layout.rightMargin: 50
                   height: 20
-                  width: gcpStatusRow.implicitWidth + 12
+                  width: gcpStatusRow.implicitWidth + 14
                   radius: 4
-                  color: Qt.rgba(163/255, 230/255, 53/255, 0.12)
-                  border.color: root.uploadColor
+                  color: isOnline ? Qt.rgba(163/255, 230/255, 53/255, 0.12) : Qt.rgba(251/255, 113/255, 133/255, 0.12)
+                  border.color: isOnline ? root.uploadColor : root.criticalColor
                   border.width: 1
 
                   Row {
@@ -859,13 +862,13 @@ BarWidget {
                       width: 6
                       height: 6
                       radius: 3
-                      color: root.uploadColor
+                      color: gcpPillBox.isOnline ? root.uploadColor : root.criticalColor
                       anchors.verticalCenter: parent.verticalCenter
                     }
 
                     Text {
-                      text: (root.gcpInfo && root.gcpInfo.status) ? root.gcpInfo.status : "Operational"
-                      color: root.uploadColor
+                      text: gcpPillBox.isOnline ? "Online" : "Offline"
+                      color: gcpPillBox.isOnline ? root.uploadColor : root.criticalColor
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
                       font.bold: true
