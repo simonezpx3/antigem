@@ -496,20 +496,18 @@ BarWidget {
               width: 27
               height: 27
               radius: 5
-              color: (root.selectedTab === 2) 
-                     ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                     : (settingsBtnMouse.containsMouse ? root.cardHover : root.cardFill)
+              color: settingsBtnMouse.containsMouse ? root.cardHover : root.cardFill
               border.color: (root.selectedTab === 2) ? root.primaryAccent : root.cardBorder
               border.width: 1
               scale: settingsBtnMouse.pressed ? 0.92 : 1.0
 
               Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-              Behavior on color { ColorAnimation { duration: 150 } }
+              Behavior on border.color { ColorAnimation { duration: 150 } }
 
               Text {
                 anchors.centerIn: parent
                 text: "󰒓"
-                color: (root.selectedTab === 2) ? root.primaryAccent : root.foreground
+                color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.title
               }
@@ -545,21 +543,19 @@ BarWidget {
               width: tabsRow.tabWidth
               radius: 6
               scale: tabMouse.pressed ? 0.92 : 1.0
-              color: (root.selectedTab === modelData.tabIndex) 
-                     ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                     : (tabMouse.containsMouse ? root.cardHover : root.cardFill)
+              color: tabMouse.containsMouse ? root.cardHover : root.cardFill
               border.color: (root.selectedTab === modelData.tabIndex) 
                             ? root.primaryAccent 
                             : (tabMouse.containsMouse ? Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.28) : root.cardBorder)
               border.width: 1
 
               Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-              Behavior on color { ColorAnimation { duration: 150 } }
+              Behavior on border.color { ColorAnimation { duration: 150 } }
 
               Text {
                 anchors.centerIn: parent
                 text: modelData.title
-                color: (root.selectedTab === modelData.tabIndex) ? root.primaryAccent : (tabMouse.containsMouse ? root.foreground : root.dim)
+                color: (root.selectedTab === modelData.tabIndex) ? root.foreground : (tabMouse.containsMouse ? root.foreground : root.dim)
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.body
                 font.bold: root.selectedTab === modelData.tabIndex
@@ -941,21 +937,19 @@ BarWidget {
                       width: launchText.implicitWidth + 14
                       height: 24
                       radius: 4
-                      color: launchMouse.containsMouse 
-                             ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.22) 
-                             : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
-                      border.color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.5)
+                      color: launchMouse.containsMouse ? root.cardHover : root.cardFill
+                      border.color: launchMouse.containsMouse ? root.primaryAccent : root.cardBorder
                       border.width: 1
                       scale: launchMouse.pressed ? 0.90 : 1.0
 
                       Behavior on scale { NumberAnimation { duration: 90 } }
-                      Behavior on color { ColorAnimation { duration: 150 } }
+                      Behavior on border.color { ColorAnimation { duration: 150 } }
 
                       Text {
                         id: launchText
                         anchors.centerIn: parent
                         text: "Open"
-                        color: root.primaryAccent
+                        color: root.foreground
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.bodySmall
                         font.bold: true
@@ -1110,20 +1104,18 @@ BarWidget {
                     width: presetText.implicitWidth + 14
                     radius: 4
                     scale: presetMouse.pressed ? 0.92 : 1.0
-                    color: (root.refreshIntervalSec === modelData) 
-                           ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                           : (presetMouse.containsMouse ? root.cardHover : root.cardFill)
+                    color: presetMouse.containsMouse ? root.cardHover : root.cardFill
                     border.color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.cardBorder
                     border.width: 1
 
                     Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
 
                     Text {
                       id: presetText
                       anchors.centerIn: parent
                       text: modelData + "s"
-                      color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : (presetMouse.containsMouse ? root.foreground : root.dim)
+                      color: root.foreground
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.body
                       font.bold: root.refreshIntervalSec === modelData
@@ -1184,20 +1176,18 @@ BarWidget {
                   width: saveText.implicitWidth + 14
                   radius: 4
                   scale: saveIntervalMouse.pressed ? 0.92 : 1.0
-                  color: isCustomActive 
-                         ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                         : (saveIntervalMouse.containsMouse ? root.cardHover : root.cardFill)
+                  color: saveIntervalMouse.containsMouse ? root.cardHover : root.cardFill
                   border.color: isCustomActive ? root.primaryAccent : root.cardBorder
                   border.width: 1
 
                   Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                  Behavior on color { ColorAnimation { duration: 150 } }
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
 
                   Text {
                     id: saveText
                     anchors.centerIn: parent
                     text: "Save"
-                    color: saveIntervalBtn.isCustomActive ? root.primaryAccent : (saveIntervalMouse.containsMouse ? root.foreground : root.dim)
+                    color: root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.bodySmall
                     font.bold: saveIntervalBtn.isCustomActive
@@ -1323,20 +1313,18 @@ BarWidget {
                       width: bpmPresetText.implicitWidth + 14
                       radius: 4
                       scale: bpmPresetMouse.pressed ? 0.92 : 1.0
-                      color: (root.pulseBpm === modelData.bpm) 
-                             ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                             : (bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill)
+                      color: bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill
                       border.color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.cardBorder
                       border.width: 1
 
                       Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                      Behavior on color { ColorAnimation { duration: 150 } }
+                      Behavior on border.color { ColorAnimation { duration: 150 } }
 
                       Text {
                         id: bpmPresetText
                         anchors.centerIn: parent
                         text: modelData.name + " (" + modelData.bpm + ")"
-                        color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : (bpmPresetMouse.containsMouse ? root.foreground : root.dim)
+                        color: root.foreground
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.bodySmall
                         font.bold: root.pulseBpm === modelData.bpm
@@ -1373,59 +1361,57 @@ BarWidget {
                     border.color: bpmCustomInput.activeFocus ? root.primaryAccent : root.cardBorder
                     border.width: 1
 
-                    TextInput {
-                      id: bpmCustomInput
-                      anchors.fill: parent
-                      anchors.leftMargin: 6
-                      anchors.rightMargin: 6
-                      verticalAlignment: TextInput.AlignVCenter
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
-                      text: String(root.pulseBpm)
-                      validator: IntValidator { bottom: 20; top: 240 }
-                      selectByMouse: true
+                  TextInput {
+                    id: bpmCustomInput
+                    anchors.fill: parent
+                    anchors.leftMargin: 6
+                    anchors.rightMargin: 6
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.body
+                    text: String(root.pulseBpm)
+                    validator: IntValidator { bottom: 20; top: 240 }
+                    selectByMouse: true
 
-                      onAccepted: root.setPulseBpm(text)
-                    }
+                    onAccepted: root.setPulseBpm(text)
+                  }
+                }
+
+                Rectangle {
+                  id: saveBpmBtn
+                  property bool isCustomActive: !([40, 60, 85, 130].includes(root.pulseBpm)) || saveBpmMouse.pressed
+                  height: 26
+                  width: bpmSaveText.implicitWidth + 14
+                  radius: 4
+                  scale: saveBpmMouse.pressed ? 0.92 : 1.0
+                  color: saveBpmMouse.containsMouse ? root.cardHover : root.cardFill
+                  border.color: isCustomActive ? root.primaryAccent : root.cardBorder
+                  border.width: 1
+
+                  Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                  Text {
+                    id: bpmSaveText
+                    anchors.centerIn: parent
+                    text: "Save"
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.bodySmall
+                    font.bold: saveBpmBtn.isCustomActive
                   }
 
-                  Rectangle {
-                    id: saveBpmBtn
-                    property bool isCustomActive: !([40, 60, 85, 130].includes(root.pulseBpm)) || saveBpmMouse.pressed
-                    height: 26
-                    width: bpmSaveText.implicitWidth + 14
-                    radius: 4
-                    scale: saveBpmMouse.pressed ? 0.92 : 1.0
-                    color: isCustomActive 
-                           ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.16) 
-                           : (saveBpmMouse.containsMouse ? root.cardHover : root.cardFill)
-                    border.color: isCustomActive ? root.primaryAccent : root.cardBorder
-                    border.width: 1
-
-                    Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
-
-                    Text {
-                      id: bpmSaveText
-                      anchors.centerIn: parent
-                      text: "Save"
-                      color: saveBpmBtn.isCustomActive ? root.primaryAccent : (saveBpmMouse.containsMouse ? root.foreground : root.dim)
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: saveBpmBtn.isCustomActive
-                    }
-
-                    MouseArea {
-                      id: saveBpmMouse
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: root.setPulseBpm(bpmCustomInput.text)
-                    }
+                  MouseArea {
+                    id: saveBpmMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.setPulseBpm(bpmCustomInput.text)
                   }
                 }
               }
+            }
             }
           }
         }
