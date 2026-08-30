@@ -1903,8 +1903,9 @@ BarWidget {
                   property bool animating: false
                   property real elapsedFrames: 0.0
                   property real totalFrames: 300.0 // 5 seconds @ 60 FPS
-                  property real laserX: 0.0
-                  property real laserY: 25.0
+                  property real plasmaX: 0.0
+                  property real plasmaY: 25.0
+                  property real targetPlasmaY: 25.0
                   property var streams: []
                   property var lockedBlocks: []
                   property var sparks: []
@@ -1928,7 +1929,9 @@ BarWidget {
                     syncBtnBox.lockedBlocks = []
                     syncBtnBox.sparks = []
                     syncBtnBox.elapsedFrames = 0.0
-                    syncBtnBox.laserX = 0.0
+                    syncBtnBox.plasmaX = 0.0
+                    syncBtnBox.plasmaY = 25.0
+                    syncBtnBox.targetPlasmaY = 25.0
 
                     for (var r = 0; r < 10; r++) {
                       var lockRow = []
@@ -1968,9 +1971,10 @@ BarWidget {
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Calculate sweeping Laser Beam X across the 5 seconds
-                      var laserProg = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.85))
-                      syncBtnBox.laserX = laserProg * asciiCanvas.width
+                      // Calculate sweeping Plasma Bod X & Y across the 5 seconds
+                      var plasmaProg = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.85))
+                      syncBtnBox.plasmaX = plasmaProg * asciiCanvas.width
+                      syncBtnBox.plasmaY += (syncBtnBox.targetPlasmaY - syncBtnBox.plasmaY) * 0.15
 
                       var allDone = syncBtnBox.elapsedFrames >= syncBtnBox.totalFrames
 
@@ -1994,17 +1998,17 @@ BarWidget {
                             var ch = asciiCanvas.asciiArt[r].charAt(c)
                             if (ch === "█" || ch === "▄" || ch === "▀") {
                               syncBtnBox.lockedBlocks[r][c] = 1.0 // Flash white!
-                              syncBtnBox.laserY = r * chH + chH / 2
+                              syncBtnBox.targetPlasmaY = r * chH + chH / 2
 
-                              // Emit cutting laser sparks
-                              if (Math.random() > 0.4) {
+                              // Emit plasma sparks radiating from the plasma point
+                              if (Math.random() > 0.35) {
                                 syncBtnBox.sparks.push({
                                   x: c * cw,
-                                  y: syncBtnBox.laserY,
-                                  vx: 0.5 + Math.random() * 2.0,
-                                  vy: (Math.random() - 0.5) * 2.2,
+                                  y: r * chH + chH / 2,
+                                  vx: (Math.random() - 0.3) * 2.5,
+                                  vy: (Math.random() - 0.5) * 2.5,
                                   life: 1.0,
-                                  decay: 0.06 + Math.random() * 0.06,
+                                  decay: 0.05 + Math.random() * 0.05,
                                   size: 1 + Math.random() * 1.5
                                 })
                               }
@@ -2026,7 +2030,6 @@ BarWidget {
                         var sp = syncBtnBox.sparks[s]
                         sp.x += sp.vx
                         sp.y += sp.vy
-                        sp.vy += 0.08
                         sp.life -= sp.decay
                         if (sp.life <= 0) {
                           syncBtnBox.sparks.splice(s, 1)
@@ -2153,39 +2156,45 @@ BarWidget {
                         }
                       }
 
-                      // 3. Draw Sparks
+                      // 3. Draw Plasma Sparks
                       for (var spIdx = 0; spIdx < syncBtnBox.sparks.length; spIdx++) {
                         var spk = syncBtnBox.sparks[spIdx]
-                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fbbf24")
+                        ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#a855f7")
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
 
-                      // 4. Draw Cutting Laser Beam & Stylus Head
-                      if (syncBtnBox.animating && syncBtnBox.laserX < width) {
-                        var lx = syncBtnBox.laserX
-                        var ly = syncBtnBox.laserY
+                      // 4. Draw Glowing Concentrated Plasma Bod (Multi-Layer Corona)
+                      if (syncBtnBox.animating && syncBtnBox.plasmaX < width) {
+                        var px = syncBtnBox.plasmaX
+                        var py = syncBtnBox.plasmaY
 
-                        // Outer Cyan Laser Aura
-                        ctx.strokeStyle = "rgba(56, 189, 248, 0.4)"
-                        ctx.lineWidth = 5.0
+                        // Layer 1: Outer Purple Plasma Field
+                        ctx.fillStyle = "rgba(139, 92, 246, 0.25)"
                         ctx.beginPath()
-                        ctx.moveTo(lx - 2, 0)
-                        ctx.lineTo(lx + 2, height)
-                        ctx.stroke()
+                        ctx.arc(px, py, 11.0, 0, Math.PI * 2)
+                        ctx.fill()
 
-                        // Core White Laser Beam
-                        ctx.strokeStyle = "#ffffff"
-                        ctx.lineWidth = 1.5
+                        // Layer 2: Mid Neon Cyan Halo
+                        ctx.fillStyle = "rgba(56, 189, 248, 0.55)"
                         ctx.beginPath()
-                        ctx.moveTo(lx - 2, 0)
-                        ctx.lineTo(lx + 2, height)
-                        ctx.stroke()
+                        ctx.arc(px, py, 6.0, 0, Math.PI * 2)
+                        ctx.fill()
 
-                        // Glowing Laser Stylus Focal Head
+                        // Layer 3: Hot White Plasma Core
                         ctx.fillStyle = "#ffffff"
                         ctx.beginPath()
-                        ctx.arc(lx, ly, 2.5, 0, Math.PI * 2)
+                        ctx.arc(px, py, 2.5, 0, Math.PI * 2)
                         ctx.fill()
+
+                        // Layer 4: Electric Micro Flares
+                        ctx.strokeStyle = "rgba(224, 247, 250, 0.8)"
+                        ctx.lineWidth = 1.0
+                        ctx.beginPath()
+                        ctx.moveTo(px - 4, py)
+                        ctx.lineTo(px + 4, py)
+                        ctx.moveTo(px, py - 4)
+                        ctx.lineTo(px, py + 4)
+                        ctx.stroke()
                       }
                     }
                   }
