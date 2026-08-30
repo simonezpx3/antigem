@@ -444,13 +444,57 @@ BarWidget {
               Layout.fillWidth: true
               spacing: 3
 
-              Text {
-                id: headerTitleText
-                text: "Antigravity"
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.heading
-                font.bold: true
+              Row {
+                spacing: Style.space(4)
+
+                Text {
+                  id: headerTitleText
+                  text: "Antigravity"
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.heading
+                  font.bold: true
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                // Status Pill (Working / Waiting / Idle) - Same size (20px) and style as Online pill
+                Rectangle {
+                  id: statusPillRect
+                  anchors.verticalCenter: parent.verticalCenter
+                  height: 20
+                  width: statusPillRow.implicitWidth + 14
+                  radius: 4
+                  color: root.isWorking ? Qt.rgba(163/255, 230/255, 53/255, 0.12) : (root.isWaiting ? Qt.rgba(97/255, 213/255, 248/255, 0.12) : root.cardFill)
+                  border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
+                  border.width: 1
+
+                  Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                  Row {
+                    id: statusPillRow
+                    anchors.centerIn: parent
+                    spacing: 4
+
+                    Rectangle {
+                      width: 6
+                      height: 6
+                      radius: 3
+                      color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.dim)
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                      id: statusPillText
+                      text: root.isWorking ? "Working" : (root.isWaiting ? "Waiting" : "Idle")
+                      color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.foreground)
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                      anchors.verticalCenter: parent.verticalCenter
+                      renderType: Text.NativeRendering
+                    }
+                  }
+                }
               }
 
               Text {
@@ -459,32 +503,6 @@ BarWidget {
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.bodySmall
                 font.bold: true
-              }
-            }
-
-            // Status Pill (WORKING / WAITING / IDLE) shifted 50px from right edge
-            Rectangle {
-              id: statusPillRect
-              Layout.alignment: Qt.AlignVCenter
-              Layout.rightMargin: 50
-              height: 27
-              width: statusPillText.implicitWidth + 16
-              radius: 5
-              color: root.cardFill
-              border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
-              border.width: 1
-
-              Behavior on border.color { ColorAnimation { duration: 150 } }
-
-              Text {
-                id: statusPillText
-                anchors.centerIn: parent
-                text: root.isWorking ? "WORKING" : (root.isWaiting ? "WAITING" : "IDLE")
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                font.bold: true
-                renderType: Text.NativeRendering
               }
             }
           }
