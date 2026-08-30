@@ -462,7 +462,7 @@ BarWidget {
 
             // Right Actions: Status Pill + Settings Gear Button
             Row {
-              spacing: Style.space(4) + 120
+              spacing: Style.space(4) + 70
               Layout.alignment: Qt.AlignVCenter
 
               // Status Pill (WORKING / WAITING / IDLE)
