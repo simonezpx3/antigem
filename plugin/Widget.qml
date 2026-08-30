@@ -372,7 +372,7 @@ BarWidget {
       if (open !== root.popupOpen) root.popupOpen = open
     }
     contentWidth: panel.fittedContentWidth(Style.space(450))
-    contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Style.space(700))
+    contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Style.space(850))
 
     Flickable {
       id: flick
@@ -983,7 +983,7 @@ BarWidget {
             }
           }
 
-          // Tools Distribution Card
+          // Tools Distribution Card (Donut Pie Chart & Stats Legend)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
@@ -998,51 +998,180 @@ BarWidget {
               anchors.centerIn: parent
               spacing: Style.space(4)
 
-              Text {
-                text: "🛠️ TOOL CALLS BREAKDOWN (TOTAL: " + root.totalToolCalls + ")"
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                font.bold: true
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: "🛠️ TOOL CALLS BREAKDOWN"
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: "Total: " + root.totalToolCalls + " calls"
+                  color: root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                }
               }
 
-              Repeater {
-                model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 4) : []
+              // Donut Chart & Legend Row
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(6)
 
-                Column {
-                  width: parent.width
-                  spacing: 2
+                // 1. Donut Pie Chart
+                Item {
+                  width: 104
+                  height: 104
 
-                  RowLayout {
-                    width: parent.width
-                    Text {
-                      text: modelData.name
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
+                  Canvas {
+                    id: toolDonutCanvas
+                    anchors.fill: parent
+                    antialiasing: true
+
+                    readonly property var sliceColors: [
+                      "#61d5f8", // Electric Cyan
+                      "#5eead4", // Mint Teal
+                      "#c7a6ff", // Lavender Purple
+                      "#a3e635", // Lime Green
+                      "#fbbf24", // Amber Gold
+                      "#f472b6", // Fuchsia Pink
+                      "#fb923c", // Warm Orange
+                      "#94a3b8"  // Slate Gray
+                    ]
+
+                    onPaint: {
+                      var ctx = getContext("2d")
+                      ctx.clearRect(0, 0, width, height)
+
+                      var tools = root.toolsList || []
+                      var total = root.totalToolCalls
+                      var cx = width / 2
+                      var cy = height / 2
+                      var outerR = width / 2 - 4
+                      var innerR = width / 2 - 18
+
+                      if (total <= 0 || tools.length === 0) {
+                        ctx.beginPath()
+                        ctx.arc(cx, cy, outerR, 0, 2 * Math.PI, false)
+                        ctx.arc(cx, cy, innerR, 2 * Math.PI, 0, true)
+                        ctx.fillStyle = Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.12)
+                        ctx.fill()
+                        return
+                      }
+
+                      var startAngle = -Math.PI / 2
+                      var gapAngle = tools.length > 1 ? 0.035 : 0
+
+                      for (var i = 0; i < tools.length; i++) {
+                        var count = Number(tools[i].count || 0)
+                        if (count <= 0) continue
+                        var sliceAngle = (count / total) * (2 * Math.PI)
+                        var endAngle = startAngle + sliceAngle - (sliceAngle > gapAngle ? gapAngle : 0)
+
+                        ctx.beginPath()
+                        ctx.arc(cx, cy, outerR, startAngle, endAngle, false)
+                        ctx.arc(cx, cy, innerR, endAngle, startAngle, true)
+                        ctx.closePath()
+
+                        ctx.fillStyle = sliceColors[i % sliceColors.length]
+                        ctx.fill()
+
+                        startAngle += sliceAngle
+                      }
                     }
-                    Item { Layout.fillWidth: true }
-                    Text {
-                      text: modelData.count + "x (" + Math.round((Number(modelData.count) / Math.max(1, root.totalToolCalls)) * 100) + "%)"
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+
+                    Connections {
+                      target: root
+                      function onToolsListChanged() { toolDonutCanvas.requestPaint() }
                     }
                   }
 
-                  // Meter Bar (Download Mint Teal #5eead4)
-                  Rectangle {
-                    width: parent.width
-                    height: 4
-                    radius: 2
-                    color: root.track
+                  // Center Total in Donut Hole
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 0
 
-                    Rectangle {
-                      height: parent.height
-                      width: Math.min(parent.width, parent.width * (Number(modelData.count) / Math.max(1, root.totalToolCalls)))
-                      radius: 2
-                      color: index === 0 ? root.cpuColor : (index === 1 ? root.downloadColor : (index === 2 ? root.memoryColor : root.loadColor))
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: {
+                        var n = root.totalToolCalls
+                        return n > 9999 ? (Math.round(n / 1000) + "k") : String(n)
+                      }
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
+                      renderType: Text.NativeRendering
+                    }
+
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: "calls"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      renderType: Text.NativeRendering
+                    }
+                  }
+                }
+
+                // 2. Legend & Meter Rows
+                Column {
+                  Layout.fillWidth: true
+                  spacing: Style.space(2)
+
+                  Repeater {
+                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 5) : []
+
+                    Column {
+                      width: parent.width
+                      spacing: 2
+
+                      RowLayout {
+                        width: parent.width
+                        spacing: Style.space(3)
+
+                        Rectangle {
+                          width: 8
+                          height: 8
+                          radius: 4
+                          color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
+                        }
+
+                        Text {
+                          text: modelData.name
+                          color: root.foreground
+                          font.family: root.fontFamily
+                          font.pixelSize: Style.font.bodySmall
+                          font.bold: true
+                          elide: Text.ElideRight
+                          Layout.fillWidth: true
+                        }
+
+                        Text {
+                          text: modelData.count + "x (" + Math.round((Number(modelData.count) / Math.max(1, root.totalToolCalls)) * 100) + "%)"
+                          color: root.dim
+                          font.family: root.fontFamily
+                          font.pixelSize: Style.font.caption
+                        }
+                      }
+
+                      Rectangle {
+                        width: parent.width
+                        height: 3
+                        radius: 1.5
+                        color: root.track
+
+                        Rectangle {
+                          height: parent.height
+                          width: Math.min(parent.width, parent.width * (Number(modelData.count) / Math.max(1, root.totalToolCalls)))
+                          radius: 1.5
+                          color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
+                        }
+                      }
                     }
                   }
                 }
