@@ -2109,8 +2109,8 @@ BarWidget {
                   Canvas {
                     id: asciiCanvas
                     anchors.centerIn: parent
-                    width: Math.min(parent.width - 24, 235)
-                    height: 35
+                    width: Math.min(parent.width - 24, 153)
+                    height: 36
 
                     readonly property var asciiArt: [
                       "                 ▄▄▄                                                                 ",
