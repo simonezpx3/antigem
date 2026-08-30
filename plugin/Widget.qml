@@ -1897,12 +1897,14 @@ BarWidget {
 
                   property bool animating: false
                   property real elapsedFrames: 0.0
-                  property real totalFrames: 300.0 // 5 seconds @ 60 FPS
-                  property real laserX: 0.0
-                  property real laserY: 25.0
+                  property real totalFrames: 80.0 // Fast ~1.3s @ 60 FPS
                   property var heatMap: []
                   property var sparks: []
                   property var embers: []
+                  property var laserBeams: []
+                  property var pendingCells: []
+                  property real lastLaserX: 0.0
+                  property real lastLaserY: 25.0
 
                   // Exact omarchy.org Vertical Gradient (Pure White -> Cyan -> Blue -> Purple)
                   readonly property var rowGradient: [
@@ -1918,20 +1920,34 @@ BarWidget {
                     "#8b5cf6"  // Row 9: Purple
                   ]
 
-                  function startLaserEtch() {
+                  function startZigZagLaser() {
                     syncBtnBox.heatMap = []
                     syncBtnBox.sparks = []
                     syncBtnBox.embers = []
+                    syncBtnBox.laserBeams = []
+                    syncBtnBox.pendingCells = []
                     syncBtnBox.elapsedFrames = 0.0
-                    syncBtnBox.laserX = 0.0
-                    syncBtnBox.laserY = 25.0
+                    syncBtnBox.lastLaserX = Math.random() * asciiCanvas.width
+                    syncBtnBox.lastLaserY = Math.random() * asciiCanvas.height
 
                     for (var r = 0; r < 10; r++) {
                       var row = []
                       for (var c = 0; c < 85; c++) {
                         row.push(0.0)
+                        var ch = asciiCanvas.asciiArt[r].charAt(c)
+                        if (ch === "█" || ch === "▄" || ch === "▀") {
+                          syncBtnBox.pendingCells.push({ r: r, c: c })
+                        }
                       }
                       syncBtnBox.heatMap.push(row)
+                    }
+
+                    // Randomize cell ignition order with zig-zag jumps
+                    for (var i = syncBtnBox.pendingCells.length - 1; i > 0; i--) {
+                      var j = Math.floor(Math.random() * (i + 1))
+                      var tmp = syncBtnBox.pendingCells[i]
+                      syncBtnBox.pendingCells[i] = syncBtnBox.pendingCells[j]
+                      syncBtnBox.pendingCells[j] = tmp
                     }
 
                     syncBtnBox.animating = true
@@ -1951,48 +1967,66 @@ BarWidget {
                       var cw = asciiCanvas.width / 85
                       var chH = asciiCanvas.height / 10
 
-                      // Progress across 85 columns over 5.0 seconds (300 frames)
-                      var progress = Math.min(1.0, syncBtnBox.elapsedFrames / (syncBtnBox.totalFrames * 0.9))
-                      var exactCol = progress * 84.0
-                      var targetCol = Math.floor(exactCol)
+                      // Burn multiple random zig-zag cells per frame for fast delivery (~1.3s)
+                      var cellsPerFrame = Math.max(3, Math.ceil(syncBtnBox.pendingCells.length / (syncBtnBox.totalFrames * 0.75)))
+                      var burnedInFrame = 0
 
-                      syncBtnBox.laserX = exactCol * cw
+                      while (syncBtnBox.pendingCells.length > 0 && burnedInFrame < cellsPerFrame) {
+                        var cell = syncBtnBox.pendingCells.pop()
+                        syncBtnBox.heatMap[cell.r][cell.c] = 1.0 // White-hot flash
+                        burnedInFrame++
 
-                      // Burn blocks up to targetCol
-                      for (var c = 0; c <= targetCol && c < 85; c++) {
-                        for (var r = 0; r < 10; r++) {
-                          if (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c] === 0.0) {
-                            var ch = asciiCanvas.asciiArt[r].charAt(c)
-                            if (ch === "█" || ch === "▄" || ch === "▀") {
-                              syncBtnBox.heatMap[r][c] = 1.0 // Flash white-hot!
-                              syncBtnBox.laserY = r * chH + chH / 2
+                        var targetX = cell.c * cw + cw / 2
+                        var targetY = cell.r * chH + chH / 2
 
-                              // Emit laser cutting sparks
-                              for (var p = 0; p < 2; p++) {
-                                syncBtnBox.sparks.push({
-                                  x: syncBtnBox.laserX,
-                                  y: syncBtnBox.laserY,
-                                  vx: 0.6 + Math.random() * 2.2,
-                                  vy: (Math.random() - 0.5) * 2.4,
-                                  life: 1.0,
-                                  decay: 0.04 + Math.random() * 0.05,
-                                  size: 1 + Math.random() * 1.5
-                                })
-                              }
+                        // Create Random Zig-Zag Laser Beam with mid-point lightning jitter
+                        var midJitterX = (syncBtnBox.lastLaserX + targetX) / 2 + (Math.random() - 0.5) * 22
+                        var midJitterY = (syncBtnBox.lastLaserY + targetY) / 2 + (Math.random() - 0.5) * 16
 
-                              if (Math.random() > 0.6) {
-                                syncBtnBox.embers.push({
-                                  x: syncBtnBox.laserX + (Math.random() - 0.5) * 4,
-                                  y: asciiCanvas.height - 1 - Math.random() * 2,
-                                  life: 1.0,
-                                  decay: 0.02 + Math.random() * 0.03,
-                                  size: 1 + Math.random() * 1.0
-                                })
-                              }
-                            } else {
-                              syncBtnBox.heatMap[r][c] = 0.001 // Empty space
-                            }
-                          }
+                        syncBtnBox.laserBeams.push({
+                          x1: syncBtnBox.lastLaserX,
+                          y1: syncBtnBox.lastLaserY,
+                          mx: midJitterX,
+                          my: midJitterY,
+                          x2: targetX,
+                          y2: targetY,
+                          life: 1.0,
+                          decay: 0.16 + Math.random() * 0.10
+                        })
+
+                        syncBtnBox.lastLaserX = targetX
+                        syncBtnBox.lastLaserY = targetY
+
+                        // Emit high-energy directional cutting sparks
+                        for (var p = 0; p < 2; p++) {
+                          syncBtnBox.sparks.push({
+                            x: targetX,
+                            y: targetY,
+                            vx: (Math.random() - 0.5) * 3.5,
+                            vy: (Math.random() - 0.6) * 3.0,
+                            life: 1.0,
+                            decay: 0.05 + Math.random() * 0.06,
+                            size: 1 + Math.random() * 1.6
+                          })
+                        }
+
+                        if (Math.random() > 0.7) {
+                          syncBtnBox.embers.push({
+                            x: targetX + (Math.random() - 0.5) * 6,
+                            y: asciiCanvas.height - 1 - Math.random() * 2,
+                            life: 1.0,
+                            decay: 0.03 + Math.random() * 0.04,
+                            size: 1 + Math.random() * 1.2
+                          })
+                        }
+                      }
+
+                      // Update zig-zag laser beams
+                      for (var b = syncBtnBox.laserBeams.length - 1; b >= 0; b--) {
+                        var beam = syncBtnBox.laserBeams[b]
+                        beam.life -= beam.decay
+                        if (beam.life <= 0) {
+                          syncBtnBox.laserBeams.splice(b, 1)
                         }
                       }
 
@@ -2001,7 +2035,7 @@ BarWidget {
                         var sp = syncBtnBox.sparks[s]
                         sp.x += sp.vx
                         sp.y += sp.vy
-                        sp.vy += 0.08
+                        sp.vy += 0.12
                         sp.life -= sp.decay
                         if (sp.life <= 0) {
                           syncBtnBox.sparks.splice(s, 1)
@@ -2021,14 +2055,14 @@ BarWidget {
                       for (var r2 = 0; r2 < 10; r2++) {
                         for (var c2 = 0; c2 < 85; c2++) {
                           if (syncBtnBox.heatMap[r2] && syncBtnBox.heatMap[r2][c2] > 0.01) {
-                            syncBtnBox.heatMap[r2][c2] = Math.max(0.01, syncBtnBox.heatMap[r2][c2] - 0.035)
+                            syncBtnBox.heatMap[r2][c2] = Math.max(0.01, syncBtnBox.heatMap[r2][c2] - 0.045)
                           }
                         }
                       }
 
                       asciiCanvas.requestPaint()
 
-                      if (syncBtnBox.elapsedFrames >= syncBtnBox.totalFrames && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
+                      if (syncBtnBox.pendingCells.length === 0 && syncBtnBox.laserBeams.length === 0 && syncBtnBox.sparks.length === 0 && syncBtnBox.embers.length === 0) {
                         syncBtnBox.animating = false
                         laserTimer.stop()
                         asciiCanvas.requestPaint()
@@ -2065,13 +2099,13 @@ BarWidget {
                       var ch = height / rows
                       var isHovered = forceSyncMouse.containsMouse
 
-                      // 1. Draw ASCII Character Blocks (Laser Bod Etched)
+                      // 1. Draw ASCII Character Blocks (Random Zig-Zag Laser Etched)
                       for (var r = 0; r < rows; r++) {
                         var line = asciiArt[r]
 
                         for (var c = 0; c < cols; c++) {
                           var heatVal = (syncBtnBox.heatMap[r] && syncBtnBox.heatMap[r][c]) || 0.0
-                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden before laser reaches here
+                          if (syncBtnBox.animating && heatVal === 0.0) continue // Hidden until laser strikes
 
                           var chChar = line.charAt(c)
                           if (chChar === " " || chChar === "") continue
@@ -2114,6 +2148,30 @@ BarWidget {
                         ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? "#38bdf8" : "#fde047")
                         ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
                       }
+
+                      // 4. Draw Random Zig-Zag Laser Beams (Jagged Electric Arc)
+                      for (var bm = 0; bm < syncBtnBox.laserBeams.length; bm++) {
+                        var bObj = syncBtnBox.laserBeams[bm]
+                        var bAlpha = Math.max(0.1, bObj.life)
+
+                        // Outer Neon Cyan Laser Glow
+                        ctx.strokeStyle = "rgba(56, 189, 248, " + (bAlpha * 0.7).toFixed(2) + ")"
+                        ctx.lineWidth = 3.0
+                        ctx.beginPath()
+                        ctx.moveTo(bObj.x1, bObj.y1)
+                        ctx.lineTo(bObj.mx, bObj.my)
+                        ctx.lineTo(bObj.x2, bObj.y2)
+                        ctx.stroke()
+
+                        // Core White-Hot Laser Beam
+                        ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
+                        ctx.lineWidth = 1.2
+                        ctx.beginPath()
+                        ctx.moveTo(bObj.x1, bObj.y1)
+                        ctx.lineTo(bObj.mx, bObj.my)
+                        ctx.lineTo(bObj.x2, bObj.y2)
+                        ctx.stroke()
+                      }
                     }
                   }
 
@@ -2123,7 +2181,7 @@ BarWidget {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      syncBtnBox.startLaserEtch()
+                      syncBtnBox.startZigZagLaser()
                       root.requestRefresh()
                     }
                   }
@@ -2132,18 +2190,18 @@ BarWidget {
                     target: root
                     function onRefreshingChanged() {
                       if (root.refreshing) {
-                        syncBtnBox.startLaserEtch()
+                        syncBtnBox.startZigZagLaser()
                       }
                     }
                     function onSelectedTabChanged() {
                       if (root.selectedTab === 2) {
-                        syncBtnBox.startLaserEtch()
+                        syncBtnBox.startZigZagLaser()
                       }
                     }
                   }
 
                   Component.onCompleted: {
-                    syncBtnBox.startLaserEtch()
+                    syncBtnBox.startZigZagLaser()
                   }
                 }
 
