@@ -54,8 +54,8 @@ BarWidget {
   }
 
   // Exact System Monitor Color Scheme
-  readonly property string appIconPath: "/home/simonez/.config/omarchy/plugins/simonez.antigem/assets/antigravity_logo.png"
-  readonly property string appIconPanelPath: "/home/simonez/.config/omarchy/plugins/simonez.antigem/assets/antigravity_logo_panel.png"
+  readonly property string appIconPath: Qt.resolvedUrl("assets/antigravity_logo.png")
+  readonly property string appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
   readonly property color foreground: (bar && bar.foreground) ? bar.foreground : Color.foreground
   readonly property color background: Color.background
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
@@ -311,16 +311,18 @@ BarWidget {
       // 1. Antigravity Logo with Heartbeat Pulse
       Item {
         id: logoContainer
-        width: 10
-        height: 10
+        width: 14
+        height: 14
         anchors.verticalCenter: parent.verticalCenter
 
         Image {
           id: barAppLogo
           anchors.centerIn: parent
-          width: 10
-          height: 10
-          source: Util.fileUrl(root.appIconPath)
+          width: 14
+          height: 14
+          sourceSize.width: 32
+          sourceSize.height: 32
+          source: root.appIconPath
           fillMode: Image.PreserveAspectFit
           mipmap: true
           smooth: true
@@ -425,7 +427,7 @@ BarWidget {
                 id: heroAppLogo
                 anchors.fill: parent
                 anchors.margins: 4
-                source: Util.fileUrl(root.appIconPanelPath)
+                source: root.appIconPanelPath
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
                 smooth: true
