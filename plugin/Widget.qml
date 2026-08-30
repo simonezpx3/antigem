@@ -312,10 +312,10 @@ BarWidget {
       Image {
         id: barAppLogo
         anchors.verticalCenter: parent.verticalCenter
-        width: 14
-        height: 14
-        sourceSize.width: 32
-        sourceSize.height: 32
+        width: 10
+        height: 10
+        sourceSize.width: 24
+        sourceSize.height: 24
         source: root.appIconPath
         fillMode: Image.PreserveAspectFit
         mipmap: true
