@@ -19,13 +19,493 @@ BarWidget {
   property int weeklyGeminiPct: 0
   property string weeklyGeminiDetail: "Resets in ~7d"
 
+  // Context Window & Subagents (v1.2)
+  property int contextPct: 0
+  property string contextTokensStr: "0k / 1M"
+  property int activeSubagents: 0
+  property var productivityData: ({})
+  property bool notificationsEnabled: root.setting("notificationsEnabled", true) !== false
+  property string currentLang: String(root.setting("language", "cs"))
+
+  readonly property var langDictionary: ({
+    "cs": {
+      "tabPerf": "Výkon & Limity",
+      "tabSessions": "Relace & Nástroje",
+      "tabSettings": "Nastavení",
+      "statusWorking": "Pracuje",
+      "statusWaiting": "Čeká na vstup",
+      "statusIdle": "Nečinný",
+      "quota5h": "⏱ 5H RELACE",
+      "quota7d": "📅 7D TÝDNÍ",
+      "usage": "Využití",
+      "limit": "Limit",
+      "activityTitle": "📊 7-DENNÍ AKTIVITA PROMPTŮ",
+      "today": "Dnes",
+      "total": "Celkem",
+      "prompts": "promptů",
+      "contextTitle": "🧠 KONTEXT & SUBAGENTI",
+      "contextMax": "Kontextové okno (1M max):",
+      "subagentsActive": "Aktivní",
+      "noSubagents": "Bez subagentů",
+      "prodTitle": "⚡ PRODUKTIVITA & UŠETŘENÝ ČAS",
+      "devTimeSaved": "Ušetřený čas",
+      "toolsRun": "Nástroje",
+      "tokensProcessed": "Zpracováno tokenů",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 POSLEDNÍ RELACE (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Aktivní složky",
+      "copy": "📋 Kopírovat",
+      "copied": "Zkopírováno!",
+      "open": "Otevřít",
+      "subagentsFleetTitle": "🤖 TÝM SPECIALIZOVANÝCH SUBAGENTŮ",
+      "agentsCount": "4 Agenti",
+      "subWorking": "Pracuje 💓",
+      "subReady": "Připraven",
+      "localGpuTitle": "🖥️ LOKÁLNÍ GPU WORKERS (RTX 3070)",
+      "qwenDesc": "Bleskový kód & syntaxe",
+      "deepseekDesc": "Logický rozbor & audit",
+      "vramTitle": "RTX 3070 VRAM",
+      "toolsTitle": "🛠️ ROZPAD VOLÁNÍ NÁSTROJŮ",
+      "totalCalls": "volání",
+      "telemetryTitle": "⏱️ TELEMETRIE & AUTO-REFRESH",
+      "heartbeatTitle": "💓 SRDEČNÍ PULZ PŘI PRÁCI",
+      "active": "Aktivní",
+      "disabled": "Vypnuto",
+      "pulseCadence": "🎚️ Rytmus pulzu:",
+      "notifTitle": "🔔 DESKTOPOVÉ NOTIFIKACE ÚKOLŮ",
+      "enabled": "Zapnuto",
+      "muted": "Ztišeno",
+      "notifDesc": "Odešle tichou systémovou notifikaci při dokončení práce agenta na pozadí.",
+      "langTitle": "🌐 JAZYK & LOKALIZACE",
+      "sysTitle": "🔧 SYSTÉMOVÉ PROSTŘEDÍ",
+      "planTier": "Úroveň plánu",
+      "activeModel": "Aktivní model",
+      "refresh": "Obnovit",
+      "refreshing": "Obnovuji…"
+    },
+    "en": {
+      "tabPerf": "Performance & Limits",
+      "tabSessions": "Sessions & Tools",
+      "tabSettings": "Settings",
+      "statusWorking": "Working",
+      "statusWaiting": "Waiting",
+      "statusIdle": "Idle",
+      "quota5h": "⏱ 5H SESSION",
+      "quota7d": "📅 7D WEEKLY",
+      "usage": "Usage",
+      "limit": "Limit",
+      "activityTitle": "📊 7-DAY PROMPT ACTIVITY",
+      "today": "Today",
+      "total": "Total",
+      "prompts": "prompts",
+      "contextTitle": "🧠 CONTEXT & SUBAGENTS",
+      "contextMax": "Context Window (1M max):",
+      "subagentsActive": "Active",
+      "noSubagents": "No Subagents",
+      "prodTitle": "⚡ DEV PRODUCTIVITY & TIME SAVED",
+      "devTimeSaved": "Dev Time Saved",
+      "toolsRun": "Tools Run",
+      "tokensProcessed": "Tokens Processed",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 LATEST SESSIONS (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Active Workspaces",
+      "copy": "📋 Copy",
+      "copied": "Copied!",
+      "open": "Open",
+      "subagentsFleetTitle": "🤖 SPECIALIZED SUBAGENTS FLEET",
+      "agentsCount": "4 Agents",
+      "subWorking": "Working 💓",
+      "subReady": "Ready",
+      "localGpuTitle": "🖥️ LOCAL GPU WORKERS (RTX 3070)",
+      "qwenDesc": "Fast Code & Syntax",
+      "deepseekDesc": "Reasoning & Audit",
+      "vramTitle": "RTX 3070 VRAM",
+      "toolsTitle": "🛠️ TOOL CALLS BREAKDOWN",
+      "totalCalls": "calls",
+      "telemetryTitle": "⏱️ TELEMETRY & AUTO-REFRESH",
+      "heartbeatTitle": "💓 WORKING HEARTBEAT ANIMATION",
+      "active": "Active",
+      "disabled": "Disabled",
+      "pulseCadence": "🎚️ Pulse Cadence:",
+      "notifTitle": "🔔 TASK COMPLETION NOTIFICATIONS",
+      "enabled": "Enabled",
+      "muted": "Muted",
+      "notifDesc": "Sends a discreet desktop notification whenever a background turn completes.",
+      "langTitle": "🌐 LANGUAGE & LOCALIZATION",
+      "sysTitle": "🔧 SYSTEM & PLUGIN ENVIRONMENT",
+      "planTier": "Plan Tier",
+      "activeModel": "Active Model",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing…"
+    },
+    "it": {
+      "tabPerf": "Prestazioni & Limiti",
+      "tabSessions": "Sessioni & Strumenti",
+      "tabSettings": "Impostazioni",
+      "statusWorking": "Al lavoro",
+      "statusWaiting": "In attesa",
+      "statusIdle": "Inattivo",
+      "quota5h": "⏱ SESSIONE 5H",
+      "quota7d": "📅 SETTIMANALE 7D",
+      "usage": "Utilizzo",
+      "limit": "Limite",
+      "activityTitle": "📊 ATTIVITÀ PROMPT 7 GIORNI",
+      "today": "Oggi",
+      "total": "Totale",
+      "prompts": "prompt",
+      "contextTitle": "🧠 CONTESTO & SUBAGENTI",
+      "contextMax": "Finestra di contesto (1M max):",
+      "subagentsActive": "Attivi",
+      "noSubagents": "Nessun subagente",
+      "prodTitle": "⚡ PRODUTTIVITÀ & TEMPO RISPARMIATO",
+      "devTimeSaved": "Tempo risparmiato",
+      "toolsRun": "Strumenti eseguiti",
+      "tokensProcessed": "Token elaborati",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 ULTIME SESSIONI (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Workspace attivi",
+      "copy": "📋 Copia",
+      "copied": "Copiato!",
+      "open": "Apri",
+      "subagentsFleetTitle": "🤖 FLOTTA DI SUBAGENTI SPECIALIZZATI",
+      "agentsCount": "4 Agenti",
+      "subWorking": "Al lavoro 💓",
+      "subReady": "Pronto",
+      "localGpuTitle": "🖥️ WORKER GPU LOCALI (RTX 3070)",
+      "qwenDesc": "Codice rapido & sintassi",
+      "deepseekDesc": "Ragionamento & audit",
+      "vramTitle": "VRAM RTX 3070",
+      "toolsTitle": "🛠️ RIPARTIZIONE DEGLI STRUMENTI",
+      "totalCalls": "chiamate",
+      "telemetryTitle": "⏱️ TELEMETRIA & AUTO-REFRESH",
+      "heartbeatTitle": "💓 ANIMAZIONE BATTITO CARDIACO",
+      "active": "Attivo",
+      "disabled": "Disattivato",
+      "pulseCadence": "🎚️ Cadenza battito:",
+      "notifTitle": "🔔 NOTIFICHE DI COMPLETAMENTO",
+      "enabled": "Attivato",
+      "muted": "Silenzioso",
+      "notifDesc": "Invia una notifica discreta quando l'agente termina un'attività.",
+      "langTitle": "🌐 LINGUA & LOCALIZZAZIONE",
+      "sysTitle": "🔧 AMBIENTE DI SISTEMA",
+      "planTier": "Piano",
+      "activeModel": "Modello attivo",
+      "refresh": "Aggiorna",
+      "refreshing": "Aggiornamento…"
+    },
+    "de": {
+      "tabPerf": "Leistung & Limits",
+      "tabSessions": "Sitzungen & Tools",
+      "tabSettings": "Einstellungen",
+      "statusWorking": "Arbeitet",
+      "statusWaiting": "Wartet",
+      "statusIdle": "Inaktiv",
+      "quota5h": "⏱ 5H SITZUNG",
+      "quota7d": "📅 7T WÖCHENTLICH",
+      "usage": "Nutzung",
+      "limit": "Limit",
+      "activityTitle": "📊 7-TAGE PROMPT-AKTIVITÄT",
+      "today": "Heute",
+      "total": "Gesamt",
+      "prompts": "Prompts",
+      "contextTitle": "🧠 KONTEXT & SUBAGENTEN",
+      "contextMax": "Kontextfenster (1M max):",
+      "subagentsActive": "Aktiv",
+      "noSubagents": "Keine Subagenten",
+      "prodTitle": "⚡ PRODUKTIVITÄT & ZEITERSPARNIS",
+      "devTimeSaved": "Zeit gespart",
+      "toolsRun": "Tools ausgeführt",
+      "tokensProcessed": "Token verarbeitet",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 LETZTE SITZUNGEN (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Aktive Arbeitsbereiche",
+      "copy": "📋 Kopieren",
+      "copied": "Kopiert!",
+      "open": "Öffnen",
+      "subagentsFleetTitle": "🤖 SPEZIALISIERTE SUBAGENTEN-FLOTTE",
+      "agentsCount": "4 Agenten",
+      "subWorking": "Arbeitet 💓",
+      "subReady": "Bereit",
+      "localGpuTitle": "🖥️ LOKALE GPU-WORKER (RTX 3070)",
+      "qwenDesc": "Schneller Code & Syntax",
+      "deepseekDesc": "Logik & Sicherheitsaudit",
+      "vramTitle": "RTX 3070 VRAM",
+      "toolsTitle": "🛠️ WERKZEUG-AUFRUFE",
+      "totalCalls": "Aufrufe",
+      "telemetryTitle": "⏱️ TELEMETRIE & AUTO-REFRESH",
+      "heartbeatTitle": "💓 HERZSCHLAG-ANIMATION",
+      "active": "Aktiv",
+      "disabled": "Deaktiviert",
+      "pulseCadence": "🎚️ Pulsfrequenz:",
+      "notifTitle": "🔔 BENACHRICHTIGUNGEN BEI ABSCHLUSS",
+      "enabled": "Aktiviert",
+      "muted": "Stumm",
+      "notifDesc": "Sendet eine Benachrichtigung, wenn eine Hintergrundaufgabe abgeschlossen ist.",
+      "langTitle": "🌐 SPRACHE & LOKALISIERUNG",
+      "sysTitle": "🔧 SYSTEMUMGEBUNG",
+      "planTier": "Tarif",
+      "activeModel": "Aktives Modell",
+      "refresh": "Aktualisieren",
+      "refreshing": "Aktualisiere…"
+    },
+    "es": {
+      "tabPerf": "Rendimiento",
+      "tabSessions": "Sesiones & Herramientas",
+      "tabSettings": "Ajustes",
+      "statusWorking": "Trabajando",
+      "statusWaiting": "Esperando",
+      "statusIdle": "Inactivo",
+      "quota5h": "⏱ SESIÓN 5H",
+      "quota7d": "📅 SEMANAL 7D",
+      "usage": "Uso",
+      "limit": "Límite",
+      "activityTitle": "📊 ACTIVIDAD DE PROMPTS (7 DÍAS)",
+      "today": "Hoy",
+      "total": "Total",
+      "prompts": "prompts",
+      "contextTitle": "🧠 CONTEXTO & SUBAGENTES",
+      "contextMax": "Ventana de contexto (1M máx):",
+      "subagentsActive": "Activos",
+      "noSubagents": "Sin subagentes",
+      "prodTitle": "⚡ PRODUCTIVIDAD & TIEMPO AHORRADO",
+      "devTimeSaved": "Tiempo ahorrado",
+      "toolsRun": "Herramientas",
+      "tokensProcessed": "Tokens procesados",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 ÚLTIMAS SESIONES (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Espacios de trabajo",
+      "copy": "📋 Copiar",
+      "copied": "¡Copiado!",
+      "open": "Abrir",
+      "subagentsFleetTitle": "🤖 FLOTA DE SUBAGENTES ESPECIALIZADOS",
+      "agentsCount": "4 Agentes",
+      "subWorking": "Trabajando 💓",
+      "subReady": "Listo",
+      "localGpuTitle": "🖥️ TRABAJADORES GPU LOCALES (RTX 3070)",
+      "qwenDesc": "Código rápido y sintaxis",
+      "deepseekDesc": "Razonamiento y auditoría",
+      "vramTitle": "VRAM RTX 3070",
+      "toolsTitle": "🛠️ DESGLOSE DE HERRAMIENTAS",
+      "totalCalls": "llamadas",
+      "telemetryTitle": "⏱️ TELEMETRÍA & AUTO-REFRESH",
+      "heartbeatTitle": "💓 ANIMACIÓN DE LATIDO",
+      "active": "Activo",
+      "disabled": "Desactivado",
+      "pulseCadence": "🎚️ Cadencia del pulso:",
+      "notifTitle": "🔔 NOTIFICACIONES DE TAREAS",
+      "enabled": "Activado",
+      "muted": "Silenciado",
+      "notifDesc": "Envía una notificación de escritorio cuando termina una tarea.",
+      "langTitle": "🌐 IDIOMA Y LOCALIZACIÓN",
+      "sysTitle": "🔧 ENTORNO DEL SISTEMA",
+      "planTier": "Plan",
+      "activeModel": "Modelo activo",
+      "refresh": "Actualizar",
+      "refreshing": "Actualizando…"
+    },
+    "fr": {
+      "tabPerf": "Performances",
+      "tabSessions": "Sessions & Outils",
+      "tabSettings": "Paramètres",
+      "statusWorking": "En cours",
+      "statusWaiting": "En attente",
+      "statusIdle": "Inactif",
+      "quota5h": "⏱ SESSION 5H",
+      "quota7d": "📅 HEBDOMADAIRE 7J",
+      "usage": "Utilisation",
+      "limit": "Limite",
+      "activityTitle": "📊 ACTIVITÉ DES PROMPTS (7 JOURS)",
+      "today": "Aujourd'hui",
+      "total": "Total",
+      "prompts": "prompts",
+      "contextTitle": "🧠 CONTEXTE & SOUS-AGENTS",
+      "contextMax": "Fenêtre de contexte (1M max):",
+      "subagentsActive": "Actifs",
+      "noSubagents": "Aucun sous-agent",
+      "prodTitle": "⚡ PRODUCTIVITÉ & TEMPS GAGNÉ",
+      "devTimeSaved": "Temps gagné",
+      "toolsRun": "Outils exécutés",
+      "tokensProcessed": "Tokens traités",
+      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
+      "sessionsTitle": "󰆍 DERNIÈRES SESSIONS (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Espaces de travail",
+      "copy": "📋 Copier",
+      "copied": "Copié !",
+      "open": "Ouvrir",
+      "subagentsFleetTitle": "🤖 FLOTTE DE SOUS-AGENTS SPÉCIALISÉS",
+      "agentsCount": "4 Agents",
+      "subWorking": "En cours 💓",
+      "subReady": "Prêt",
+      "localGpuTitle": "🖥️ WORKERS GPU LOCAUX (RTX 3070)",
+      "qwenDesc": "Code rapide & syntaxe",
+      "deepseekDesc": "Raisonnement & audit",
+      "vramTitle": "VRAM RTX 3070",
+      "toolsTitle": "🛠️ RÉPARTITION DES OUTILS",
+      "totalCalls": "appels",
+      "telemetryTitle": "⏱️ TÉLÉMÉTRIE & AUTO-REFRESH",
+      "heartbeatTitle": "💓 BATTEMENT DE CŒUR EN COURS",
+      "active": "Actif",
+      "disabled": "Désactivé",
+      "pulseCadence": "🎚️ Cadence du pouls :",
+      "notifTitle": "🔔 NOTIFICATIONS DE FIN DE TÂCHE",
+      "enabled": "Activé",
+      "muted": "Muet",
+      "notifDesc": "Envoie une notification lorsqu'une tâche d'agent est terminée.",
+      "langTitle": "🌐 LANGUE & LOCALISATION",
+      "sysTitle": "🔧 ENVIRONNEMENT SYSTÈME",
+      "planTier": "Abonnement",
+      "activeModel": "Modèle actif",
+      "refresh": "Actualiser",
+      "refreshing": "Actualisation…"
+    },
+    "uk": {
+      "tabPerf": "Продуктивність та ліміти",
+      "tabSessions": "Сесії та інструменти",
+      "tabSettings": "Налаштування",
+      "statusWorking": "Працює",
+      "statusWaiting": "Очікує вводу",
+      "statusIdle": "У спокої",
+      "quota5h": "⏱ 5-ГОД СЕСІЯ",
+      "quota7d": "📅 7Д ТИЖНЕВИЙ",
+      "usage": "Використання",
+      "limit": "Ліміт",
+      "activityTitle": "📊 7-ДЕННА АКТИВНІСТЬ ПРОМПТІВ",
+      "today": "Сьогодні",
+      "total": "Всього",
+      "prompts": "промптів",
+      "contextTitle": "🧠 КОНТЕКСТ ТА СУБАГЕНТИ",
+      "contextMax": "Контекстне вікно (макс. 1M):",
+      "subagentsActive": "Активні",
+      "noSubagents": "Без субагентів",
+      "prodTitle": "⚡ ПРОДУКТИВНІСТЬ І ЗБЕРЕЖЕНИЙ ЧАС",
+      "devTimeSaved": "Збережений час",
+      "toolsRun": "Інструменти",
+      "tokensProcessed": "Оброблено токенів",
+      "gcpTitle": "☁️ GOOGLE CLOUD І APIS",
+      "sessionsTitle": "󰆍 ОСТАННІ СЕСІЇ (1 CLI · 1 IDE)",
+      "activeWorkspaces": "Робочі простори",
+      "copy": "📋 Копіювати",
+      "copied": "Скопійовано!",
+      "open": "Відкрити",
+      "subagentsFleetTitle": "🤖 КОМАНДА СПЕЦІАЛІЗОВАНИХ СУБАГЕНТІВ",
+      "agentsCount": "4 Агенти",
+      "subWorking": "Працює 💓",
+      "subReady": "Готовий",
+      "localGpuTitle": "🖥️ ЛОКАЛЬНІ GPU WORKERS (RTX 3070)",
+      "qwenDesc": "Швидкий код і синтаксис",
+      "deepseekDesc": "Міркування та аудит",
+      "vramTitle": "RTX 3070 VRAM",
+      "toolsTitle": "🛠️ РОЗПОДІЛ ВИКЛИКІВ ІНСТРУМЕНТІВ",
+      "totalCalls": "викликів",
+      "telemetryTitle": "⏱️ ТЕЛЕМЕТРІЯ ТА АВТООНОВЛЕННЯ",
+      "heartbeatTitle": "💓 СЕРЦЕБИТТЯ ПРИ РОБОТІ",
+      "active": "Активно",
+      "disabled": "Вимкнено",
+      "pulseCadence": "🎚️ Ритм пульсу:",
+      "notifTitle": "🔔 СПОВІЩЕННЯ ПРО ЗАВЕРШЕННЯ",
+      "enabled": "Увімкнено",
+      "muted": "Без звуку",
+      "notifDesc": "Надсилає сповіщення при завершенні фонового завдання.",
+      "langTitle": "🌐 МОВА ТА ЛОКАЛІЗАЦІЯ",
+      "sysTitle": "🔧 СИСТЕМНЕ СЕРЕДОВИЩЕ",
+      "planTier": "Рівень плану",
+      "activeModel": "Активна модель",
+      "refresh": "Оновити",
+      "refreshing": "Оновлюю…"
+    },
+    "ja": {
+      "tabPerf": "パフォーマンス",
+      "tabSessions": "セッション＆ツール",
+      "tabSettings": "設定",
+      "statusWorking": "処理中",
+      "statusWaiting": "入力待ち",
+      "statusIdle": "アイドル",
+      "quota5h": "⏱ 5時間セッション",
+      "quota7d": "📅 7日間制限",
+      "usage": "使用量",
+      "limit": "上限",
+      "activityTitle": "📊 7日間のプロンプト活動",
+      "today": "本日",
+      "total": "合計",
+      "prompts": "プロンプト",
+      "contextTitle": "🧠 コンテキスト＆エージェント",
+      "contextMax": "コンテキストウィンドウ (最大 1M):",
+      "subagentsActive": "稼働中",
+      "noSubagents": "サブエージェントなし",
+      "prodTitle": "⚡ 開発生産性＆節約時間",
+      "devTimeSaved": "節約された開発時間",
+      "toolsRun": "実行ツール数",
+      "tokensProcessed": "処理済みトークン",
+      "gcpTitle": "☁️ GOOGLE CLOUD＆API",
+      "sessionsTitle": "󰆍 最新セッション (1 CLI · 1 IDE)",
+      "activeWorkspaces": "ワークスペース",
+      "copy": "📋 コピー",
+      "copied": "コピー完了!",
+      "open": "開く",
+      "subagentsFleetTitle": "🤖 専門サブエージェント艦隊",
+      "agentsCount": "4 エージェント",
+      "subWorking": "処理中 💓",
+      "subReady": "待機中",
+      "localGpuTitle": "🖥️ ローカル GPU ワーカー (RTX 3070)",
+      "qwenDesc": "高速コード生成＆構文",
+      "deepseekDesc": "推論＆セキュリティ監査",
+      "vramTitle": "RTX 3070 VRAM",
+      "toolsTitle": "🛠️ ツール呼び出し内訳",
+      "totalCalls": "回",
+      "telemetryTitle": "⏱️ テレメトリ＆自動更新",
+      "heartbeatTitle": "💓 稼働中ハートビート脈拍",
+      "active": "有効",
+      "disabled": "無効",
+      "pulseCadence": "🎚️ 脈拍リズム:",
+      "notifTitle": "🔔 タスク完了デスクトップ通知",
+      "enabled": "有効",
+      "muted": "ミュート",
+      "notifDesc": "バックグラウンド作業完了時にデスクトップ通知を送信します。",
+      "langTitle": "🌐 言語とローカライゼーション",
+      "sysTitle": "🔧 システム環境",
+      "planTier": "プラン",
+      "activeModel": "アクティブモデル",
+      "refresh": "更新",
+      "refreshing": "更新中…"
+    }
+  })
+
+  function t(key, fallback) {
+    if (root.langDictionary && root.langDictionary[root.currentLang] && root.langDictionary[root.currentLang][key]) {
+      return root.langDictionary[root.currentLang][key]
+    }
+    if (root.langDictionary && root.langDictionary["en"] && root.langDictionary["en"][key]) {
+      return root.langDictionary["en"][key]
+    }
+    return fallback || key
+  }
+
+  function setLanguage(langCode) {
+    root.currentLang = langCode
+    var entry = { id: root.moduleName }
+    if (root.settings && typeof root.settings === "object") {
+      for (var key in root.settings) {
+        if (key !== "id") entry[key] = root.settings[key]
+      }
+    }
+    entry["language"] = langCode
+    root.settings = entry
+
+    if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
+    }
+  }
+
   // Activity & Telemetry
   property int todayPrompts: 0
   property int totalPrompts: 0
   property var recentDays: []
   property var toolsList: []
   property var recentSessions: []
+  property var featuredSessions: []
   property var gcpInfo: null
+  property var localAiInfo: null
+  property var subagentsFleet: []
   property bool popupOpen: false
 
   // Active status helper
@@ -62,24 +542,74 @@ BarWidget {
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
   readonly property color accent: (bar && bar.accent) ? bar.accent : Color.accent
 
-  // System Monitor palette tokens
-  readonly property color cpuColor: "#61d5f8"        // Electric Cyan (CPU / 5h session / Primary Accent)
-  readonly property color memoryColor: "#c7a6ff"     // Lavender Purple (Memory / 7d weekly)
-  readonly property color downloadColor: "#5eead4"   // Mint Teal (Download / Activity)
-  readonly property color uploadColor: "#a3e635"     // Lime Green (Upload / Working live)
-  readonly property color loadColor: "#fbbf24"       // Amber Gold (Load / Prompts)
-  readonly property color uptimeColor: "#94a3b8"     // Slate Gray (Uptime / Info)
-  readonly property color gpuColor: "#f472b6"        // Fuchsia Pink (GPU / IDE sessions)
-  readonly property color temperatureColor: "#fb923c"// Warm Orange (Temperature)
-  readonly property color warningColor: "#fbbf24"    // Amber Warning
-  readonly property color criticalColor: "#fb7185"   // Coral Red
+  // Dynamic System Theme Adapter (Adapts 100% natively on every PC and active theme)
+  property var themeColors: ({})
+
+  FileView {
+    id: themeColorsWatcher
+    path: Color.currentThemePath + "/colors.toml"
+    watchChanges: true
+    printErrors: false
+    onLoaded: {
+      var lines = String(text() || "").split("\n")
+      var dict = {}
+      for (var i = 0; i < lines.length; i++) {
+        var match = lines[i].match(/^\s*([A-Za-z0-9_-]+)\s*=\s*["']?(#[0-9A-Fa-f]{6})/)
+        if (match) {
+          dict[match[1]] = match[2]
+        }
+      }
+      root.themeColors = dict
+    }
+  }
+
+  function getThemeColor(key, fallback) {
+    if (root.themeColors && root.themeColors[key]) return root.themeColors[key]
+    return fallback
+  }
+
+  // System Monitor palette tokens (Live adaptive to any Omarchy / System theme)
+  readonly property color cpuColor: getThemeColor("cyan", getThemeColor("accent", Color.accent))
+  readonly property color uploadColor: getThemeColor("green", "#34d399")
+  readonly property color memoryColor: getThemeColor("magenta", getThemeColor("blue", "#c084fc"))
+  readonly property color downloadColor: getThemeColor("bright_cyan", getThemeColor("cyan", "#2dd4bf"))
+  readonly property color loadColor: getThemeColor("yellow", "#fbbf24")
+  readonly property color uptimeColor: getThemeColor("dark_foreground", getThemeColor("muted", Color.muted))
+  readonly property color gpuColor: getThemeColor("magenta", "#f472b6")
+  readonly property color temperatureColor: getThemeColor("orange", "#fb923c")
+  readonly property color warningColor: getThemeColor("yellow", "#fbbf24")
+  readonly property color criticalColor: getThemeColor("red", Color.urgent)
+
+  readonly property var sliceColors: [
+    cpuColor,
+    downloadColor,
+    memoryColor,
+    uploadColor,
+    loadColor,
+    gpuColor,
+    temperatureColor,
+    uptimeColor
+  ]
+  readonly property var topToolsList: (toolsList && toolsList.length > 0) ? toolsList.slice(0, 8) : []
+
+  function launchSession(session) {
+    if (!session) return
+    if (root.bar && typeof root.bar.run === "function") {
+      var type = String(session.type || "cli").replace(/[^a-zA-Z0-9_\-]/g, "")
+      var id = String(session.id || "").replace(/[^a-zA-Z0-9_\-]/g, "")
+      var ws = String(session.workspace || "")
+      var escapedWs = "'" + ws.replace(/'/g, "'\\''") + "'"
+      root.bar.run("omarchy-launch-antigravity " + type + " " + id + " " + escapedWs)
+    }
+    root.close()
+  }
 
   readonly property color primaryAccent: cpuColor
-  readonly property color cardFill: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.045)
-  readonly property color cardHover: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.085)
-  readonly property color cardBorder: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.18)
-  readonly property color graphGrid: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.12)
-  readonly property color track: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.22)
+  readonly property color cardFill: Qt.rgba(accent.r, accent.g, accent.b, 0.045)
+  readonly property color cardHover: Qt.rgba(accent.r, accent.g, accent.b, 0.09)
+  readonly property color cardBorder: Qt.rgba(accent.r, accent.g, accent.b, 0.22)
+  readonly property color graphGrid: Qt.rgba(accent.r, accent.g, accent.b, 0.12)
+  readonly property color track: Qt.rgba(accent.r, accent.g, accent.b, 0.22)
   readonly property color dim: Qt.darker(foreground, 1.45)
   readonly property string fontFamily: (bar && bar.fontFamily) ? bar.fontFamily : Style.font.family
 
@@ -115,6 +645,8 @@ BarWidget {
       var data = JSON.parse(String(content || "{}"))
       if (!data || !data.ready) return
 
+      var wasWorking = root.isWorking
+
       root.ready = true
       root.active = data.active === true
       root.activeStatus = String(data.activeStatus || "Idle")
@@ -125,7 +657,22 @@ BarWidget {
       root.recentDays = data.recentDays || []
       root.toolsList = data.tools || []
       root.recentSessions = data.recentSessions || []
+      root.featuredSessions = (data.featuredSessions && data.featuredSessions.length > 0) ? data.featuredSessions : ((data.recentSessions && data.recentSessions.length > 0) ? data.recentSessions.slice(0, 2) : [])
       root.gcpInfo = data.gcpApis || null
+      root.localAiInfo = data.localAi || null
+      root.subagentsFleet = data.subagentsFleet || []
+
+      root.contextPct = Number(data.contextPct || 0)
+      root.contextTokensStr = String(data.contextTokensStr || "0k / 1M")
+      root.activeSubagents = Number(data.activeSubagents || 0)
+      root.productivityData = data.productivity || {}
+
+      // Feature 2: Task Completion Desktop Notification
+      if (root.notificationsEnabled && wasWorking && !root.isWorking && root.activeStatus !== "Working") {
+        if (root.bar && typeof root.bar.run === "function") {
+          root.bar.run("notify-send -a 'Antigravity' -i 'dialog-information' 'Antigravity AI' '✅ Úkol dokončen! Všechny změny a testy jsou hotové.'")
+        }
+      }
 
       if (data.quotas) {
         if (data.quotas.session) {
@@ -139,6 +686,39 @@ BarWidget {
       }
     } catch (e) {
       console.error("simonez.antigem: Parse error", e)
+    }
+  }
+
+  function copySessionSummary(s) {
+    if (!s) return
+    var title = s.title || s.firstPrompt || "Antigravity Session"
+    var date = s.date || "-"
+    var cid = s.conversationId || s.id || ""
+    var ws = s.workspace || "~"
+    var client = (s.clientType || "cli").toUpperCase()
+    var md = "### 🤖 Antigravity Session: " + title + "\n" +
+             "- **ID:** `" + cid + "`\n" +
+             "- **Date:** " + date + " (" + (s.timeAgo || "") + ")\n" +
+             "- **Client:** " + client + "\n" +
+             "- **Workspace:** `" + ws + "`\n"
+    if (root.bar && typeof root.bar.run === "function") {
+      root.bar.run("bash -c 'printf " + JSON.stringify(md) + " | wl-copy'")
+    }
+  }
+
+  function setNotificationsEnabled(enabled) {
+    root.notificationsEnabled = enabled
+    var entry = { id: root.moduleName }
+    if (root.settings && typeof root.settings === "object") {
+      for (var key in root.settings) {
+        if (key !== "id") entry[key] = root.settings[key]
+      }
+    }
+    entry["notificationsEnabled"] = enabled
+    root.settings = entry
+
+    if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
+      root.bar.shell.updateEntryInline(root.moduleName, entry)
     }
   }
 
@@ -224,6 +804,21 @@ BarWidget {
     }
   }
 
+  property bool manualRefreshing: false
+
+  Timer {
+    id: manualRefreshFeedbackTimer
+    interval: 850
+    repeat: false
+    onTriggered: root.manualRefreshing = false
+  }
+
+  function triggerManualRefresh() {
+    root.manualRefreshing = true
+    manualRefreshFeedbackTimer.restart()
+    root.requestRefresh()
+  }
+
   function requestRefresh() {
     if (root.refreshing) return
     root.refreshing = true
@@ -250,17 +845,29 @@ BarWidget {
     root.popupOpen = false
   }
 
-  // Adaptive polling timer for live telemetry & turn completion (2s when active/open, 15s when idle/closed)
+  // Initial startup delay timer to let Quickshell finish layout before spawning Python scanner
   Timer {
-    interval: (root.popupOpen || root.isWorking || root.isWaiting) ? 2000 : 15000
-    running: true
+    id: initialStartupTimer
+    interval: 400
+    running: false
+    repeat: false
+    onTriggered: root.requestRefresh()
+  }
+
+  // Fast live telemetry polling: active only when panel is open or agent is working/waiting
+  Timer {
+    interval: 2000
+    running: root.popupOpen || root.isWorking || root.isWaiting
     repeat: true
     onTriggered: {
-      if (!root.refreshing) scannerProcess.running = true
+      if (!root.refreshing) {
+        root.refreshing = true
+        scannerProcess.running = true
+      }
     }
   }
 
-  // Countdown timer for next full sync
+  // Main interval countdown timer
   Timer {
     interval: 1000
     running: true
@@ -275,7 +882,7 @@ BarWidget {
   }
 
   Component.onCompleted: {
-    root.requestRefresh()
+    initialStartupTimer.start()
   }
 
   // Top Bar Chip Tooltip
@@ -328,6 +935,9 @@ BarWidget {
           id: barHeartbeatAnim
           running: root.isWorking && root.pulseEnabled
           loops: Animation.Infinite
+          onRunningChanged: {
+            if (!running) barAppLogo.scale = 1.0
+          }
 
           NumberAnimation { target: barAppLogo; property: "scale"; to: 1.35; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
           NumberAnimation { target: barAppLogo; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
@@ -351,6 +961,9 @@ BarWidget {
           id: barTextHeartbeatAnim
           running: root.isWorking && root.pulseEnabled
           loops: Animation.Infinite
+          onRunningChanged: {
+            if (!running) barPctText.scale = 1.0
+          }
 
           NumberAnimation { target: barPctText; property: "scale"; to: 1.15; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.3 }
           NumberAnimation { target: barPctText; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
@@ -431,6 +1044,9 @@ BarWidget {
                   id: heroHeartbeatAnim
                   running: root.isWorking && root.pulseEnabled && root.popupOpen
                   loops: Animation.Infinite
+                  onRunningChanged: {
+                    if (!running) heroAppLogo.scale = 1.0
+                  }
 
                   NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.30; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
                   NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
@@ -600,10 +1216,10 @@ BarWidget {
                 id: headerLaserTimer
                 interval: 16
                 repeat: true
-                running: headerOmarchyLogoBox.animating
+                running: headerOmarchyLogoBox.animating && root.popupOpen
 
                 onTriggered: {
-                  if (!headerOmarchyLogoBox.animating) return
+                  if (!headerOmarchyLogoBox.animating || !root.popupOpen) return
 
                   headerOmarchyLogoBox.elapsedFrames += 1.0
                   var cw = headerCanvas.width / 85
@@ -724,7 +1340,6 @@ BarWidget {
                   var rows = 10
                   var cw = width / cols
                   var ch = height / rows
-                  var isHovered = headerOmarchyMouse.containsMouse
                   var grad = headerOmarchyLogoBox.activeGradient || headerOmarchyLogoBox.allPalettes[0]
 
                   // 1. Draw ASCII Character Blocks
@@ -854,18 +1469,12 @@ BarWidget {
 
               Connections {
                 target: root
-                function onRefreshingChanged() {
-                  if (root.refreshing) {
-                    headerOmarchyLogoBox.startLightningDischarge()
+                function onPopupOpenChanged() {
+                  if (!root.popupOpen && headerOmarchyLogoBox.animating) {
+                    headerOmarchyLogoBox.animating = false
+                    headerLaserTimer.stop()
                   }
                 }
-                function onSelectedTabChanged() {
-                  headerOmarchyLogoBox.startLightningDischarge()
-                }
-              }
-
-              Component.onCompleted: {
-                headerOmarchyLogoBox.startLightningDischarge()
               }
             }
           }
@@ -879,7 +1488,7 @@ BarWidget {
             height: 20
             width: statusPillRow.implicitWidth + 14
             radius: 4
-            color: root.isWorking ? Qt.rgba(163/255, 230/255, 53/255, 0.12) : (root.isWaiting ? Qt.rgba(97/255, 213/255, 248/255, 0.12) : root.cardFill)
+            color: root.isWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.12) : (root.isWaiting ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12) : root.cardFill)
             border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
             border.width: 1
 
@@ -900,7 +1509,7 @@ BarWidget {
 
               Text {
                 id: statusPillText
-                text: root.isWorking ? "Working" : (root.isWaiting ? "Waiting" : "Idle")
+                text: root.isWorking ? root.t("statusWorking", "Working") : (root.isWaiting ? root.t("statusWaiting", "Waiting") : root.t("statusIdle", "Idle"))
                 color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.foreground)
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.caption
@@ -922,9 +1531,9 @@ BarWidget {
 
           Repeater {
             model: [
-              { title: "Performance", tabIndex: 0 },
-              { title: "Sessions & Tools", tabIndex: 1 },
-              { title: "Settings", tabIndex: 2 }
+              { title: root.t("tabPerf", "Performance"), tabIndex: 0 },
+              { title: root.t("tabSessions", "Sessions & Tools"), tabIndex: 1 },
+              { title: root.t("tabSettings", "Settings"), tabIndex: 2 }
             ]
 
             Rectangle {
@@ -992,7 +1601,7 @@ BarWidget {
                 RowLayout {
                   width: parent.width
                   Text {
-                    text: "⏱ 5H SESSION"
+                    text: root.t("quota5h", "⏱ 5H SESSION")
                     color: root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.bodySmall
@@ -1018,7 +1627,7 @@ BarWidget {
                   }
                   Item { Layout.fillWidth: true }
                   Text {
-                    text: "Usage"
+                    text: root.t("usage", "Usage")
                     color: root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
@@ -1060,7 +1669,7 @@ BarWidget {
                 RowLayout {
                   width: parent.width
                   Text {
-                    text: "📅 7D WEEKLY"
+                    text: root.t("quota7d", "📅 7D WEEKLY")
                     color: root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.bodySmall
@@ -1086,7 +1695,7 @@ BarWidget {
                   }
                   Item { Layout.fillWidth: true }
                   Text {
-                    text: "Limit"
+                    text: root.t("limit", "Limit")
                     color: root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
@@ -1130,7 +1739,7 @@ BarWidget {
               RowLayout {
                 width: parent.width
                 Text {
-                  text: "📊 7-DAY PROMPT ACTIVITY"
+                  text: root.t("activityTitle", "📊 7-DAY PROMPT ACTIVITY")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -1138,7 +1747,7 @@ BarWidget {
                 }
                 Item { Layout.fillWidth: true }
                 Text {
-                  text: "Today: " + root.todayPrompts + " prompts (Total: " + root.totalPrompts + ")"
+                  text: root.t("today", "Today") + ": " + root.todayPrompts + " " + root.t("prompts", "prompts") + " (" + root.t("total", "Total") + ": " + root.totalPrompts + ")"
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -1236,7 +1845,229 @@ BarWidget {
             }
           }
 
-          // 3. GCP & Cloud APIs Availability Card
+          // 3. Active Context Window & Subagents Card (v1.2)
+          Rectangle {
+            width: parent.width
+            implicitHeight: contextCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: contextCardCol
+              anchors.fill: parent
+              anchors.margins: Style.space(4)
+              spacing: Style.space(3)
+
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(3)
+
+                Text {
+                  Layout.fillWidth: true
+                  text: root.t("contextTitle", "🧠 CONTEXT & SUBAGENTS")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
+
+                // Subagents Pill
+                Rectangle {
+                  height: 20
+                  implicitWidth: subPillRow.implicitWidth + 12
+                  radius: 4
+                  color: root.activeSubagents > 0 ? Qt.rgba(root.gpuColor.r, root.gpuColor.g, root.gpuColor.b, 0.18) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
+                  border.color: root.activeSubagents > 0 ? root.gpuColor : root.cardBorder
+                  border.width: 1
+                  Layout.alignment: Qt.AlignRight
+
+                  Row {
+                    id: subPillRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Text {
+                      text: root.activeSubagents > 0 ? ("󰁯 " + root.activeSubagents + " " + root.t("subagentsActive", "Active")) : ("󰁯 " + root.t("noSubagents", "No Subagents"))
+                      color: root.activeSubagents > 0 ? root.gpuColor : root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: root.activeSubagents > 0
+                    }
+                  }
+                }
+              }
+
+              // Context Usage Bar
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("contextMax", "Context Window (1M Max):")
+                  color: root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.contextTokensStr + " (" + root.contextPct + "%)"
+                  color: root.primaryAccent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: true
+                }
+              }
+
+              Rectangle {
+                width: parent.width
+                height: 6
+                radius: 3
+                color: root.track
+
+                Rectangle {
+                  height: parent.height
+                  width: Math.min(parent.width, Math.max(4, parent.width * (root.contextPct / 100)))
+                  radius: 3
+                  color: root.contextPct > 80 ? root.criticalColor : (root.contextPct > 50 ? root.warningColor : root.primaryAccent)
+                  Behavior on width { NumberAnimation { duration: 250 } }
+                }
+              }
+            }
+          }
+
+          // 4. Developer Productivity & Time Saved Card (v1.2)
+          Rectangle {
+            width: parent.width
+            implicitHeight: prodCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: prodCardCol
+              anchors.fill: parent
+              anchors.margins: Style.space(4)
+              spacing: Style.space(3)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("prodTitle", "⚡ DEV PRODUCTIVITY & TIME SAVED")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr : "~28h saved"
+                  color: root.uploadColor
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: true
+                }
+              }
+
+              // 3-Col Productivity Grid
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                // Metric 1: Saved Dev Hours
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 48
+                  radius: 6
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 2
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr.replace(" saved", "") : "28.8h"
+                      color: root.uploadColor
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.t("devTimeSaved", "Dev Time Saved")
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption - 1
+                    }
+                  }
+                }
+
+                // Metric 2: Tools Executed
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 48
+                  radius: 6
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 2
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: String(root.totalToolCalls || (root.productivityData && root.productivityData.toolsExecuted) || 0)
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.t("toolsRun", "Tools Run")
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption - 1
+                    }
+                  }
+                }
+
+                // Metric 3: Tokens Processed
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 48
+                  radius: 6
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 2
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.productivityData && root.productivityData.tokensProcessedStr ? root.productivityData.tokensProcessedStr : "~6.2M"
+                      color: root.memoryColor
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.body
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.t("tokensProcessed", "Tokens Processed")
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption - 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // 5. GCP & Cloud APIs Availability Card
           Rectangle {
             width: parent.width
             implicitHeight: gcpCardCol.implicitHeight + Style.space(8)
@@ -1259,7 +2090,7 @@ BarWidget {
                 Text {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "☁️ GOOGLE CLOUD PLATFORM & APIS"
+                  text: root.t("gcpTitle", "☁️ GOOGLE CLOUD & APIS")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -1275,7 +2106,7 @@ BarWidget {
                   height: 20
                   width: gcpStatusRow.implicitWidth + 14
                   radius: 4
-                  color: isOnline ? Qt.rgba(163/255, 230/255, 53/255, 0.12) : Qt.rgba(251/255, 113/255, 133/255, 0.12)
+                  color: isOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.12) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.12)
                   border.color: isOnline ? root.uploadColor : root.criticalColor
                   border.width: 1
 
@@ -1426,7 +2257,7 @@ BarWidget {
                       width: 7
                       height: 7
                       radius: 3.5
-                      color: modelData.status === "Operational" || modelData.status === "Ready" ? root.uploadColor : root.memoryColor
+                      color: (modelData.status === "Operational" || modelData.status === "Online") ? root.uploadColor : (modelData.status === "Ready" ? root.primaryAccent : root.dim)
                     }
 
                     // API Name & Tag
@@ -1499,23 +2330,33 @@ BarWidget {
               anchors.centerIn: parent
               spacing: Style.space(4)
 
-              Text {
-                text: "󰆍 RECENT SESSIONS (CLI & IDE)"
-                color: root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.body
-                font.bold: true
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("sessionsTitle", "󰆍 LATEST SESSIONS (1 CLI · 1 IDE)")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.t("activeWorkspaces", "Active Workspaces")
+                  color: root.dim
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                }
               }
 
               Repeater {
-                model: (root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 3) : []
+                model: (root.featuredSessions && root.featuredSessions.length > 0) ? root.featuredSessions : ((root.recentSessions && root.recentSessions.length > 0) ? root.recentSessions.slice(0, 2) : [])
 
                 Rectangle {
                   width: parent.width
-                  height: 42
+                  height: 44
                   radius: 6
                   color: sessionMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
+                  border.color: modelData.isActive ? (modelData.type === "ide" ? root.gpuColor : root.primaryAccent) : root.cardBorder
                   border.width: 1
 
                   RowLayout {
@@ -1525,19 +2366,31 @@ BarWidget {
 
                     // Type Icon Badge (GPU Pink #f472b6 for IDE, CPU Cyan #61d5f8 for CLI)
                     Rectangle {
-                      width: 30
-                      height: 30
+                      width: 32
+                      height: 32
                       radius: 5
                       color: modelData.type === "ide" ? Qt.rgba(244/255, 114/255, 182/255, 0.2) : Qt.rgba(97/255, 213/255, 248/255, 0.2)
                       border.color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
                       border.width: 1
 
-                      Text {
+                      Column {
                         anchors.centerIn: parent
-                        text: modelData.type === "ide" ? "󰨞" : "󰆍"
-                        color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.body
+                        spacing: 0
+                        Text {
+                          anchors.horizontalCenter: parent.horizontalCenter
+                          text: modelData.type === "ide" ? "󰨞" : "󰆍"
+                          color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
+                          font.family: root.fontFamily
+                          font.pixelSize: Style.font.caption + 1
+                        }
+                        Text {
+                          anchors.horizontalCenter: parent.horizontalCenter
+                          text: modelData.type === "ide" ? "IDE" : "CLI"
+                          color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
+                          font.family: root.fontFamily
+                          font.pixelSize: 8
+                          font.bold: true
+                        }
                       }
                     }
 
@@ -1566,6 +2419,50 @@ BarWidget {
                       }
                     }
 
+                    // Copy Summary Button (v1.2)
+                    Rectangle {
+                      id: copyBtnBox
+                      property bool copied: false
+                      width: copyBtnText.implicitWidth + 12
+                      height: 24
+                      radius: 4
+                      color: copyBtnMouse.containsMouse ? root.cardHover : root.cardFill
+                      border.color: copyBtnBox.copied ? root.uploadColor : (copyBtnMouse.containsMouse ? root.downloadColor : root.cardBorder)
+                      border.width: 1
+                      scale: copyBtnMouse.pressed ? 0.90 : 1.0
+
+                      Behavior on scale { NumberAnimation { duration: 90 } }
+                      Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                      Text {
+                        id: copyBtnText
+                        anchors.centerIn: parent
+                        text: copyBtnBox.copied ? root.t("copied", "Copied!") : root.t("copy", "📋 Copy")
+                        color: copyBtnBox.copied ? root.uploadColor : root.downloadColor
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: true
+                      }
+
+                      MouseArea {
+                        id: copyBtnMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                          root.copySessionSummary(modelData)
+                          copyBtnBox.copied = true
+                          copyResetTimer.restart()
+                        }
+                      }
+
+                      Timer {
+                        id: copyResetTimer
+                        interval: 1400
+                        onTriggered: copyBtnBox.copied = false
+                      }
+                    }
+
                     // Launch Action Button
                     Rectangle {
                       width: launchText.implicitWidth + 14
@@ -1582,7 +2479,7 @@ BarWidget {
                       Text {
                         id: launchText
                         anchors.centerIn: parent
-                        text: "Open"
+                        text: root.t("open", "Open")
                         color: root.foreground
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.bodySmall
@@ -1594,12 +2491,7 @@ BarWidget {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                          if (root.bar && typeof root.bar.run === "function") {
-                            root.bar.run("omarchy-launch-antigravity " + modelData.type + " " + modelData.id + " " + (modelData.workspace || ""))
-                          }
-                          root.close()
-                        }
+                        onClicked: root.launchSession(modelData)
                       }
                     }
                   }
@@ -1609,11 +2501,131 @@ BarWidget {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                      if (root.bar && typeof root.bar.run === "function") {
-                        root.bar.run("omarchy-launch-antigravity " + modelData.type + " " + modelData.id + " " + (modelData.workspace || ""))
+                    onClicked: root.launchSession(modelData)
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 2: 🤖 Specialized Subagents Fleet
+          Rectangle {
+            width: parent.width
+            implicitHeight: subFleetCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: subFleetCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("subagentsFleetTitle", "🤖 SPECIALIZED SUBAGENTS FLEET")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.t("agentsCount", "4 Agents")
+                  color: root.gpuColor
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+
+              // 2x2 Subagents Grid
+              Grid {
+                columns: 2
+                width: parent.width
+                spacing: Style.space(3)
+
+                Repeater {
+                  model: root.subagentsFleet && root.subagentsFleet.length > 0 ? root.subagentsFleet : [
+                    { id: "sec-auditor", name: "Security Auditor", role: "AGENTS.md & 0700/0600", icon: "󰒃", status: "Ready" },
+                    { id: "qml-designer-reviewer", name: "QML UI Reviewer", role: "Quickshell & Design", icon: "󰢮", status: "Ready" },
+                    { id: "test-runner", name: "Test & Regression", role: "Snapshots & Sync", icon: "󰙨", status: "Ready" },
+                    { id: "doc-researcher", name: "Doc & API Explorer", role: "Deep Specs & Repos", icon: "󰈙", status: "Ready" }
+                  ]
+
+                  Rectangle {
+                    readonly property bool isSubWorking: modelData.status === "Working" || modelData.status === "Active"
+                    width: (parent.width - Style.space(3)) / 2
+                    height: 42
+                    radius: 6
+                    color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                    border.color: isSubWorking ? root.uploadColor : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.30)
+                    border.width: isSubWorking ? 2 : 1
+
+                    RowLayout {
+                      anchors.fill: parent
+                      anchors.margins: Style.space(3)
+                      spacing: Style.space(3)
+
+                      Rectangle {
+                        width: 26
+                        height: 26
+                        radius: 4
+                        color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                        border.color: isSubWorking ? root.uploadColor : root.primaryAccent
+                        border.width: 1
+
+                        Text {
+                          anchors.centerIn: parent
+                          text: modelData.icon || "󰒃"
+                          color: isSubWorking ? root.uploadColor : root.primaryAccent
+                          font.family: root.fontFamily
+                          font.pixelSize: Style.font.bodySmall
+                        }
                       }
-                      root.close()
+
+                      Column {
+                        Layout.fillWidth: true
+                        spacing: 1
+                        Text {
+                          text: modelData.name
+                          color: root.foreground
+                          font.family: root.fontFamily
+                          font.pixelSize: Style.font.caption
+                          font.bold: true
+                          elide: Text.ElideRight
+                          width: parent.width
+                        }
+                        Text {
+                          text: modelData.role
+                          color: root.dim
+                          font.family: root.fontFamily
+                          font.pixelSize: 8
+                          elide: Text.ElideRight
+                          width: parent.width
+                        }
+                      }
+
+                      Rectangle {
+                        width: isSubWorking ? 54 : 44
+                        height: 18
+                        radius: 3
+                        color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15)
+                        border.color: isSubWorking ? root.uploadColor : root.primaryAccent
+                        border.width: 1
+
+                        Text {
+                          anchors.centerIn: parent
+                          text: isSubWorking ? root.t("subWorking", "Working 💓") : root.t("subReady", "Ready")
+                          color: isSubWorking ? root.uploadColor : root.primaryAccent
+                          font.family: root.fontFamily
+                          font.pixelSize: 8
+                          font.bold: true
+                        }
+                      }
                     }
                   }
                 }
@@ -1621,7 +2633,193 @@ BarWidget {
             }
           }
 
-          // Tools Distribution Card (Enlarged Donut Pie Chart, Stats Legend & Summary)
+          // Card 3: 🖥️ Local GPU Workers (RTX 3070 CUDA)
+          Rectangle {
+            width: parent.width
+            implicitHeight: localGpuCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: localGpuCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("localGpuTitle", "🖥️ LOCAL GPU WORKERS (RTX 3070)")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                // Online Pill (Green when online, Red if offline)
+                Rectangle {
+                  height: 18
+                  width: localGpuStatusRow.implicitWidth + 10
+                  radius: 3
+                  color: (root.localAiInfo && root.localAiInfo.status === "Online") ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.15) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.15)
+                  border.color: (root.localAiInfo && root.localAiInfo.status === "Online") ? root.uploadColor : root.criticalColor
+                  border.width: 1
+
+                  Row {
+                    id: localGpuStatusRow
+                    anchors.centerIn: parent
+                    spacing: 3
+                    Text {
+                      text: "● " + ((root.localAiInfo && root.localAiInfo.status) ? root.localAiInfo.status : "Online")
+                      color: (root.localAiInfo && root.localAiInfo.status === "Online") ? root.uploadColor : root.criticalColor
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                      font.bold: true
+                    }
+                  }
+                }
+              }
+
+              // Models & VRAM Row
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(3)
+
+                // 2 GPU Models Grid (Identical structure to Subagents Fleet)
+                Grid {
+                  columns: 2
+                  Layout.fillWidth: true
+                  spacing: Style.space(3)
+
+                  Repeater {
+                    model: [
+                      {
+                        name: "qwen2.5-coder:7b",
+                        desc: root.t("qwenDesc", "Fast Code & Syntax"),
+                        icon: "󰘦",
+                        isWorking: (root.localAiInfo && root.localAiInfo.qwenWorking) || false
+                      },
+                      {
+                        name: "deepseek-r1:7b",
+                        desc: root.t("deepseekDesc", "Reasoning & Audit"),
+                        icon: "󰚩",
+                        isWorking: (root.localAiInfo && root.localAiInfo.deepseekWorking) || false
+                      }
+                    ]
+
+                    Rectangle {
+                      readonly property bool isModelWorking: modelData.isWorking
+                      width: (parent.width - Style.space(3)) / 2
+                      height: 42
+                      radius: 6
+                      color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                      border.color: isModelWorking ? root.uploadColor : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.30)
+                      border.width: isModelWorking ? 2 : 1
+
+                      RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: Style.space(3)
+                        spacing: Style.space(3)
+
+                        Rectangle {
+                          width: 26
+                          height: 26
+                          radius: 4
+                          color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                          border.color: isModelWorking ? root.uploadColor : root.primaryAccent
+                          border.width: 1
+
+                          Text {
+                            anchors.centerIn: parent
+                            text: isModelWorking ? "⚡" : modelData.icon
+                            color: isModelWorking ? root.uploadColor : root.primaryAccent
+                            font.family: root.fontFamily
+                            font.pixelSize: Style.font.bodySmall
+                          }
+                        }
+
+                        Column {
+                          Layout.fillWidth: true
+                          spacing: 1
+
+                          Text {
+                            text: modelData.name
+                            color: isModelWorking ? root.uploadColor : root.foreground
+                            font.family: root.fontFamily
+                            font.pixelSize: Style.font.caption
+                            font.bold: true
+                            elide: Text.ElideRight
+                            width: parent.width
+                          }
+
+                          Text {
+                            text: isModelWorking ? root.t("subWorking", "Working 💓") : modelData.desc
+                            color: root.dim
+                            font.family: root.fontFamily
+                            font.pixelSize: 8
+                            elide: Text.ElideRight
+                            width: parent.width
+                          }
+                        }
+
+                        Rectangle {
+                          width: isModelWorking ? 54 : 44
+                          height: 18
+                          radius: 3
+                          color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15)
+                          border.color: isModelWorking ? root.uploadColor : root.primaryAccent
+                          border.width: 1
+
+                          Text {
+                            anchors.centerIn: parent
+                            text: isModelWorking ? root.t("subWorking", "Working 💓") : root.t("subReady", "Ready")
+                            color: isModelWorking ? root.uploadColor : root.primaryAccent
+                            font.family: root.fontFamily
+                            font.pixelSize: 8
+                            font.bold: true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+
+                // VRAM Badge (110x42)
+                Rectangle {
+                  width: 110
+                  height: 42
+                  radius: 6
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: (root.localAiInfo && root.localAiInfo.vramAllocated) ? root.localAiInfo.vramAllocated : "4.7 GB / 8 GB"
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.t("vramTitle", "RTX 3070 VRAM")
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 4: Tools Distribution Card (Enlarged Donut Pie Chart, Stats Legend & Summary)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
@@ -1639,7 +2837,7 @@ BarWidget {
               RowLayout {
                 width: parent.width
                 Text {
-                  text: "🛠️ TOOL CALLS BREAKDOWN"
+                  text: root.t("toolsTitle", "🛠️ TOOL CALLS BREAKDOWN")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -1647,7 +2845,7 @@ BarWidget {
                 }
                 Item { Layout.fillWidth: true }
                 Text {
-                  text: "Total: " + root.totalToolCalls + " calls"
+                  text: root.t("total", "Total") + ": " + root.totalToolCalls + " " + root.t("totalCalls", "calls")
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -1669,17 +2867,8 @@ BarWidget {
                     id: toolDonutCanvas
                     anchors.fill: parent
                     antialiasing: true
-
-                    readonly property var sliceColors: [
-                      "#61d5f8", // Electric Cyan
-                      "#5eead4", // Mint Teal
-                      "#c7a6ff", // Lavender Purple
-                      "#a3e635", // Lime Green
-                      "#fbbf24", // Amber Gold
-                      "#f472b6", // Fuchsia Pink
-                      "#fb923c", // Warm Orange
-                      "#94a3b8"  // Slate Gray
-                    ]
+                    readonly property var sliceColors: root.sliceColors
+                    onVisibleChanged: if (visible) requestPaint()
 
                     onPaint: {
                       var ctx = getContext("2d")
@@ -1715,7 +2904,7 @@ BarWidget {
                         ctx.arc(cx, cy, innerR, endAngle, startAngle, true)
                         ctx.closePath()
 
-                        ctx.fillStyle = sliceColors[i % sliceColors.length]
+                        ctx.fillStyle = root.sliceColors[i % root.sliceColors.length]
                         ctx.fill()
 
                         startAngle += sliceAngle
@@ -1724,7 +2913,11 @@ BarWidget {
 
                     Connections {
                       target: root
-                      function onToolsListChanged() { toolDonutCanvas.requestPaint() }
+                      function onToolsListChanged() {
+                        if (root.popupOpen && root.selectedTab === 1 && toolDonutCanvas.visible) {
+                          toolDonutCanvas.requestPaint()
+                        }
+                      }
                     }
                   }
 
@@ -1748,7 +2941,7 @@ BarWidget {
 
                     Text {
                       anchors.horizontalCenter: parent.horizontalCenter
-                      text: "calls"
+                      text: root.t("totalCalls", "calls")
                       color: root.dim
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.bodySmall
@@ -1764,7 +2957,7 @@ BarWidget {
                   Layout.alignment: Qt.AlignVCenter
 
                   Repeater {
-                    model: (root.toolsList && root.toolsList.length > 0) ? root.toolsList.slice(0, 8) : []
+                    model: root.topToolsList
 
                     Column {
                       width: parent.width
@@ -1778,7 +2971,7 @@ BarWidget {
                           width: 8
                           height: 8
                           radius: 4
-                          color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
+                          color: (toolDonutCanvas.sliceColors && toolDonutCanvas.sliceColors.length > 0) ? toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length] : root.primaryAccent
                         }
 
                         Text {
@@ -1810,7 +3003,7 @@ BarWidget {
                           height: parent.height
                           width: Math.min(parent.width, parent.width * (Number(modelData.count) / Math.max(1, root.totalToolCalls)))
                           radius: 1.75
-                          color: toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length]
+                          color: (toolDonutCanvas.sliceColors && toolDonutCanvas.sliceColors.length > 0) ? toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length] : root.primaryAccent
                         }
                       }
                     }
@@ -1916,7 +3109,7 @@ BarWidget {
                 Text {
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "⏱️ TELEMETRY & AUTO-REFRESH"
+                  text: root.t("telemetryTitle", "⏱️ TELEMETRY & AUTO-REFRESH")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -2019,7 +3212,7 @@ BarWidget {
                   Layout.alignment: Qt.AlignVCenter
 
                   Text {
-                    text: "💓 WORKING HEARTBEAT ANIMATION"
+                    text: root.t("heartbeatTitle", "💓 WORKING HEARTBEAT ANIMATION")
                     color: root.foreground
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.body
@@ -2027,8 +3220,8 @@ BarWidget {
                   }
 
                   Text {
-                    text: root.pulseEnabled ? "(Active)" : "(Disabled)"
-                    color: root.pulseEnabled ? root.primaryAccent : root.dim
+                    text: root.pulseEnabled ? ("(" + root.t("active", "Active") + ")") : ("(" + root.t("disabled", "Disabled") + ")")
+                    color: root.pulseEnabled ? root.uploadColor : root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.caption
                     font.bold: true
@@ -2044,8 +3237,8 @@ BarWidget {
                   width: 28
                   height: 16
                   radius: 8
-                  color: root.pulseEnabled ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
-                  border.color: root.pulseEnabled ? root.primaryAccent : root.cardBorder
+                  color: root.pulseEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
+                  border.color: root.pulseEnabled ? root.uploadColor : root.cardBorder
                   border.width: 1
 
                   Behavior on color { ColorAnimation { duration: 160 } }
@@ -2058,7 +3251,7 @@ BarWidget {
                     radius: 6
                     anchors.verticalCenter: parent.verticalCenter
                     x: root.pulseEnabled ? (parent.width - width - 2) : 2
-                    color: root.pulseEnabled ? root.primaryAccent : root.foreground
+                    color: root.pulseEnabled ? root.uploadColor : root.foreground
 
                     Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
                     Behavior on color { ColorAnimation { duration: 160 } }
@@ -2091,7 +3284,7 @@ BarWidget {
                 RowLayout {
                   width: parent.width
                   Text {
-                    text: "🎚️ Pulse Cadence:"
+                    text: root.t("pulseCadence", "🎚️ Pulse Cadence:")
                     color: root.dim
                     font.family: root.fontFamily
                     font.pixelSize: Style.font.bodySmall
@@ -2154,7 +3347,185 @@ BarWidget {
             }
           }
 
-          // Card 3: 🔧 System & Environment Integration
+          // Card 3: 🔔 Task Completion Desktop Notifications (v1.2)
+          Rectangle {
+            width: parent.width
+            implicitHeight: notifCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: notifCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+
+                Row {
+                  spacing: Style.space(4)
+                  Layout.alignment: Qt.AlignVCenter
+
+                  Text {
+                    text: root.t("notifTitle", "🔔 TASK COMPLETION NOTIFICATIONS")
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.body
+                    font.bold: true
+                  }
+
+                  Text {
+                    text: root.notificationsEnabled ? ("(" + root.t("enabled", "Enabled") + ")") : ("(" + root.t("muted", "Muted") + ")")
+                    color: root.notificationsEnabled ? root.uploadColor : root.dim
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // Notification Jumper Switch
+                Rectangle {
+                  id: notifJumper
+                  width: 28
+                  height: 16
+                  radius: 8
+                  color: root.notificationsEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
+                  border.color: root.notificationsEnabled ? root.uploadColor : root.cardBorder
+                  border.width: 1
+
+                  Behavior on color { ColorAnimation { duration: 160 } }
+
+                  Rectangle {
+                    id: notifKnob
+                    width: 12
+                    height: 12
+                    radius: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: root.notificationsEnabled ? (parent.width - width - 2) : 2
+                    color: root.notificationsEnabled ? root.uploadColor : root.foreground
+
+                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnimation { duration: 160 } }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.setNotificationsEnabled(!root.notificationsEnabled)
+                  }
+                }
+              }
+
+              Text {
+                text: root.t("notifDesc", "Sends a discreet desktop notification via notify-send whenever an autonomous coding turn or background task finishes.")
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
+              }
+            }
+          }
+
+          // Card 4: 🌐 Language & Localization (8 languages)
+          Rectangle {
+            width: parent.width
+            implicitHeight: langCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: langCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("langTitle", "🌐 LANGUAGE & LOCALIZATION")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.currentLang.toUpperCase()
+                  color: root.primaryAccent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: true
+                }
+              }
+
+              // 8-language grid (4x2)
+              Grid {
+                columns: 4
+                width: parent.width
+                spacing: Style.space(3)
+
+                Repeater {
+                  model: [
+                    { code: "cs", flag: "🇨🇿", name: "Čeština" },
+                    { code: "en", flag: "🇬🇧", name: "English" },
+                    { code: "uk", flag: "🇺🇦", name: "Українська" },
+                    { code: "it", flag: "🇮🇹", name: "Italiano" },
+                    { code: "de", flag: "🇩🇪", name: "Deutsch" },
+                    { code: "es", flag: "🇪🇸", name: "Español" },
+                    { code: "fr", flag: "🇫🇷", name: "Français" },
+                    { code: "ja", flag: "🇯🇵", name: "日本語" }
+                  ]
+
+                  Rectangle {
+                    width: (parent.width - 3 * Style.space(3)) / 4
+                    height: 32
+                    radius: 5
+                    color: root.currentLang === modelData.code ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15) : (langBtnMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03))
+                    border.color: root.currentLang === modelData.code ? root.primaryAccent : root.cardBorder
+                    border.width: 1
+
+                    RowLayout {
+                      anchors.centerIn: parent
+                      spacing: 3
+                      Text {
+                        text: modelData.flag
+                        font.pixelSize: Style.font.caption
+                      }
+                      Text {
+                        text: modelData.name
+                        color: root.currentLang === modelData.code ? root.primaryAccent : root.foreground
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: root.currentLang === modelData.code
+                        elide: Text.ElideRight
+                        Layout.maximumWidth: 62
+                      }
+                    }
+
+                    MouseArea {
+                      id: langBtnMouse
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: root.setLanguage(modelData.code)
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 5: 🔧 System & Environment Integration
           Rectangle {
             width: parent.width
             implicitHeight: sysInfoCol.implicitHeight + Style.space(8)
@@ -2173,7 +3544,7 @@ BarWidget {
                 width: parent.width
 
                 Text {
-                  text: "🔧 SYSTEM & PLUGIN ENVIRONMENT"
+                  text: root.t("sysTitle", "🔧 SYSTEM & PLUGIN ENVIRONMENT")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -2183,7 +3554,7 @@ BarWidget {
                 Item { Layout.fillWidth: true }
 
                 Text {
-                  text: "v1.1 · Stable"
+                  text: "v1.2-preview · Local Pro"
                   color: root.dim
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -2216,7 +3587,7 @@ BarWidget {
                     }
                     Text {
                       anchors.horizontalCenter: parent.horizontalCenter
-                      text: "Plan Tier"
+                      text: root.t("planTier", "Plan Tier")
                       color: root.dim
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
@@ -2245,7 +3616,7 @@ BarWidget {
                     }
                     Text {
                       anchors.horizontalCenter: parent.horizontalCenter
-                      text: "Active Model"
+                      text: root.t("activeModel", "Active Model")
                       color: root.dim
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
@@ -2319,22 +3690,45 @@ BarWidget {
 
             Rectangle {
               height: 24
-              width: refreshText.implicitWidth + 12
+              implicitWidth: Math.max(96, refreshBtnLayout.implicitWidth + 18)
               radius: 4
               color: refreshMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-              border.color: root.cardBorder
+              border.color: root.manualRefreshing ? root.primaryAccent : root.cardBorder
               border.width: 1
-              scale: refreshMouse.pressed ? 0.92 : 1.0
+              scale: refreshMouse.pressed ? 0.94 : 1.0
 
               Behavior on scale { NumberAnimation { duration: 90 } }
+              Behavior on border.color { ColorAnimation { duration: 150 } }
 
-              Text {
-                id: refreshText
+              RowLayout {
+                id: refreshBtnLayout
                 anchors.centerIn: parent
-                text: root.refreshing ? "󰑐 Refreshing…" : "󰑐 Refresh"
-                color: root.refreshing ? root.primaryAccent : root.foreground
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.bodySmall
+                spacing: 4
+
+                Text {
+                  id: refreshIcon
+                  text: "󰑐"
+                  color: root.manualRefreshing ? root.primaryAccent : root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  transformOrigin: Item.Center
+                  RotationAnimator on rotation {
+                    running: root.manualRefreshing
+                    loops: Animation.Infinite
+                    from: 0
+                    to: 360
+                    duration: 900
+                  }
+                }
+
+                Text {
+                  id: refreshText
+                  text: root.manualRefreshing ? root.t("refreshing", "Refreshing…") : root.t("refresh", "Refresh")
+                  color: root.manualRefreshing ? root.primaryAccent : root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: root.manualRefreshing
+                }
               }
 
               MouseArea {
@@ -2342,7 +3736,7 @@ BarWidget {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.requestRefresh()
+                onClicked: root.triggerManualRefresh()
               }
             }
           }

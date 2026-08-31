@@ -1,6 +1,6 @@
-# 🚀 Antigravity 1.1 (Anti/Gem) for Omarchy Linux
+# 🚀 Antigravity 1.2 (Anti/Gem) for Omarchy Linux
 
-A native, high-performance telemetry dashboard and quota monitor for **Google Antigravity** and **Gemini AI**, built for **Omarchy Linux** (Quickshell / Hyprland).
+A native, high-performance telemetry dashboard, subagents monitor, and quota tracker for **Google Antigravity** and **Gemini AI**, built for **Omarchy Linux** (Quickshell / Hyprland).
 
 <p align="center">
   <img src="preview.png" alt="Anti/Gem Dashboard Preview" width="560">
@@ -18,7 +18,18 @@ Designed following the visual language, palette tokens, and 3-tab UX structure o
 
 ---
 
-## ✨ Features in v1.1
+## ✨ What's New in v1.2
+
+* 🎨 **Adaptive System Theme Engine:** Full reactive synchronization with active Omarchy color themes (`colors.toml` / `FileView`). Subtle accent-tinted card backgrounds, borders, and controls matching Nord, Catppuccin, Tokyo Night, Gruvbox, and Wallhaven/Aether.
+* 🇺🇦 **Full Ukrainian Localization (`uk` / `🇺🇦 Українська`):** 100% complete translations across all 3 tabs, tools, quotas, and subagents fleet.
+* 🤖 **Specialized Subagents Fleet & Local GPU Workers:** Live monitoring of autonomous subagents (`sec-auditor`, `qml-designer-reviewer`, `test-runner`, `doc-researcher`) and local GPU models (`qwen2.5-coder:7b`, `deepseek-r1:7b` via Ollama on NVIDIA RTX 3070).
+* 🔄 **Decoupled Refresh & Animation Engine:** Hardware-accelerated rotating spinner (`RotationAnimator`) with responsive non-overflowing buttons and silent background polling.
+* 🛡️ **Hardened Security & Privacy:** Strict `0700`/`0600` cache permissions, structured command execution without `shell=True`, and regex prompt sanitization.
+* 🖥️ **Wayland IDE Session Restorer:** 1-click launcher bridging the language server binary and focusing Antigravity IDE workspaces under Wayland.
+
+---
+
+## 🌟 Core Features
 
 ### 1. 🖥️ Ultra-Minimalist Top Bar Presentation
 * **Dimensions & Typography:** Scaled down to match surrounding system widgets (`Style.font.caption` / 10px, logo 10×10px).
