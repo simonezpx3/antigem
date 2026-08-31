@@ -856,6 +856,8 @@ BarWidget {
 
 
 
+
+
   // Fast live telemetry polling: active only when panel is open or agent is working/waiting
   Timer {
     interval: 2000
