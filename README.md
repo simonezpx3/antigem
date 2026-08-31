@@ -3,7 +3,7 @@
 A native, high-performance telemetry dashboard, subagents monitor, and quota tracker for **Google Antigravity** and **Gemini AI**, built for **Omarchy Linux** (Quickshell / Hyprland).
 
 <p align="center">
-  <img src="assets/demo.webp" alt="Anti/Gem Live Demo Animation" width="560">
+  <img src="assets/omarchy_anim.webp" alt="Omarchy ASCII Lightning Discharge Animation" width="560">
 </p>
 
 Designed following the visual language, palette tokens, and 3-tab UX structure of **System Monitor** (`bitr0t.system-monitor`).
