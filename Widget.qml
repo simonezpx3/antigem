@@ -506,7 +506,9 @@ BarWidget {
   property var gcpInfo: null
   property var localAiInfo: null
   property var subagentsFleet: []
-  property bool popupOpen: false
+  property bool opened: false
+  property bool popoutSwitchClosing: false
+  property alias popupOpen: root.opened
 
   // Active status helper
   readonly property bool isWorking: activeStatus === "Working"
@@ -827,22 +829,35 @@ BarWidget {
   }
 
   function triggerPress(buttonCode) {
-    if (buttonCode === 1) { // Left click
-      root.popupOpen = !root.popupOpen
-    } else if (buttonCode === 3) { // Right click
+    if (buttonCode === 1 || buttonCode === Qt.LeftButton) { // Left click
+      if (!root.opened) {
+        root.selectedTab = 0 // Reset to primary performance tab on fresh open
+      }
+      root.toggle()
+    } else if (buttonCode === 3 || buttonCode === Qt.RightButton) { // Right click
       root.selectedTab = 2
-      root.popupOpen = true
-    } else if (buttonCode === 2) { // Middle click
-      root.requestRefresh()
+      root.open()
+    } else if (buttonCode === 2 || buttonCode === Qt.MiddleButton) { // Middle click
+      root.triggerManualRefresh()
     }
   }
 
   function open() {
-    root.popupOpen = true
+    root.opened = true
   }
 
   function close() {
-    root.popupOpen = false
+    root.opened = false
+  }
+
+  function toggle() {
+    root.opened ? root.close() : root.open()
+  }
+
+  function closeForPopoutSwitch() {
+    root.popoutSwitchClosing = true
+    root.close()
+    Qt.callLater(function() { root.popoutSwitchClosing = false })
   }
 
   // Initial startup delay timer to let Quickshell finish layout before spawning Python scanner
@@ -989,9 +1004,9 @@ BarWidget {
     anchorItem: button
     owner: root
     bar: root.bar
-    open: root.popupOpen
+    open: root.opened
     onOpenChanged: {
-      if (open !== root.popupOpen) root.popupOpen = open
+      if (open !== root.opened) root.opened = open
       if (open) {
         root.requestRefresh()
         headerOmarchyLogoBox.startLightningDischarge()
