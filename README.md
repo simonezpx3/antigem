@@ -1,5 +1,13 @@
 # 🚀 Antigravity 1.2 (Anti/Gem) for Omarchy Linux
 
+<p align="left">
+  <img src="https://img.shields.io/badge/version-1.2.0-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.2.0">
+  <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
+  <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
+  <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
+  <img src="https://img.shields.io/badge/AI-Google%20Antigravity%20%7C%20Gemini-2dd4bf?style=flat-square&logo=google&logoColor=white" alt="Google Antigravity">
+</p>
+
 A native, high-performance telemetry dashboard, subagents monitor, and quota tracker for **Google Antigravity** and **Gemini AI**, built for **Omarchy Linux** (Quickshell / Hyprland).
 
 <p align="center">
