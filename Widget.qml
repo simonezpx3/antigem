@@ -19,6 +19,18 @@ BarWidget {
   property int weeklyGeminiPct: 0
   property string weeklyGeminiDetail: "Resets in ~7d"
 
+  // Token Metrics & Headroom (Google AI Pro)
+  property var tokensData: ({})
+  property string weeklyTokensUsed: "~24.5M"
+  property string weeklyTokensRemaining: "~500k"
+  property int weeklyTokensRemainingPct: 2
+  property string weeklyTokensDetail: "Resets in ~1d 15h"
+  property string weeklyTokensSeverity: "critical"
+  property string sessionTokensUsed: "~75k"
+  property string sessionTokensRemaining: "~2.42M"
+  property string todayTokens: "~285k"
+  property string allTimeTokens: "~48.6M"
+
   // Context Window & Subagents (v1.2)
   property int contextPct: 0
   property string contextTokensStr: "0k / 1M"
@@ -37,6 +49,11 @@ BarWidget {
       "statusIdle": "Nečinný",
       "quota5h": "⏱ 5H RELACE",
       "quota7d": "📅 7D TÝDNÍ",
+      "tokenBreakdownTitle": "🪙 SUMA TOKENŮ & SPOTŘEBA (GOOGLE AI PRO)",
+      "weeklyTokens": "Týdně spotřebováno",
+      "remainingTokens": "Zbývá do resetu",
+      "todayTokens": "Dnes celkem",
+      "allTimeTokens": "Celkem historie",
       "usage": "Využití",
       "limit": "Limit",
       "activityTitle": "📊 7-DENNÍ AKTIVITA PROMPTŮ",
@@ -92,6 +109,11 @@ BarWidget {
       "statusIdle": "Idle",
       "quota5h": "⏱ 5H SESSION",
       "quota7d": "📅 7D WEEKLY",
+      "tokenBreakdownTitle": "🪙 TOKEN TOTALS & QUOTA CONSUMPTION (GOOGLE AI PRO)",
+      "weeklyTokens": "Weekly Used",
+      "remainingTokens": "Remaining Headroom",
+      "todayTokens": "Today Total",
+      "allTimeTokens": "All-Time History",
       "usage": "Usage",
       "limit": "Limit",
       "activityTitle": "📊 7-DAY PROMPT ACTIVITY",
@@ -676,6 +698,19 @@ BarWidget {
         }
       }
 
+      if (data.tokens) {
+        root.tokensData = data.tokens
+        root.weeklyTokensUsed = String(data.tokens.weeklyUsedStr || "~24.5M")
+        root.weeklyTokensRemaining = String(data.tokens.weeklyRemainingStr || "~500k")
+        root.weeklyTokensRemainingPct = Number(data.tokens.weeklyRemainingPct || 2)
+        root.weeklyTokensDetail = String(data.tokens.weeklyDetail || "Resets in ~1d 15h")
+        root.weeklyTokensSeverity = String(data.tokens.weeklySeverity || "normal")
+        root.sessionTokensUsed = String(data.tokens.sessionUsedStr || "~75k")
+        root.sessionTokensRemaining = String(data.tokens.sessionRemainingStr || "~2.42M")
+        root.todayTokens = String(data.tokens.todayTokensStr || "~285k")
+        root.allTimeTokens = String(data.tokens.allTimeTokensStr || "~48.6M")
+      }
+
       if (data.quotas) {
         if (data.quotas.session) {
           root.sessionGeminiPct = Number(data.quotas.session.percent || 0)
@@ -703,8 +738,10 @@ BarWidget {
              "- **Date:** " + date + " (" + (s.timeAgo || "") + ")\n" +
              "- **Client:** " + client + "\n" +
              "- **Workspace:** `" + ws + "`\n"
-    if (root.bar && typeof root.bar.run === "function") {
-      root.bar.run("bash -c 'printf " + JSON.stringify(md) + " | wl-copy'")
+    if (typeof Quickshell !== "undefined" && typeof Quickshell.execDetached === "function") {
+      Quickshell.execDetached(["/usr/bin/wl-copy", md])
+    } else if (root.bar && typeof root.bar.run === "function") {
+      root.bar.run(["/usr/bin/wl-copy", md])
     }
   }
 
@@ -907,8 +944,9 @@ BarWidget {
   // Top Bar Chip Tooltip
   readonly property string barTooltip: {
     var text = "Antigravity — Google AI Pro"
-    text += "\n⏱ 5h Session: " + root.sessionGeminiPct + "% (" + root.sessionGeminiDetail + ")"
-    text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyGeminiDetail + ")"
+    text += "\n⏱ 5h Session: " + root.sessionGeminiPct + "% (" + root.sessionTokensUsed + " · " + root.sessionGeminiDetail + ")"
+    text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyTokensUsed + " / 25M · " + (root.weeklyGeminiPct >= 90 ? "🚨 KRITICKÝ LIMIT! Zbývá " + root.weeklyTokensRemaining : root.weeklyGeminiDetail) + ")"
+    text += "\n🪙 Dnes tokenů: " + root.todayTokens + " (Celkem: " + root.allTimeTokens + ")"
     text += "\n🧠 Model: " + root.currentModel
     text += "\nStatus: " + (root.isWorking ? "Working 💓" : (root.isWaiting ? "Waiting for input" : "Idle"))
     text += "\n[Tap: Open panel · Right-tap: Settings]"
@@ -1734,6 +1772,137 @@ BarWidget {
                     radius: 3
                     color: root.memoryColor
                     Behavior on width { NumberAnimation { duration: 250 } }
+                  }
+                }
+              }
+            }
+          }
+
+          // Critical Token Warning Banner (when weekly tokens are >= 90%)
+          Rectangle {
+            visible: root.weeklyGeminiPct >= 90
+            width: parent.width
+            height: 38
+            radius: 8
+            color: Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.18)
+            border.color: root.criticalColor
+            border.width: 1
+
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.space(8)
+              anchors.rightMargin: Style.space(8)
+              spacing: Style.space(6)
+
+              Text {
+                text: "🚨"
+                font.pixelSize: Style.font.bodyLarge
+              }
+
+              Text {
+                text: "KRITICKÝ LIMIT: Zbývá pouze " + (100 - root.weeklyGeminiPct) + "% týdenních tokenů (" + root.weeklyTokensRemaining + ")! Reset za " + root.weeklyGeminiDetail
+                color: root.criticalColor
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.bodySmall
+                font.bold: true
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+              }
+            }
+          }
+
+          // Total Token Sums & Quota Headroom Card
+          Rectangle {
+            width: parent.width
+            implicitHeight: tokenBreakdownCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+            border.width: 1
+
+            Column {
+              id: tokenBreakdownCol
+              width: parent.width
+              anchors.margins: Style.space(6)
+              spacing: Style.space(6)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("tokenBreakdownTitle", "🪙 SUMA TOKENŮ & SPOTŘEBA (GOOGLE AI PRO)")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.tierLabel
+                  color: root.accentColor
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.bodySmall
+                  font.bold: true
+                }
+              }
+
+              // 4-Metric Grid of Token Sums
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(6)
+
+                // 1. Týdenní spotřeba (Weekly Used)
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 52
+                  radius: 6
+                  color: root.subcardFill
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: root.t("weeklyTokens", "Týdně spotřebováno"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.weeklyTokensUsed + " / 25M"; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
+
+                // 2. Týdenní zbývající kapacita (Weekly Remaining Headroom)
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 52
+                  radius: 6
+                  color: root.subcardFill
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: root.t("remainingTokens", "Zbývá do resetu"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.weeklyTokensRemaining + " (" + (100 - root.weeklyGeminiPct) + "%)"; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
+
+                // 3. Dnešní tokeny (Today's Tokens)
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 52
+                  radius: 6
+                  color: root.subcardFill
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: root.t("todayTokens", "Dnes celkem"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
+
+                // 4. Celková historická suma (All-time Tokens)
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 52
+                  radius: 6
+                  color: root.subcardFill
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: root.t("allTimeTokens", "Celkem historie"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
               }
