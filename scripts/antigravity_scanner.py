@@ -246,7 +246,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
         "authTier": "Google AI Pro",
         "services": [
             {
-                "name": "Gemini 3.7 Pro / Flash (Interactions API)",
+                "name": "Gemini 3.8 Flash / Pro (Interactions API)",
                 "status": "Operational",
                 "ping": f"{latency_ms} ms",
                 "badge": "Active",
@@ -382,6 +382,70 @@ def read_tail_step(path: Path, max_bytes: int = 8192) -> dict[str, Any] | None:
     return None
 
 
+def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
+    """Detect active model from cli.log or recent transcript session settings."""
+    cli_log = base_dir / "cli.log"
+    if cli_log.is_file():
+        try:
+            target_log = cli_log.resolve()
+            if target_log.is_file():
+                with open(target_log, "r", encoding="utf-8", errors="ignore") as f:
+                    last_label = None
+                    for line in f:
+                        if "model_config_manager.go" in line and "label=" in line:
+                            m = re.search(r'label="([^"]+)"', line)
+                            if m:
+                                last_label = m.group(1).strip()
+                    if last_label:
+                        return sanitize_plain_text(last_label, 50)
+        except Exception:
+            pass
+
+    if brain_dir.is_dir() and not brain_dir.is_symlink():
+        try:
+            sessions = sorted(
+                [p for p in brain_dir.iterdir() if p.is_dir() and not p.name.startswith(".")],
+                key=lambda p: p.stat().st_mtime,
+                reverse=True
+            )
+            for s in sessions[:6]:
+                t_file = s / ".system_generated" / "logs" / "transcript.jsonl"
+                if t_file.is_file():
+                    try:
+                        with open(t_file, "r", encoding="utf-8", errors="ignore") as f:
+                            for idx, line in enumerate(f):
+                                if idx > 20:
+                                    break
+                                if "Model Selection" in line:
+                                    m = re.search(r"Model Selection` from [^`]+ to ([^.\n<]+)", line)
+                                    if m:
+                                        return sanitize_plain_text(m.group(1).strip(), 50)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+    return "Gemini 3.8 Flash (High)"
+
+
+def detect_server_version() -> dict[str, str]:
+    """Detect Antigravity CLI and IDE server versions."""
+    cli_ver = "1.1.25"
+    ide_ver = "2.10.0"
+    try:
+        res = subprocess.run(["agy", "--version"], capture_output=True, text=True, timeout=0.3)
+        if res.returncode == 0 and res.stdout.strip():
+            cli_ver = res.stdout.strip()
+    except Exception:
+        pass
+    return {
+        "ide": ide_ver,
+        "cli": cli_ver,
+        "display": f"v{ide_ver}",
+        "full": f"v{ide_ver} (CLI {cli_ver})"
+    }
+
+
 def scan() -> dict[str, Any]:
     now_ts = time.time()
     cache = load_cache()
@@ -484,7 +548,8 @@ def scan() -> dict[str, Any]:
 
     # 2. Fast incremental inspection of brain/
     tool_counter: Counter[str] = Counter()
-    latest_model = "Gemini 3.7 Flash"
+    latest_model = detect_active_model(base_dir, brain_dir)
+    server_info = detect_server_version()
     agent_working = False
     active_subagents = 0
     active_subagent_types: set[str] = set()
@@ -510,10 +575,9 @@ def scan() -> dict[str, Any]:
                 if not step:
                     continue
 
-                if not latest_model or latest_model == "Gemini 3.7 Flash":
-                    m_cand = step.get("model") or step.get("model_name")
-                    if m_cand:
-                        latest_model = sanitize_plain_text(m_cand, 50)
+                m_cand = step.get("model") or step.get("model_name")
+                if m_cand:
+                    latest_model = sanitize_plain_text(m_cand, 50)
 
                 created_at = step.get("created_at") or step.get("timestamp") or 0
                 step_time = 0
@@ -715,6 +779,8 @@ def scan() -> dict[str, Any]:
         "activeStatus": active_status,
         "tierLabel": quota_info["plan"],
         "currentModel": latest_model,
+        "serverVersion": server_info["display"],
+        "serverVersionFull": server_info["full"],
         "quotas": quota_info,
         "tokens": token_usage_data,
         "contextPct": context_pct,

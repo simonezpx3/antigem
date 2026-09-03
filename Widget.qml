@@ -13,7 +13,9 @@ BarWidget {
   property bool active: false
   property string activeStatus: "Idle"
   property string tierLabel: "Google AI Pro"
-  property string currentModel: "Gemini 3.7 Flash"
+  property string currentModel: "Gemini 3.8 Flash (High)"
+  property string serverVersion: "v2.10.0"
+  property string serverVersionFull: "v2.10.0 (CLI 1.1.25)"
   property int sessionGeminiPct: 0
   property string sessionGeminiDetail: "Resets in ~5h"
   property int weeklyGeminiPct: 0
@@ -97,6 +99,7 @@ BarWidget {
       "sysTitle": "🔧 SYSTÉMOVÉ PROSTŘEDÍ",
       "planTier": "Úroveň plánu",
       "activeModel": "Aktivní model",
+      "serverCore": "Jádro serveru",
       "refresh": "Obnovit",
       "refreshing": "Obnovuji…"
     },
@@ -157,6 +160,7 @@ BarWidget {
       "sysTitle": "🔧 SYSTEM & PLUGIN ENVIRONMENT",
       "planTier": "Plan Tier",
       "activeModel": "Active Model",
+      "serverCore": "Server Core",
       "refresh": "Refresh",
       "refreshing": "Refreshing…"
     },
@@ -675,7 +679,9 @@ BarWidget {
       root.active = data.active === true
       root.activeStatus = String(data.activeStatus || "Idle")
       root.tierLabel = String(data.tierLabel || "Google AI Pro")
-      root.currentModel = String(data.currentModel || "Gemini 3.7 Flash")
+      root.currentModel = String(data.currentModel || "Gemini 3.8 Flash (High)")
+      root.serverVersion = String(data.serverVersion || "v2.10.0")
+      root.serverVersionFull = String(data.serverVersionFull || "v2.10.0 (CLI 1.1.25)")
       root.todayPrompts = Number(data.todayPrompts || 0)
       root.totalPrompts = Number(data.totalPrompts || 0)
       root.recentDays = data.recentDays || []
@@ -948,6 +954,7 @@ BarWidget {
     text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyTokensUsed + " / 25M · " + (root.weeklyGeminiPct >= 90 ? "🚨 KRITICKÝ LIMIT! Zbývá " + root.weeklyTokensRemaining : root.weeklyGeminiDetail) + ")"
     text += "\n🪙 Dnes tokenů: " + root.todayTokens + " (Celkem: " + root.allTimeTokens + ")"
     text += "\n🧠 Model: " + root.currentModel
+    text += "\n⚙️ AGY Server: " + root.serverVersionFull
     text += "\nStatus: " + (root.isWorking ? "Working 💓" : (root.isWaiting ? "Waiting for input" : "Idle"))
     text += "\n[Tap: Open panel · Right-tap: Settings]"
     return text
@@ -2421,7 +2428,7 @@ BarWidget {
               // Service & API Endpoints Table
               Repeater {
                 model: (root.gcpInfo && root.gcpInfo.services && root.gcpInfo.services.length > 0) ? root.gcpInfo.services : [
-                  { name: "Gemini Language & Code API", endpoint: "generativelanguage.googleapis.com", status: "Operational", latency: "30 ms", tag: "Live Chat & Code" },
+                  { name: "Gemini 3.8 Flash / Pro (Interactions API)", endpoint: "generativelanguage.googleapis.com", status: "Operational", latency: "30 ms", tag: "Live Chat & Code" },
                   { name: "Vertex AI / Cloud Inference", endpoint: "aiplatform.googleapis.com", status: "Operational", latency: "33 ms", tag: "Agent Reasoning & AGY" },
                   { name: "Google Grounding & Search", endpoint: "google.com/search/api", status: "Operational", latency: "27 ms", tag: "Live Web Index" },
                   { name: "Cloud Code Sandbox Runner", endpoint: "gcp-sandbox-runner", status: "Ready", latency: "< 5 ms", tag: "Isolated Tool Execution" }
@@ -3825,6 +3832,35 @@ BarWidget {
                     spacing: 1
                     Text {
                       anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.serverVersion
+                      color: root.cpuColor
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: true
+                    }
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      text: root.t("serverCore", "Server Core")
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
+                }
+
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text {
+                      anchors.horizontalCenter: parent.horizontalCenter
                       text: "QuickShell"
                       color: root.uploadColor
                       font.family: root.fontFamily
@@ -3868,7 +3904,7 @@ BarWidget {
             }
 
             Text {
-              text: root.currentModel + " · " + root.secondsRemaining + "s"
+              text: root.currentModel + " · AGY " + root.serverVersion + " · " + root.secondsRemaining + "s"
               color: root.dim
               font.family: root.fontFamily
               font.pixelSize: Style.font.bodySmall
