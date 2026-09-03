@@ -39,487 +39,9 @@ BarWidget {
   property int activeSubagents: 0
   property var productivityData: ({})
   property bool notificationsEnabled: root.setting("notificationsEnabled", true) !== false
-  property string currentLang: String(root.setting("language", "cs"))
-
-  readonly property var langDictionary: ({
-    "cs": {
-      "tabPerf": "Výkon & Limity",
-      "tabSessions": "Relace & Nástroje",
-      "tabSettings": "Nastavení",
-      "statusWorking": "Pracuje",
-      "statusWaiting": "Čeká na vstup",
-      "statusIdle": "Nečinný",
-      "quota5h": "⏱ 5H RELACE",
-      "quota7d": "📅 7D TÝDNÍ",
-      "tokenBreakdownTitle": "🪙 SUMA TOKENŮ & SPOTŘEBA (GOOGLE AI PRO)",
-      "weeklyTokens": "Týdně spotřebováno",
-      "remainingTokens": "Zbývá do resetu",
-      "todayTokens": "Dnes celkem",
-      "allTimeTokens": "Celkem historie",
-      "usage": "Využití",
-      "limit": "Limit",
-      "activityTitle": "📊 7-DENNÍ AKTIVITA PROMPTŮ",
-      "today": "Dnes",
-      "total": "Celkem",
-      "prompts": "promptů",
-      "contextTitle": "🧠 KONTEXT & SUBAGENTI",
-      "contextMax": "Kontextové okno (1M max):",
-      "subagentsActive": "Aktivní",
-      "noSubagents": "Bez subagentů",
-      "prodTitle": "⚡ PRODUKTIVITA & UŠETŘENÝ ČAS",
-      "devTimeSaved": "Ušetřený čas",
-      "toolsRun": "Nástroje",
-      "tokensProcessed": "Zpracováno tokenů",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 POSLEDNÍ RELACE (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Aktivní složky",
-      "copy": "📋 Kopírovat",
-      "copied": "Zkopírováno!",
-      "open": "Otevřít",
-      "subagentsFleetTitle": "🤖 TÝM SPECIALIZOVANÝCH SUBAGENTŮ",
-      "agentsCount": "4 Agenti",
-      "subWorking": "Pracuje 💓",
-      "subReady": "Připraven",
-      "localGpuTitle": "🖥️ LOKÁLNÍ GPU WORKERS (RTX 3070)",
-      "qwenDesc": "Bleskový kód & syntaxe",
-      "deepseekDesc": "Logický rozbor & audit",
-      "vramTitle": "RTX 3070 VRAM",
-      "toolsTitle": "🛠️ ROZPAD VOLÁNÍ NÁSTROJŮ",
-      "totalCalls": "volání",
-      "telemetryTitle": "⏱️ TELEMETRIE & AUTO-REFRESH",
-      "heartbeatTitle": "💓 SRDEČNÍ PULZ PŘI PRÁCI",
-      "active": "Aktivní",
-      "disabled": "Vypnuto",
-      "pulseCadence": "🎚️ Rytmus pulzu:",
-      "notifTitle": "🔔 DESKTOPOVÉ NOTIFIKACE ÚKOLŮ",
-      "enabled": "Zapnuto",
-      "muted": "Ztišeno",
-      "notifDesc": "Odešle tichou systémovou notifikaci při dokončení práce agenta na pozadí.",
-      "langTitle": "🌐 JAZYK & LOKALIZACE",
-      "sysTitle": "🔧 SYSTÉMOVÉ PROSTŘEDÍ",
-      "planTier": "Úroveň plánu",
-      "activeModel": "Aktivní model",
-      "serverCore": "Jádro serveru",
-      "refresh": "Obnovit",
-      "refreshing": "Obnovuji…"
-    },
-    "en": {
-      "tabPerf": "Performance & Limits",
-      "tabSessions": "Sessions & Tools",
-      "tabSettings": "Settings",
-      "statusWorking": "Working",
-      "statusWaiting": "Waiting",
-      "statusIdle": "Idle",
-      "quota5h": "⏱ 5H SESSION",
-      "quota7d": "📅 7D WEEKLY",
-      "tokenBreakdownTitle": "🪙 TOKEN TOTALS & QUOTA CONSUMPTION (GOOGLE AI PRO)",
-      "weeklyTokens": "Weekly Used",
-      "remainingTokens": "Remaining Headroom",
-      "todayTokens": "Today Total",
-      "allTimeTokens": "All-Time History",
-      "usage": "Usage",
-      "limit": "Limit",
-      "activityTitle": "📊 7-DAY PROMPT ACTIVITY",
-      "today": "Today",
-      "total": "Total",
-      "prompts": "prompts",
-      "contextTitle": "🧠 CONTEXT & SUBAGENTS",
-      "contextMax": "Context Window (1M max):",
-      "subagentsActive": "Active",
-      "noSubagents": "No Subagents",
-      "prodTitle": "⚡ DEV PRODUCTIVITY & TIME SAVED",
-      "devTimeSaved": "Dev Time Saved",
-      "toolsRun": "Tools Run",
-      "tokensProcessed": "Tokens Processed",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 LATEST SESSIONS (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Active Workspaces",
-      "copy": "📋 Copy",
-      "copied": "Copied!",
-      "open": "Open",
-      "subagentsFleetTitle": "🤖 SPECIALIZED SUBAGENTS FLEET",
-      "agentsCount": "4 Agents",
-      "subWorking": "Working 💓",
-      "subReady": "Ready",
-      "localGpuTitle": "🖥️ LOCAL GPU WORKERS (RTX 3070)",
-      "qwenDesc": "Fast Code & Syntax",
-      "deepseekDesc": "Reasoning & Audit",
-      "vramTitle": "RTX 3070 VRAM",
-      "toolsTitle": "🛠️ TOOL CALLS BREAKDOWN",
-      "totalCalls": "calls",
-      "telemetryTitle": "⏱️ TELEMETRY & AUTO-REFRESH",
-      "heartbeatTitle": "💓 WORKING HEARTBEAT ANIMATION",
-      "active": "Active",
-      "disabled": "Disabled",
-      "pulseCadence": "🎚️ Pulse Cadence:",
-      "notifTitle": "🔔 TASK COMPLETION NOTIFICATIONS",
-      "enabled": "Enabled",
-      "muted": "Muted",
-      "notifDesc": "Sends a discreet desktop notification whenever a background turn completes.",
-      "langTitle": "🌐 LANGUAGE & LOCALIZATION",
-      "sysTitle": "🔧 SYSTEM & PLUGIN ENVIRONMENT",
-      "planTier": "Plan Tier",
-      "activeModel": "Active Model",
-      "serverCore": "Server Core",
-      "refresh": "Refresh",
-      "refreshing": "Refreshing…"
-    },
-    "it": {
-      "tabPerf": "Prestazioni & Limiti",
-      "tabSessions": "Sessioni & Strumenti",
-      "tabSettings": "Impostazioni",
-      "statusWorking": "Al lavoro",
-      "statusWaiting": "In attesa",
-      "statusIdle": "Inattivo",
-      "quota5h": "⏱ SESSIONE 5H",
-      "quota7d": "📅 SETTIMANALE 7D",
-      "usage": "Utilizzo",
-      "limit": "Limite",
-      "activityTitle": "📊 ATTIVITÀ PROMPT 7 GIORNI",
-      "today": "Oggi",
-      "total": "Totale",
-      "prompts": "prompt",
-      "contextTitle": "🧠 CONTESTO & SUBAGENTI",
-      "contextMax": "Finestra di contesto (1M max):",
-      "subagentsActive": "Attivi",
-      "noSubagents": "Nessun subagente",
-      "prodTitle": "⚡ PRODUTTIVITÀ & TEMPO RISPARMIATO",
-      "devTimeSaved": "Tempo risparmiato",
-      "toolsRun": "Strumenti eseguiti",
-      "tokensProcessed": "Token elaborati",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 ULTIME SESSIONI (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Workspace attivi",
-      "copy": "📋 Copia",
-      "copied": "Copiato!",
-      "open": "Apri",
-      "subagentsFleetTitle": "🤖 FLOTTA DI SUBAGENTI SPECIALIZZATI",
-      "agentsCount": "4 Agenti",
-      "subWorking": "Al lavoro 💓",
-      "subReady": "Pronto",
-      "localGpuTitle": "🖥️ WORKER GPU LOCALI (RTX 3070)",
-      "qwenDesc": "Codice rapido & sintassi",
-      "deepseekDesc": "Ragionamento & audit",
-      "vramTitle": "VRAM RTX 3070",
-      "toolsTitle": "🛠️ RIPARTIZIONE DEGLI STRUMENTI",
-      "totalCalls": "chiamate",
-      "telemetryTitle": "⏱️ TELEMETRIA & AUTO-REFRESH",
-      "heartbeatTitle": "💓 ANIMAZIONE BATTITO CARDIACO",
-      "active": "Attivo",
-      "disabled": "Disattivato",
-      "pulseCadence": "🎚️ Cadenza battito:",
-      "notifTitle": "🔔 NOTIFICHE DI COMPLETAMENTO",
-      "enabled": "Attivato",
-      "muted": "Silenzioso",
-      "notifDesc": "Invia una notifica discreta quando l'agente termina un'attività.",
-      "langTitle": "🌐 LINGUA & LOCALIZZAZIONE",
-      "sysTitle": "🔧 AMBIENTE DI SISTEMA",
-      "planTier": "Piano",
-      "activeModel": "Modello attivo",
-      "refresh": "Aggiorna",
-      "refreshing": "Aggiornamento…"
-    },
-    "de": {
-      "tabPerf": "Leistung & Limits",
-      "tabSessions": "Sitzungen & Tools",
-      "tabSettings": "Einstellungen",
-      "statusWorking": "Arbeitet",
-      "statusWaiting": "Wartet",
-      "statusIdle": "Inaktiv",
-      "quota5h": "⏱ 5H SITZUNG",
-      "quota7d": "📅 7T WÖCHENTLICH",
-      "usage": "Nutzung",
-      "limit": "Limit",
-      "activityTitle": "📊 7-TAGE PROMPT-AKTIVITÄT",
-      "today": "Heute",
-      "total": "Gesamt",
-      "prompts": "Prompts",
-      "contextTitle": "🧠 KONTEXT & SUBAGENTEN",
-      "contextMax": "Kontextfenster (1M max):",
-      "subagentsActive": "Aktiv",
-      "noSubagents": "Keine Subagenten",
-      "prodTitle": "⚡ PRODUKTIVITÄT & ZEITERSPARNIS",
-      "devTimeSaved": "Zeit gespart",
-      "toolsRun": "Tools ausgeführt",
-      "tokensProcessed": "Token verarbeitet",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 LETZTE SITZUNGEN (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Aktive Arbeitsbereiche",
-      "copy": "📋 Kopieren",
-      "copied": "Kopiert!",
-      "open": "Öffnen",
-      "subagentsFleetTitle": "🤖 SPEZIALISIERTE SUBAGENTEN-FLOTTE",
-      "agentsCount": "4 Agenten",
-      "subWorking": "Arbeitet 💓",
-      "subReady": "Bereit",
-      "localGpuTitle": "🖥️ LOKALE GPU-WORKER (RTX 3070)",
-      "qwenDesc": "Schneller Code & Syntax",
-      "deepseekDesc": "Logik & Sicherheitsaudit",
-      "vramTitle": "RTX 3070 VRAM",
-      "toolsTitle": "🛠️ WERKZEUG-AUFRUFE",
-      "totalCalls": "Aufrufe",
-      "telemetryTitle": "⏱️ TELEMETRIE & AUTO-REFRESH",
-      "heartbeatTitle": "💓 HERZSCHLAG-ANIMATION",
-      "active": "Aktiv",
-      "disabled": "Deaktiviert",
-      "pulseCadence": "🎚️ Pulsfrequenz:",
-      "notifTitle": "🔔 BENACHRICHTIGUNGEN BEI ABSCHLUSS",
-      "enabled": "Aktiviert",
-      "muted": "Stumm",
-      "notifDesc": "Sendet eine Benachrichtigung, wenn eine Hintergrundaufgabe abgeschlossen ist.",
-      "langTitle": "🌐 SPRACHE & LOKALISIERUNG",
-      "sysTitle": "🔧 SYSTEMUMGEBUNG",
-      "planTier": "Tarif",
-      "activeModel": "Aktives Modell",
-      "refresh": "Aktualisieren",
-      "refreshing": "Aktualisiere…"
-    },
-    "es": {
-      "tabPerf": "Rendimiento",
-      "tabSessions": "Sesiones & Herramientas",
-      "tabSettings": "Ajustes",
-      "statusWorking": "Trabajando",
-      "statusWaiting": "Esperando",
-      "statusIdle": "Inactivo",
-      "quota5h": "⏱ SESIÓN 5H",
-      "quota7d": "📅 SEMANAL 7D",
-      "usage": "Uso",
-      "limit": "Límite",
-      "activityTitle": "📊 ACTIVIDAD DE PROMPTS (7 DÍAS)",
-      "today": "Hoy",
-      "total": "Total",
-      "prompts": "prompts",
-      "contextTitle": "🧠 CONTEXTO & SUBAGENTES",
-      "contextMax": "Ventana de contexto (1M máx):",
-      "subagentsActive": "Activos",
-      "noSubagents": "Sin subagentes",
-      "prodTitle": "⚡ PRODUCTIVIDAD & TIEMPO AHORRADO",
-      "devTimeSaved": "Tiempo ahorrado",
-      "toolsRun": "Herramientas",
-      "tokensProcessed": "Tokens procesados",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 ÚLTIMAS SESIONES (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Espacios de trabajo",
-      "copy": "📋 Copiar",
-      "copied": "¡Copiado!",
-      "open": "Abrir",
-      "subagentsFleetTitle": "🤖 FLOTA DE SUBAGENTES ESPECIALIZADOS",
-      "agentsCount": "4 Agentes",
-      "subWorking": "Trabajando 💓",
-      "subReady": "Listo",
-      "localGpuTitle": "🖥️ TRABAJADORES GPU LOCALES (RTX 3070)",
-      "qwenDesc": "Código rápido y sintaxis",
-      "deepseekDesc": "Razonamiento y auditoría",
-      "vramTitle": "VRAM RTX 3070",
-      "toolsTitle": "🛠️ DESGLOSE DE HERRAMIENTAS",
-      "totalCalls": "llamadas",
-      "telemetryTitle": "⏱️ TELEMETRÍA & AUTO-REFRESH",
-      "heartbeatTitle": "💓 ANIMACIÓN DE LATIDO",
-      "active": "Activo",
-      "disabled": "Desactivado",
-      "pulseCadence": "🎚️ Cadencia del pulso:",
-      "notifTitle": "🔔 NOTIFICACIONES DE TAREAS",
-      "enabled": "Activado",
-      "muted": "Silenciado",
-      "notifDesc": "Envía una notificación de escritorio cuando termina una tarea.",
-      "langTitle": "🌐 IDIOMA Y LOCALIZACIÓN",
-      "sysTitle": "🔧 ENTORNO DEL SISTEMA",
-      "planTier": "Plan",
-      "activeModel": "Modelo activo",
-      "refresh": "Actualizar",
-      "refreshing": "Actualizando…"
-    },
-    "fr": {
-      "tabPerf": "Performances",
-      "tabSessions": "Sessions & Outils",
-      "tabSettings": "Paramètres",
-      "statusWorking": "En cours",
-      "statusWaiting": "En attente",
-      "statusIdle": "Inactif",
-      "quota5h": "⏱ SESSION 5H",
-      "quota7d": "📅 HEBDOMADAIRE 7J",
-      "usage": "Utilisation",
-      "limit": "Limite",
-      "activityTitle": "📊 ACTIVITÉ DES PROMPTS (7 JOURS)",
-      "today": "Aujourd'hui",
-      "total": "Total",
-      "prompts": "prompts",
-      "contextTitle": "🧠 CONTEXTE & SOUS-AGENTS",
-      "contextMax": "Fenêtre de contexte (1M max):",
-      "subagentsActive": "Actifs",
-      "noSubagents": "Aucun sous-agent",
-      "prodTitle": "⚡ PRODUCTIVITÉ & TEMPS GAGNÉ",
-      "devTimeSaved": "Temps gagné",
-      "toolsRun": "Outils exécutés",
-      "tokensProcessed": "Tokens traités",
-      "gcpTitle": "☁️ GOOGLE CLOUD & APIS",
-      "sessionsTitle": "󰆍 DERNIÈRES SESSIONS (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Espaces de travail",
-      "copy": "📋 Copier",
-      "copied": "Copié !",
-      "open": "Ouvrir",
-      "subagentsFleetTitle": "🤖 FLOTTE DE SOUS-AGENTS SPÉCIALISÉS",
-      "agentsCount": "4 Agents",
-      "subWorking": "En cours 💓",
-      "subReady": "Prêt",
-      "localGpuTitle": "🖥️ WORKERS GPU LOCAUX (RTX 3070)",
-      "qwenDesc": "Code rapide & syntaxe",
-      "deepseekDesc": "Raisonnement & audit",
-      "vramTitle": "VRAM RTX 3070",
-      "toolsTitle": "🛠️ RÉPARTITION DES OUTILS",
-      "totalCalls": "appels",
-      "telemetryTitle": "⏱️ TÉLÉMÉTRIE & AUTO-REFRESH",
-      "heartbeatTitle": "💓 BATTEMENT DE CŒUR EN COURS",
-      "active": "Actif",
-      "disabled": "Désactivé",
-      "pulseCadence": "🎚️ Cadence du pouls :",
-      "notifTitle": "🔔 NOTIFICATIONS DE FIN DE TÂCHE",
-      "enabled": "Activé",
-      "muted": "Muet",
-      "notifDesc": "Envoie une notification lorsqu'une tâche d'agent est terminée.",
-      "langTitle": "🌐 LANGUE & LOCALISATION",
-      "sysTitle": "🔧 ENVIRONNEMENT SYSTÈME",
-      "planTier": "Abonnement",
-      "activeModel": "Modèle actif",
-      "refresh": "Actualiser",
-      "refreshing": "Actualisation…"
-    },
-    "uk": {
-      "tabPerf": "Продуктивність та ліміти",
-      "tabSessions": "Сесії та інструменти",
-      "tabSettings": "Налаштування",
-      "statusWorking": "Працює",
-      "statusWaiting": "Очікує вводу",
-      "statusIdle": "У спокої",
-      "quota5h": "⏱ 5-ГОД СЕСІЯ",
-      "quota7d": "📅 7Д ТИЖНЕВИЙ",
-      "usage": "Використання",
-      "limit": "Ліміт",
-      "activityTitle": "📊 7-ДЕННА АКТИВНІСТЬ ПРОМПТІВ",
-      "today": "Сьогодні",
-      "total": "Всього",
-      "prompts": "промптів",
-      "contextTitle": "🧠 КОНТЕКСТ ТА СУБАГЕНТИ",
-      "contextMax": "Контекстне вікно (макс. 1M):",
-      "subagentsActive": "Активні",
-      "noSubagents": "Без субагентів",
-      "prodTitle": "⚡ ПРОДУКТИВНІСТЬ І ЗБЕРЕЖЕНИЙ ЧАС",
-      "devTimeSaved": "Збережений час",
-      "toolsRun": "Інструменти",
-      "tokensProcessed": "Оброблено токенів",
-      "gcpTitle": "☁️ GOOGLE CLOUD І APIS",
-      "sessionsTitle": "󰆍 ОСТАННІ СЕСІЇ (1 CLI · 1 IDE)",
-      "activeWorkspaces": "Робочі простори",
-      "copy": "📋 Копіювати",
-      "copied": "Скопійовано!",
-      "open": "Відкрити",
-      "subagentsFleetTitle": "🤖 КОМАНДА СПЕЦІАЛІЗОВАНИХ СУБАГЕНТІВ",
-      "agentsCount": "4 Агенти",
-      "subWorking": "Працює 💓",
-      "subReady": "Готовий",
-      "localGpuTitle": "🖥️ ЛОКАЛЬНІ GPU WORKERS (RTX 3070)",
-      "qwenDesc": "Швидкий код і синтаксис",
-      "deepseekDesc": "Міркування та аудит",
-      "vramTitle": "RTX 3070 VRAM",
-      "toolsTitle": "🛠️ РОЗПОДІЛ ВИКЛИКІВ ІНСТРУМЕНТІВ",
-      "totalCalls": "викликів",
-      "telemetryTitle": "⏱️ ТЕЛЕМЕТРІЯ ТА АВТООНОВЛЕННЯ",
-      "heartbeatTitle": "💓 СЕРЦЕБИТТЯ ПРИ РОБОТІ",
-      "active": "Активно",
-      "disabled": "Вимкнено",
-      "pulseCadence": "🎚️ Ритм пульсу:",
-      "notifTitle": "🔔 СПОВІЩЕННЯ ПРО ЗАВЕРШЕННЯ",
-      "enabled": "Увімкнено",
-      "muted": "Без звуку",
-      "notifDesc": "Надсилає сповіщення при завершенні фонового завдання.",
-      "langTitle": "🌐 МОВА ТА ЛОКАЛІЗАЦІЯ",
-      "sysTitle": "🔧 СИСТЕМНЕ СЕРЕДОВИЩЕ",
-      "planTier": "Рівень плану",
-      "activeModel": "Активна модель",
-      "refresh": "Оновити",
-      "refreshing": "Оновлюю…"
-    },
-    "ja": {
-      "tabPerf": "パフォーマンス",
-      "tabSessions": "セッション＆ツール",
-      "tabSettings": "設定",
-      "statusWorking": "処理中",
-      "statusWaiting": "入力待ち",
-      "statusIdle": "アイドル",
-      "quota5h": "⏱ 5時間セッション",
-      "quota7d": "📅 7日間制限",
-      "usage": "使用量",
-      "limit": "上限",
-      "activityTitle": "📊 7日間のプロンプト活動",
-      "today": "本日",
-      "total": "合計",
-      "prompts": "プロンプト",
-      "contextTitle": "🧠 コンテキスト＆エージェント",
-      "contextMax": "コンテキストウィンドウ (最大 1M):",
-      "subagentsActive": "稼働中",
-      "noSubagents": "サブエージェントなし",
-      "prodTitle": "⚡ 開発生産性＆節約時間",
-      "devTimeSaved": "節約された開発時間",
-      "toolsRun": "実行ツール数",
-      "tokensProcessed": "処理済みトークン",
-      "gcpTitle": "☁️ GOOGLE CLOUD＆API",
-      "sessionsTitle": "󰆍 最新セッション (1 CLI · 1 IDE)",
-      "activeWorkspaces": "ワークスペース",
-      "copy": "📋 コピー",
-      "copied": "コピー完了!",
-      "open": "開く",
-      "subagentsFleetTitle": "🤖 専門サブエージェント艦隊",
-      "agentsCount": "4 エージェント",
-      "subWorking": "処理中 💓",
-      "subReady": "待機中",
-      "localGpuTitle": "🖥️ ローカル GPU ワーカー (RTX 3070)",
-      "qwenDesc": "高速コード生成＆構文",
-      "deepseekDesc": "推論＆セキュリティ監査",
-      "vramTitle": "RTX 3070 VRAM",
-      "toolsTitle": "🛠️ ツール呼び出し内訳",
-      "totalCalls": "回",
-      "telemetryTitle": "⏱️ テレメトリ＆自動更新",
-      "heartbeatTitle": "💓 稼働中ハートビート脈拍",
-      "active": "有効",
-      "disabled": "無効",
-      "pulseCadence": "🎚️ 脈拍リズム:",
-      "notifTitle": "🔔 タスク完了デスクトップ通知",
-      "enabled": "有効",
-      "muted": "ミュート",
-      "notifDesc": "バックグラウンド作業完了時にデスクトップ通知を送信します。",
-      "langTitle": "🌐 言語とローカライゼーション",
-      "sysTitle": "🔧 システム環境",
-      "planTier": "プラン",
-      "activeModel": "アクティブモデル",
-      "refresh": "更新",
-      "refreshing": "更新中…"
-    }
-  })
-
+  
   function t(key, fallback) {
-    if (root.langDictionary && root.langDictionary[root.currentLang] && root.langDictionary[root.currentLang][key]) {
-      return root.langDictionary[root.currentLang][key]
-    }
-    if (root.langDictionary && root.langDictionary["en"] && root.langDictionary["en"][key]) {
-      return root.langDictionary["en"][key]
-    }
     return fallback || key
-  }
-
-  function setLanguage(langCode) {
-    root.currentLang = langCode
-    var entry = { id: root.moduleName }
-    if (root.settings && typeof root.settings === "object") {
-      for (var key in root.settings) {
-        if (key !== "id") entry[key] = root.settings[key]
-      }
-    }
-    entry["language"] = langCode
-    root.settings = entry
-
-    if (root.bar && root.bar.shell && typeof root.bar.shell.updateEntryInline === "function") {
-      root.bar.shell.updateEntryInline(root.moduleName, entry)
-    }
   }
 
   // Activity & Telemetry
@@ -564,7 +86,6 @@ BarWidget {
   // Exact System Monitor Color Scheme
   readonly property url appIconPath: Qt.resolvedUrl("assets/antigravity_logo.png")
   readonly property url appIconPanelPath: Qt.resolvedUrl("assets/antigravity_logo_panel.png")
-  readonly property url omarchyIconPath: Qt.resolvedUrl("assets/omarchy.png")
   readonly property color foreground: (bar && bar.foreground) ? bar.foreground : Color.foreground
   readonly property color background: Color.background
   readonly property color urgent: (bar && bar.urgent) ? bar.urgent : Color.urgent
@@ -1054,7 +575,6 @@ BarWidget {
       if (open !== root.opened) root.opened = open
       if (open) {
         root.requestRefresh()
-        headerOmarchyLogoBox.startLightningDischarge()
       }
     }
     contentWidth: panel.fittedContentWidth(Style.space(560))
@@ -1143,413 +663,15 @@ BarWidget {
                 font.bold: true
               }
             }
-
-            // Omarchy ASCII Logo Banner (Right side, level with Antigravity logo, exactly identical to settings logo)
-            Item {
-              id: headerOmarchyLogoBox
-              width: 153
-              height: 50
-              clip: true
-              scale: headerOmarchyMouse.pressed ? 0.96 : 1.0
-
-              Behavior on scale { NumberAnimation { duration: 90 } }
-
-              property bool animating: false
-              property real elapsedFrames: 0.0
-              property var heatMap: []
-              property var sparks: []
-              property var embers: []
-              property var currentBolt: null
-              property var pendingCells: []
-              property real lastLaserX: 0.0
-              property real lastLaserY: 25.0
-
-              readonly property var allPalettes: [
-                // 0: Omarchy Classic (Cyan -> Blue -> Purple)
-                ["#ffffff", "#ffffff", "#e0f7fa", "#67e8f9", "#38bdf8", "#06b6d4", "#0284c7", "#2563eb", "#6366f1", "#8b5cf6"],
-                // 1: Cyberpunk Neon (Pink -> Rose -> Magenta -> Deep Violet)
-                ["#ffffff", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#a21caf", "#701a75"],
-                // 2: Matrix Hacker (Ice Lime -> Emerald -> Forest Green)
-                ["#ffffff", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534"],
-                // 3: Solar Synthwave (White -> Yellow -> Bright Amber -> Fiery Crimson)
-                ["#ffffff", "#fefce8", "#fef08a", "#fde047", "#facc15", "#eab308", "#f97316", "#ea580c", "#dc2626", "#991b1b"],
-                // 4: Nord Glacier (White -> Glacial Aqua -> Deep Arctic Teal)
-                ["#ffffff", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59"],
-                // 5: Vaporwave Sunset (Peach -> Fuchsia -> Purple -> Midnight Indigo)
-                ["#ffffff", "#fff1f2", "#fed7aa", "#fdba74", "#fb923c", "#f43f5e", "#d946ef", "#a855f7", "#7c3aed", "#4338ca"],
-                // 6: Toxic Gold (White -> Electric Lime -> Golden Amber -> Bronze)
-                ["#ffffff", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#ca8a04", "#d97706", "#b45309", "#78350f"],
-                // 7: Electric Amethyst (White -> Lilac -> Lavender -> Deep Velvet Purple)
-                ["#ffffff", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#581c87"],
-                // 8: Deep Ocean Abyss (Ice Blue -> Sky -> Azure -> Ultramarine)
-                ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0284c7", "#0369a1", "#1d4ed8", "#1e3a8a"]
-              ]
-              property int paletteIndex: 0
-              property var activeGradient: allPalettes[0]
-
-              function randomizePalette() {
-                var newIdx = Math.floor(Math.random() * headerOmarchyLogoBox.allPalettes.length)
-                if (newIdx === headerOmarchyLogoBox.paletteIndex) {
-                  newIdx = (headerOmarchyLogoBox.paletteIndex + 1) % headerOmarchyLogoBox.allPalettes.length
-                }
-                headerOmarchyLogoBox.paletteIndex = newIdx
-                headerOmarchyLogoBox.activeGradient = headerOmarchyLogoBox.allPalettes[newIdx]
-              }
-
-              function createLightningBolt(x1, y1, x2, y2) {
-                var dx = x2 - x1
-                var dy = y2 - y1
-                var dist = Math.sqrt(dx * dx + dy * dy)
-                if (dist < 1) dist = 1
-                var nx = -dy / dist
-                var ny = dx / dist
-
-                var steps = 6
-                var pts = [{ x: x1, y: y1 }]
-                var branches = []
-
-                for (var i = 1; i < steps; i++) {
-                  var t = i / steps
-                  var bx = x1 + dx * t
-                  var by = y1 + dy * t
-                  var maxJitter = Math.min(22, Math.max(8, dist * 0.22))
-                  var jitter = (Math.random() - 0.5) * 2 * maxJitter
-                  var px = bx + nx * jitter
-                  var py = by + ny * jitter
-                  pts.push({ x: px, y: py })
-
-                  // 1-2 fractal side branches
-                  if (i === 2 || i === 4) {
-                    if (Math.random() > 0.35) {
-                      var bPts = [{ x: px, y: py }]
-                      var bLen = 10 + Math.random() * 14
-                      var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 10
-                      var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
-                      var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
-                      bPts.push({ x: bpx, y: bpy })
-                      branches.push(bPts)
-                    }
-                  }
-                }
-                pts.push({ x: x2, y: y2 })
-
-                return {
-                  pts: pts,
-                  branches: branches,
-                  targetX: x2,
-                  targetY: y2,
-                  life: 1.0
-                }
-              }
-
-              function startLightningDischarge() {
-                headerOmarchyLogoBox.randomizePalette()
-                headerOmarchyLogoBox.heatMap = []
-                headerOmarchyLogoBox.sparks = []
-                headerOmarchyLogoBox.embers = []
-                headerOmarchyLogoBox.currentBolt = null
-                headerOmarchyLogoBox.pendingCells = []
-                headerOmarchyLogoBox.elapsedFrames = 0.0
-                headerOmarchyLogoBox.lastLaserX = Math.random() * headerCanvas.width
-                headerOmarchyLogoBox.lastLaserY = Math.random() * headerCanvas.height
-
-                for (var r = 0; r < 10; r++) {
-                  var row = []
-                  for (var c = 0; c < 85; c++) {
-                    row.push(0.0)
-                    var ch = headerCanvas.asciiArt[r].charAt(c)
-                    if (ch === "█" || ch === "▄" || ch === "▀") {
-                      headerOmarchyLogoBox.pendingCells.push({ r: r, c: c })
-                    }
-                  }
-                  headerOmarchyLogoBox.heatMap.push(row)
-                }
-
-                for (var i = headerOmarchyLogoBox.pendingCells.length - 1; i > 0; i--) {
-                  var j = Math.floor(Math.random() * (i + 1))
-                  var tmp = headerOmarchyLogoBox.pendingCells[i]
-                  headerOmarchyLogoBox.pendingCells[i] = headerOmarchyLogoBox.pendingCells[j]
-                  headerOmarchyLogoBox.pendingCells[j] = tmp
-                }
-
-                headerOmarchyLogoBox.animating = true
-                headerLaserTimer.restart()
-              }
-
-              Timer {
-                id: headerLaserTimer
-                interval: 16
-                repeat: true
-                running: headerOmarchyLogoBox.animating && root.popupOpen
-
-                onTriggered: {
-                  if (!headerOmarchyLogoBox.animating || !root.popupOpen) return
-
-                  headerOmarchyLogoBox.elapsedFrames += 1.0
-                  var cw = headerCanvas.width / 85
-                  var chH = headerCanvas.height / 10
-
-                  if (headerOmarchyLogoBox.pendingCells.length > 0) {
-                    var clusterSize = Math.min(headerOmarchyLogoBox.pendingCells.length, 4)
-                    var targetCell = headerOmarchyLogoBox.pendingCells.pop()
-                    headerOmarchyLogoBox.heatMap[targetCell.r][targetCell.c] = 1.0
-
-                    for (var k = 1; k < clusterSize; k++) {
-                      var extra = headerOmarchyLogoBox.pendingCells.pop()
-                      headerOmarchyLogoBox.heatMap[extra.r][extra.c] = 1.0
-                    }
-
-                    var targetX = targetCell.c * cw + cw / 2
-                    var targetY = targetCell.r * chH + chH / 2
-
-                    headerOmarchyLogoBox.currentBolt = headerOmarchyLogoBox.createLightningBolt(
-                      headerOmarchyLogoBox.lastLaserX,
-                      headerOmarchyLogoBox.lastLaserY,
-                      targetX,
-                      targetY
-                    )
-
-                    headerOmarchyLogoBox.lastLaserX = targetX
-                    headerOmarchyLogoBox.lastLaserY = targetY
-
-                    for (var p = 0; p < 4; p++) {
-                      headerOmarchyLogoBox.sparks.push({
-                        x: targetX,
-                        y: targetY,
-                        vx: (Math.random() - 0.5) * 6.5,
-                        vy: (Math.random() - 0.6) * 5.5,
-                        life: 1.0,
-                        decay: 0.04 + Math.random() * 0.05,
-                        size: 1.5 + Math.random() * 2.5
-                      })
-                    }
-
-                    if (Math.random() > 0.60) {
-                      headerOmarchyLogoBox.embers.push({
-                        x: targetX + (Math.random() - 0.5) * 12,
-                        y: headerCanvas.height - 1 - Math.random() * 4,
-                        life: 1.0,
-                        decay: 0.025 + Math.random() * 0.035,
-                        size: 1.5 + Math.random() * 2.0
-                      })
-                    }
-                  } else if (headerOmarchyLogoBox.currentBolt) {
-                    headerOmarchyLogoBox.currentBolt.life -= 0.28
-                    if (headerOmarchyLogoBox.currentBolt.life <= 0) {
-                      headerOmarchyLogoBox.currentBolt = null
-                    }
-                  }
-
-                  for (var s = headerOmarchyLogoBox.sparks.length - 1; s >= 0; s--) {
-                    var sp = headerOmarchyLogoBox.sparks[s]
-                    sp.x += sp.vx
-                    sp.y += sp.vy
-                    sp.vy += 0.16
-                    sp.life -= sp.decay
-                    if (sp.life <= 0) {
-                      headerOmarchyLogoBox.sparks.splice(s, 1)
-                    }
-                  }
-
-                  for (var e = headerOmarchyLogoBox.embers.length - 1; e >= 0; e--) {
-                    var eb = headerOmarchyLogoBox.embers[e]
-                    eb.life -= eb.decay
-                    if (eb.life <= 0) {
-                      headerOmarchyLogoBox.embers.splice(e, 1)
-                    }
-                  }
-
-                  for (var r2 = 0; r2 < 10; r2++) {
-                    for (var c2 = 0; c2 < 85; c2++) {
-                      if (headerOmarchyLogoBox.heatMap[r2] && headerOmarchyLogoBox.heatMap[r2][c2] > 0.01) {
-                        headerOmarchyLogoBox.heatMap[r2][c2] = Math.max(0.01, headerOmarchyLogoBox.heatMap[r2][c2] - 0.045)
-                      }
-                    }
-                  }
-
-                  headerCanvas.requestPaint()
-
-                  if (headerOmarchyLogoBox.pendingCells.length === 0 && !headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.sparks.length === 0 && headerOmarchyLogoBox.embers.length === 0) {
-                    headerOmarchyLogoBox.animating = false
-                    headerLaserTimer.stop()
-                    headerCanvas.requestPaint()
-                  }
-                }
-              }
-
-              Canvas {
-                id: headerCanvas
-                anchors.centerIn: parent
-                width: 153
-                height: 36
-
-                readonly property var asciiArt: [
-                  "                 ▄▄▄                                                                 ",
-                  " ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄     ",
-                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
-                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███    ",
-                  "███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███    ",
-                  "███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███    ",
-                  "███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███    ",
-                  "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
-                  " ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀     ",
-                  "                                       ███   █▀                                      "
-                ]
-
-                onPaint: {
-                  var ctx = getContext("2d")
-                  ctx.clearRect(0, 0, width, height)
-
-                  var cols = 85
-                  var rows = 10
-                  var cw = width / cols
-                  var ch = height / rows
-                  var grad = headerOmarchyLogoBox.activeGradient || headerOmarchyLogoBox.allPalettes[0]
-
-                  // 1. Draw ASCII Character Blocks
-                  for (var r = 0; r < rows; r++) {
-                    var line = asciiArt[r]
-
-                    for (var c = 0; c < cols; c++) {
-                      var heatVal = (headerOmarchyLogoBox.heatMap[r] && headerOmarchyLogoBox.heatMap[r][c]) || 0.0
-                      if (headerOmarchyLogoBox.animating && heatVal === 0.0) continue
-
-                      var chChar = line.charAt(c)
-                      if (chChar === " " || chChar === "") continue
-
-                      var bx = c * cw
-                      var by = r * ch
-
-                      if (heatVal > 0.6) {
-                        ctx.fillStyle = "#ffffff"
-                      } else if (heatVal > 0.2) {
-                        ctx.fillStyle = "#e0f7fa"
-                      } else {
-                        ctx.fillStyle = grad[r] || "#38bdf8"
-                      }
-
-                      if (chChar === "█") {
-                        ctx.fillRect(bx, by, cw + 0.35, ch + 0.35)
-                      } else if (chChar === "▄") {
-                        ctx.fillRect(bx, by + ch / 2, cw + 0.35, ch / 2 + 0.35)
-                      } else if (chChar === "▀") {
-                        ctx.fillRect(bx, by, cw + 0.35, ch / 2 + 0.35)
-                      }
-                    }
-                  }
-
-                  // 2. Draw Floor Embers
-                  for (var e = 0; e < headerOmarchyLogoBox.embers.length; e++) {
-                    var eb = headerOmarchyLogoBox.embers[e]
-                    ctx.fillStyle = eb.life > 0.5 ? (grad[4] || "#38bdf8") : (grad[7] || "#8b5cf6")
-                    ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
-                  }
-
-                  // 3. Draw Electric Sparks
-                  for (var spIdx = 0; spIdx < headerOmarchyLogoBox.sparks.length; spIdx++) {
-                    var spk = headerOmarchyLogoBox.sparks[spIdx]
-                    ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
-                    ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
-                  }
-
-                  // 4. Draw Exactly 1 Single Fractal Lightning Bolt Discharge
-                  if (headerOmarchyLogoBox.currentBolt && headerOmarchyLogoBox.currentBolt.life > 0) {
-                    var bolt = headerOmarchyLogoBox.currentBolt
-                    var bAlpha = Math.max(0.1, bolt.life)
-                    var pts = bolt.pts
-                    var branches = bolt.branches
-
-                    // A. Wide Plasma Aura
-                    ctx.strokeStyle = (grad[4] || "#38bdf8")
-                    ctx.globalAlpha = bAlpha * 0.45
-                    ctx.lineWidth = 4.8
-                    ctx.beginPath()
-                    ctx.moveTo(pts[0].x, pts[0].y)
-                    for (var i = 1; i < pts.length; i++) {
-                      ctx.lineTo(pts[i].x, pts[i].y)
-                    }
-                    ctx.stroke()
-
-                    // Branches - Aura
-                    for (var br = 0; br < branches.length; br++) {
-                      var bp = branches[br]
-                      ctx.beginPath()
-                      ctx.moveTo(bp[0].x, bp[0].y)
-                      ctx.lineTo(bp[1].x, bp[1].y)
-                      ctx.stroke()
-                    }
-
-                    // B. Electric Mid-Arc
-                    ctx.strokeStyle = (grad[7] || "#a855f7")
-                    ctx.globalAlpha = bAlpha * 0.85
-                    ctx.lineWidth = 2.4
-                    ctx.beginPath()
-                    ctx.moveTo(pts[0].x, pts[0].y)
-                    for (var j = 1; j < pts.length; j++) {
-                      ctx.lineTo(pts[j].x, pts[j].y)
-                    }
-                    ctx.stroke()
-
-                    // Branches - Mid-Arc
-                    for (var br2 = 0; br2 < branches.length; br2++) {
-                      var bp2 = branches[br2]
-                      ctx.beginPath()
-                      ctx.moveTo(bp2[0].x, bp2[0].y)
-                      ctx.lineTo(bp2[1].x, bp2[1].y)
-                      ctx.stroke()
-                    }
-                    ctx.globalAlpha = 1.0
-
-                    // C. White-Hot Lightning Core
-                    ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
-                    ctx.lineWidth = 1.1
-                    ctx.beginPath()
-                    ctx.moveTo(pts[0].x, pts[0].y)
-                    for (var k = 1; k < pts.length; k++) {
-                      ctx.lineTo(pts[k].x, pts[k].y)
-                    }
-                    ctx.stroke()
-
-                    // D. Impact Flash Corona
-                    var tx = bolt.targetX
-                    var ty = bolt.targetY
-                    ctx.fillStyle = "rgba(255, 255, 255, " + (bAlpha * 0.9).toFixed(2) + ")"
-                    ctx.fillRect(tx - 1.5, ty - 1.5, 3, 3)
-                    ctx.fillStyle = "rgba(56, 189, 248, " + (bAlpha * 0.5).toFixed(2) + ")"
-                    ctx.fillRect(tx - 3.5, ty - 3.5, 7, 7)
-                  }
-                }
-              }
-
-              MouseArea {
-                id: headerOmarchyMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  headerOmarchyLogoBox.startLightningDischarge()
-                }
-              }
-
-              Connections {
-                target: root
-                function onPopupOpenChanged() {
-                  if (!root.popupOpen && headerOmarchyLogoBox.animating) {
-                    headerOmarchyLogoBox.animating = false
-                    headerLaserTimer.stop()
-                  }
-                }
-              }
-            }
           }
 
-          // Status Pill (Working / Waiting / Idle) - Centered horizontally & shifted 10px up
+          // Status Pill (Working / Waiting / Idle) - Right aligned
           Rectangle {
             id: statusPillRect
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: Style.space(8)
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: -10
-            height: 20
+            height: 22
             width: statusPillRow.implicitWidth + 14
             radius: 4
             color: root.isWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.12) : (root.isWaiting ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12) : root.cardFill)
@@ -1630,7 +752,9 @@ BarWidget {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   root.selectedTab = modelData.tabIndex
-                  headerOmarchyLogoBox.startLightningDischarge()
+                  if (modelData.tabIndex === 2) {
+                    omarchyLogoBox.startLightningDischarge()
+                  }
                 }
               }
             }
@@ -3629,33 +2753,36 @@ BarWidget {
             }
           }
 
-          // Card 4: 🌐 Language & Localization (8 languages)
+          // Card 4: ⚡ Omarchy Linux ASCII Engine & Logo
           Rectangle {
             width: parent.width
-            implicitHeight: langCardCol.implicitHeight + Style.space(8)
+            implicitHeight: omarchyCardCol.implicitHeight + Style.space(12)
             radius: 8
             color: root.cardFill
             border.color: root.cardBorder
             border.width: 1
 
             Column {
-              id: langCardCol
+              id: omarchyCardCol
               width: parent.width - Style.space(8)
               anchors.centerIn: parent
-              spacing: Style.space(4)
+              spacing: Style.space(6)
 
               RowLayout {
                 width: parent.width
+
                 Text {
-                  text: root.t("langTitle", "🌐 LANGUAGE & LOCALIZATION")
+                  text: "⚡ OMARCHY LINUX"
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
                 }
+
                 Item { Layout.fillWidth: true }
+
                 Text {
-                  text: root.currentLang.toUpperCase()
+                  text: "THE R IS SILENT · PALETTE " + (omarchyLogoBox.paletteIndex + 1) + "/9"
                   color: root.primaryAccent
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.bodySmall
@@ -3663,59 +2790,411 @@ BarWidget {
                 }
               }
 
-              // 8-language grid (4x2)
-              Grid {
-                columns: 4
-                width: parent.width
-                spacing: Style.space(3)
+              // Centered interactive Omarchy ASCII banner
+              Item {
+                id: omarchyLogoBox
+                width: 340
+                height: 80
+                anchors.horizontalCenter: parent.horizontalCenter
+                clip: true
+                scale: omarchyMouse.pressed ? 0.97 : (omarchyMouse.containsMouse ? 1.02 : 1.0)
 
-                Repeater {
-                  model: [
-                    { code: "cs", flag: "🇨🇿", name: "Čeština" },
-                    { code: "en", flag: "🇬🇧", name: "English" },
-                    { code: "uk", flag: "🇺🇦", name: "Українська" },
-                    { code: "it", flag: "🇮🇹", name: "Italiano" },
-                    { code: "de", flag: "🇩🇪", name: "Deutsch" },
-                    { code: "es", flag: "🇪🇸", name: "Español" },
-                    { code: "fr", flag: "🇫🇷", name: "Français" },
-                    { code: "ja", flag: "🇯🇵", name: "日本語" }
-                  ]
+                Behavior on scale { NumberAnimation { duration: 90 } }
 
-                  Rectangle {
-                    width: (parent.width - 3 * Style.space(3)) / 4
-                    height: 32
-                    radius: 5
-                    color: root.currentLang === modelData.code ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15) : (langBtnMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03))
-                    border.color: root.currentLang === modelData.code ? root.primaryAccent : root.cardBorder
-                    border.width: 1
+                property bool animating: false
+                property real elapsedFrames: 0.0
+                property var heatMap: []
+                property var sparks: []
+                property var embers: []
+                property var currentBolt: null
+                property var pendingCells: []
+                property real lastLaserX: 170.0
+                property real lastLaserY: 40.0
 
-                    RowLayout {
-                      anchors.centerIn: parent
-                      spacing: 3
-                      Text {
-                        text: modelData.flag
-                        font.pixelSize: Style.font.caption
+                readonly property var allPalettes: [
+                  // 0: Omarchy Classic (Cyan -> Blue -> Purple)
+                  ["#ffffff", "#ffffff", "#e0f7fa", "#67e8f9", "#38bdf8", "#06b6d4", "#0284c7", "#2563eb", "#6366f1", "#8b5cf6"],
+                  // 1: Cyberpunk Neon (Pink -> Rose -> Magenta -> Deep Violet)
+                  ["#ffffff", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#a21caf", "#701a75"],
+                  // 2: Matrix Hacker (Ice Lime -> Emerald -> Forest Green)
+                  ["#ffffff", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534"],
+                  // 3: Solar Synthwave (White -> Yellow -> Bright Amber -> Fiery Crimson)
+                  ["#ffffff", "#fefce8", "#fef08a", "#fde047", "#facc15", "#eab308", "#f97316", "#ea580c", "#dc2626", "#991b1b"],
+                  // 4: Nord Glacier (White -> Glacial Aqua -> Deep Arctic Teal)
+                  ["#ffffff", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59"],
+                  // 5: Vaporwave Sunset (Peach -> Fuchsia -> Purple -> Midnight Indigo)
+                  ["#ffffff", "#fff1f2", "#fed7aa", "#fdba74", "#fb923c", "#f43f5e", "#d946ef", "#a855f7", "#7c3aed", "#4338ca"],
+                  // 6: Toxic Gold (White -> Electric Lime -> Golden Amber -> Bronze)
+                  ["#ffffff", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#ca8a04", "#d97706", "#b45309", "#78350f"],
+                  // 7: Electric Amethyst (White -> Lilac -> Lavender -> Deep Velvet Purple)
+                  ["#ffffff", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#581c87"],
+                  // 8: Deep Ocean Abyss (Ice Blue -> Sky -> Azure -> Ultramarine)
+                  ["#ffffff", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0284c7", "#0369a1", "#1d4ed8", "#1e3a8a"]
+                ]
+                property int paletteIndex: 0
+                property var activeGradient: allPalettes[0]
+
+                function randomizePalette() {
+                  var newIdx = Math.floor(Math.random() * omarchyLogoBox.allPalettes.length)
+                  if (newIdx === omarchyLogoBox.paletteIndex) {
+                    newIdx = (omarchyLogoBox.paletteIndex + 1) % omarchyLogoBox.allPalettes.length
+                  }
+                  omarchyLogoBox.paletteIndex = newIdx
+                  omarchyLogoBox.activeGradient = omarchyLogoBox.allPalettes[newIdx]
+                }
+
+                function createLightningBolt(x1, y1, x2, y2) {
+                  var dx = x2 - x1
+                  var dy = y2 - y1
+                  var dist = Math.sqrt(dx * dx + dy * dy)
+                  if (dist < 1) dist = 1
+                  var nx = -dy / dist
+                  var ny = dx / dist
+
+                  var steps = 7
+                  var pts = [{ x: x1, y: y1 }]
+                  var branches = []
+
+                  for (var i = 1; i < steps; i++) {
+                    var t = i / steps
+                    var bx = x1 + dx * t
+                    var by = y1 + dy * t
+                    var maxJitter = Math.min(30, Math.max(10, dist * 0.25))
+                    var jitter = (Math.random() - 0.5) * 2 * maxJitter
+                    var px = bx + nx * jitter
+                    var py = by + ny * jitter
+                    pts.push({ x: px, y: py })
+
+                    if (i === 2 || i === 4) {
+                      if (Math.random() > 0.35) {
+                        var bPts = [{ x: px, y: py }]
+                        var bLen = 14 + Math.random() * 20
+                        var bJitter = jitter * 1.5 + (Math.random() - 0.5) * 12
+                        var bpx = px + nx * bJitter + (dx / dist) * (bLen * 0.5)
+                        var bpy = py + ny * bJitter + (dy / dist) * (bLen * 0.5)
+                        bPts.push({ x: bpx, y: bpy })
+                        branches.push(bPts)
                       }
-                      Text {
-                        text: modelData.name
-                        color: root.currentLang === modelData.code ? root.primaryAccent : root.foreground
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: root.currentLang === modelData.code
-                        elide: Text.ElideRight
-                        Layout.maximumWidth: 62
+                    }
+                  }
+                  pts.push({ x: x2, y: y2 })
+
+                  return {
+                    pts: pts,
+                    branches: branches,
+                    targetX: x2,
+                    targetY: y2,
+                    life: 1.0
+                  }
+                }
+
+                function startLightningDischarge() {
+                  omarchyLogoBox.randomizePalette()
+                  omarchyLogoBox.heatMap = []
+                  omarchyLogoBox.sparks = []
+                  omarchyLogoBox.embers = []
+                  omarchyLogoBox.currentBolt = null
+                  omarchyLogoBox.pendingCells = []
+                  omarchyLogoBox.elapsedFrames = 0.0
+                  omarchyLogoBox.lastLaserX = Math.random() * omarchyCanvas.width
+                  omarchyLogoBox.lastLaserY = Math.random() * omarchyCanvas.height
+
+                  for (var r = 0; r < 10; r++) {
+                    var row = []
+                    var line = omarchyCanvas.asciiArt[r]
+                    for (var c = 0; c < 85; c++) {
+                      row.push(0.0)
+                      var ch = line.charAt(c)
+                      if (ch !== " " && ch !== "") {
+                        omarchyLogoBox.pendingCells.push({ r: r, c: c })
+                      }
+                    }
+                    omarchyLogoBox.heatMap.push(row)
+                  }
+
+                  for (var i = omarchyLogoBox.pendingCells.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1))
+                    var tmp = omarchyLogoBox.pendingCells[i]
+                    omarchyLogoBox.pendingCells[i] = omarchyLogoBox.pendingCells[j]
+                    omarchyLogoBox.pendingCells[j] = tmp
+                  }
+
+                  omarchyLogoBox.animating = true
+                  omarchyLaserTimer.restart()
+                  omarchyCanvas.requestPaint()
+                }
+
+                Timer {
+                  id: omarchyLaserTimer
+                  interval: 16
+                  repeat: true
+                  running: omarchyLogoBox.animating && root.popupOpen
+                  onTriggered: {
+                    if (!omarchyLogoBox.animating || !root.popupOpen) return
+
+                    omarchyLogoBox.elapsedFrames += 1.0
+
+                    var cols = 85
+                    var rows = 10
+                    var cw = omarchyCanvas.width / cols
+                    var ch = omarchyCanvas.height / rows
+
+                    if (omarchyLogoBox.pendingCells.length > 0) {
+                      var clusterSize = Math.min(omarchyLogoBox.pendingCells.length, 5)
+                      var targetCell = omarchyLogoBox.pendingCells.pop()
+                      omarchyLogoBox.heatMap[targetCell.r][targetCell.c] = 1.0
+
+                      for (var cl = 1; cl < clusterSize; cl++) {
+                        var extra = omarchyLogoBox.pendingCells.pop()
+                        omarchyLogoBox.heatMap[extra.r][extra.c] = 1.0
+                      }
+
+                      var targetX = targetCell.c * cw + cw / 2
+                      var targetY = targetCell.r * ch + ch / 2
+
+                      omarchyLogoBox.currentBolt = omarchyLogoBox.createLightningBolt(
+                        omarchyLogoBox.lastLaserX,
+                        omarchyLogoBox.lastLaserY,
+                        targetX,
+                        targetY
+                      )
+                      omarchyLogoBox.lastLaserX = targetX
+                      omarchyLogoBox.lastLaserY = targetY
+
+                      for (var s = 0; s < 3; s++) {
+                        omarchyLogoBox.sparks.push({
+                          x: targetX + (Math.random() - 0.5) * 6,
+                          y: targetY + (Math.random() - 0.5) * 6,
+                          vx: (Math.random() - 0.5) * 4.5,
+                          vy: (Math.random() - 0.5) * 4.5 - 1.5,
+                          life: 1.0,
+                          decay: 0.05 + Math.random() * 0.06,
+                          size: 1.5 + Math.random() * 2.0
+                        })
+                      }
+
+                      if (targetCell.r >= 8) {
+                        for (var em = 0; em < 2; em++) {
+                          omarchyLogoBox.embers.push({
+                            x: targetX + (Math.random() - 0.5) * 8,
+                            y: omarchyCanvas.height - 1 - Math.random() * 3,
+                            vx: (Math.random() - 0.5) * 1.5,
+                            vy: -Math.random() * 0.8,
+                            life: 1.0,
+                            decay: 0.03 + Math.random() * 0.04,
+                            size: 1.0 + Math.random() * 2.0
+                          })
+                        }
+                      }
+                    } else if (omarchyLogoBox.currentBolt) {
+                      omarchyLogoBox.currentBolt.life -= 0.28
+                      if (omarchyLogoBox.currentBolt.life <= 0) {
+                        omarchyLogoBox.currentBolt = null
                       }
                     }
 
-                    MouseArea {
-                      id: langBtnMouse
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: root.setLanguage(modelData.code)
+                    for (var s = omarchyLogoBox.sparks.length - 1; s >= 0; s--) {
+                      var sp = omarchyLogoBox.sparks[s]
+                      sp.x += sp.vx
+                      sp.y += sp.vy
+                      sp.vy += 0.12
+                      sp.life -= sp.decay
+                      if (sp.life <= 0) {
+                        omarchyLogoBox.sparks.splice(s, 1)
+                      }
+                    }
+
+                    for (var e = omarchyLogoBox.embers.length - 1; e >= 0; e--) {
+                      var eb = omarchyLogoBox.embers[e]
+                      eb.life -= eb.decay
+                      if (eb.life <= 0) {
+                        omarchyLogoBox.embers.splice(e, 1)
+                      }
+                    }
+
+                    for (var r2 = 0; r2 < 10; r2++) {
+                      for (var c2 = 0; c2 < 85; c2++) {
+                        if (omarchyLogoBox.heatMap[r2] && omarchyLogoBox.heatMap[r2][c2] > 0.01) {
+                          omarchyLogoBox.heatMap[r2][c2] = Math.max(0.01, omarchyLogoBox.heatMap[r2][c2] - 0.045)
+                        }
+                      }
+                    }
+
+                    omarchyCanvas.requestPaint()
+
+                    if (omarchyLogoBox.pendingCells.length === 0 && !omarchyLogoBox.currentBolt && omarchyLogoBox.sparks.length === 0 && omarchyLogoBox.embers.length === 0) {
+                      omarchyLogoBox.animating = false
+                      omarchyLaserTimer.stop()
+                      omarchyCanvas.requestPaint()
                     }
                   }
                 }
+
+                Canvas {
+                  id: omarchyCanvas
+                  anchors.centerIn: parent
+                  width: 340
+                  height: 80
+
+                  readonly property var asciiArt: [
+                    "                 ▄▄▄                                                                 ",
+                    " ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄     ",
+                    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███    ",
+                    "███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███    ",
+                    "███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███    ",
+                    "███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███    ",
+                    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███    ",
+                    " ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀     ",
+                    "                                       ███   █▀                                      "
+                  ]
+
+                  onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.clearRect(0, 0, width, height)
+
+                    var cols = 85
+                    var rows = 10
+                    var cw = width / cols
+                    var ch = height / rows
+                    var grad = omarchyLogoBox.activeGradient || omarchyLogoBox.allPalettes[0]
+
+                    // 1. Draw ASCII Character Blocks
+                    for (var r = 0; r < rows; r++) {
+                      var line = asciiArt[r]
+
+                      for (var c = 0; c < cols; c++) {
+                        var heatVal = (omarchyLogoBox.heatMap[r] && omarchyLogoBox.heatMap[r][c]) || 0.0
+                        if (omarchyLogoBox.animating && heatVal === 0.0) continue
+
+                        var chChar = line.charAt(c)
+                        if (chChar === " " || chChar === "") continue
+
+                        var bx = c * cw
+                        var by = r * ch
+
+                        if (heatVal > 0.6) {
+                          ctx.fillStyle = "#ffffff"
+                        } else if (heatVal > 0.2) {
+                          ctx.fillStyle = "#e0f7fa"
+                        } else {
+                          ctx.fillStyle = grad[r] || "#38bdf8"
+                        }
+
+                        if (chChar === "█") {
+                          ctx.fillRect(bx, by, cw + 0.4, ch + 0.4)
+                        } else if (chChar === "▄") {
+                          ctx.fillRect(bx, by + ch / 2, cw + 0.4, ch / 2 + 0.4)
+                        } else if (chChar === "▀") {
+                          ctx.fillRect(bx, by, cw + 0.4, ch / 2 + 0.4)
+                        }
+                      }
+                    }
+
+                    // 2. Draw Floor Embers
+                    for (var e = 0; e < omarchyLogoBox.embers.length; e++) {
+                      var eb = omarchyLogoBox.embers[e]
+                      ctx.fillStyle = eb.life > 0.5 ? (grad[4] || "#38bdf8") : (grad[7] || "#8b5cf6")
+                      ctx.fillRect(eb.x, eb.y, eb.size, eb.size)
+                    }
+
+                    // 3. Draw Electric Sparks
+                    for (var spIdx = 0; spIdx < omarchyLogoBox.sparks.length; spIdx++) {
+                      var spk = omarchyLogoBox.sparks[spIdx]
+                      ctx.fillStyle = spk.life > 0.6 ? "#ffffff" : (spk.life > 0.3 ? (grad[4] || "#38bdf8") : (grad[8] || "#a855f7"))
+                      ctx.fillRect(spk.x, spk.y, spk.size, spk.size)
+                    }
+
+                    // 4. Draw Lightning Bolt Discharge
+                    if (omarchyLogoBox.currentBolt && omarchyLogoBox.currentBolt.life > 0) {
+                      var bolt = omarchyLogoBox.currentBolt
+                      var bAlpha = Math.max(0.1, bolt.life)
+                      var pts = bolt.pts
+                      var branches = bolt.branches
+
+                      // A. Wide Plasma Aura
+                      ctx.strokeStyle = (grad[4] || "#38bdf8")
+                      ctx.globalAlpha = bAlpha * 0.45
+                      ctx.lineWidth = 5.0
+                      ctx.beginPath()
+                      ctx.moveTo(pts[0].x, pts[0].y)
+                      for (var i = 1; i < pts.length; i++) {
+                        ctx.lineTo(pts[i].x, pts[i].y)
+                      }
+                      ctx.stroke()
+
+                      // Branches - Aura
+                      for (var br = 0; br < branches.length; br++) {
+                        var bp = branches[br]
+                        ctx.beginPath()
+                        ctx.moveTo(bp[0].x, bp[0].y)
+                        ctx.lineTo(bp[1].x, bp[1].y)
+                        ctx.stroke()
+                      }
+
+                      // B. Electric Mid-Arc
+                      ctx.strokeStyle = (grad[7] || "#a855f7")
+                      ctx.globalAlpha = bAlpha * 0.85
+                      ctx.lineWidth = 2.6
+                      ctx.beginPath()
+                      ctx.moveTo(pts[0].x, pts[0].y)
+                      for (var j = 1; j < pts.length; j++) {
+                        ctx.lineTo(pts[j].x, pts[j].y)
+                      }
+                      ctx.stroke()
+
+                      // Branches - Mid-Arc
+                      for (var br2 = 0; br2 < branches.length; br2++) {
+                        var bp2 = branches[br2]
+                        ctx.beginPath()
+                        ctx.moveTo(bp2[0].x, bp2[0].y)
+                        ctx.lineTo(bp2[1].x, bp2[1].y)
+                        ctx.stroke()
+                      }
+                      ctx.globalAlpha = 1.0
+
+                      // C. White-Hot Lightning Core
+                      ctx.strokeStyle = "rgba(255, 255, 255, " + bAlpha.toFixed(2) + ")"
+                      ctx.lineWidth = 1.2
+                      ctx.beginPath()
+                      ctx.moveTo(pts[0].x, pts[0].y)
+                      for (var k = 1; k < pts.length; k++) {
+                        ctx.lineTo(pts[k].x, pts[k].y)
+                      }
+                      ctx.stroke()
+
+                      // D. Impact Corona
+                      var tx = bolt.targetX
+                      var ty = bolt.targetY
+                      ctx.fillStyle = "rgba(255, 255, 255, " + (bAlpha * 0.9).toFixed(2) + ")"
+                      ctx.fillRect(tx - 2, ty - 2, 4, 4)
+                      ctx.fillStyle = "rgba(56, 189, 248, " + (bAlpha * 0.5).toFixed(2) + ")"
+                      ctx.fillRect(tx - 4, ty - 4, 8, 8)
+                    }
+                  }
+                }
+
+                MouseArea {
+                  id: omarchyMouse
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: {
+                    omarchyLogoBox.startLightningDischarge()
+                  }
+                }
+
+                Component.onCompleted: {
+                  omarchyLogoBox.activeGradient = omarchyLogoBox.allPalettes[0]
+                }
+              }
+
+              Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Click logo to trigger lightning animation & cycle palettes (9 styles)"
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
               }
             }
           }
