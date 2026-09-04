@@ -1845,7 +1845,7 @@ BarWidget {
                     width: (parent.width - Style.space(3)) / 2
                     height: 42
                     radius: 6
-                    color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                    color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
                     border.width: 0
 
                     RowLayout {
@@ -1857,13 +1857,13 @@ BarWidget {
                         width: 26
                         height: 26
                         radius: 4
-                        color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                        color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
                         border.width: 0
 
                         Text {
                           anchors.centerIn: parent
                           text: modelData.icon || "󰒃"
-                          color: isSubWorking ? root.uploadColor : root.primaryAccent
+                          color: root.primaryAccent
                           font.family: root.fontFamily
                           font.pixelSize: Style.font.bodySmall
                         }
@@ -1882,11 +1882,10 @@ BarWidget {
                           width: parent.width
                         }
                         Text {
-                          text: isSubWorking ? root.t("subWorking", "Working 💓") : modelData.role
-                          color: isSubWorking ? root.uploadColor : root.dim
+                          text: modelData.role
+                          color: root.dim
                           font.family: root.fontFamily
                           font.pixelSize: 8
-                          font.bold: isSubWorking
                           elide: Text.ElideRight
                           width: parent.width
                         }
@@ -1998,7 +1997,7 @@ BarWidget {
                       width: (parent.width - Style.space(3)) / 2
                       height: 42
                       radius: 6
-                      color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                      color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
                       border.width: 0
 
                       RowLayout {
@@ -2010,13 +2009,13 @@ BarWidget {
                           width: 26
                           height: 26
                           radius: 4
-                          color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                          color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
                           border.width: 0
 
                           Text {
                             anchors.centerIn: parent
-                            text: isModelWorking ? "⚡" : modelData.icon
-                            color: isModelWorking ? root.uploadColor : root.primaryAccent
+                            text: modelData.icon
+                            color: root.primaryAccent
                             font.family: root.fontFamily
                             font.pixelSize: Style.font.bodySmall
                           }
@@ -2028,7 +2027,7 @@ BarWidget {
 
                           Text {
                             text: modelData.name
-                            color: isModelWorking ? root.uploadColor : root.foreground
+                            color: root.foreground
                             font.family: root.fontFamily
                             font.pixelSize: Style.font.caption
                             font.bold: true
@@ -2037,11 +2036,10 @@ BarWidget {
                           }
 
                           Text {
-                            text: isModelWorking ? root.t("subWorking", "Working 💓") : modelData.desc
-                            color: isModelWorking ? root.uploadColor : root.dim
+                            text: modelData.desc
+                            color: root.dim
                             font.family: root.fontFamily
                             font.pixelSize: 8
-                            font.bold: isModelWorking
                             elide: Text.ElideRight
                             width: parent.width
                           }
