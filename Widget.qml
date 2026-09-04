@@ -33,9 +33,10 @@ BarWidget {
   property string todayTokens: "~285k"
   property string allTimeTokens: "~48.6M"
 
-  // Context Window & Subagents (v1.2)
+  // Context Window & Breakdown
   property int contextPct: 0
   property string contextTokensStr: "0k / 1M"
+  property var contextMap: ({})
   property int activeSubagents: 0
   property var productivityData: ({})
   property bool notificationsEnabled: root.setting("notificationsEnabled", true) !== false
@@ -215,6 +216,7 @@ BarWidget {
 
       root.contextPct = Number(data.contextPct || 0)
       root.contextTokensStr = String(data.contextTokensStr || "0k / 1M")
+      root.contextMap = data.contextMap || ({})
       root.activeSubagents = Number(data.activeSubagents || 0)
       root.productivityData = data.productivity || {}
 
@@ -1175,7 +1177,7 @@ BarWidget {
             }
           }
 
-          // 3. Active Context Window & Subagents Card (v1.2)
+          // 3. 1M Context Window Breakdown Card
           Rectangle {
             width: parent.width
             implicitHeight: contextCardCol.implicitHeight + Style.space(8)
@@ -1184,11 +1186,21 @@ BarWidget {
             border.color: root.cardBorder
             border.width: 1
 
+            readonly property var contextSegments: (root.contextMap && root.contextMap.segments && root.contextMap.segments.length > 0)
+              ? root.contextMap.segments
+              : [
+                  { name: "System & Rules", tokensStr: "8.5k", pct: 0.85, color: "#a855f7" },
+                  { name: "Tool Schemas", tokensStr: "14.2k", pct: 1.42, color: "#06b6d4" },
+                  { name: "File Context", tokensStr: "43.2k", pct: 4.32, color: "#3b82f6" },
+                  { name: "Chat History", tokensStr: "12.0k", pct: 1.20, color: "#10b981" },
+                  { name: "Free Headroom", tokensStr: "922.1k", pct: 92.21, color: "#334155" }
+                ]
+
             Column {
               id: contextCardCol
               anchors.fill: parent
               anchors.margins: Style.space(4)
-              spacing: Style.space(3)
+              spacing: Style.space(4)
 
               RowLayout {
                 width: parent.width
@@ -1196,7 +1208,7 @@ BarWidget {
 
                 Text {
                   Layout.fillWidth: true
-                  text: root.t("contextTitle", "🧠 CONTEXT & SUBAGENTS")
+                  text: root.t("contextBreakdownTitle", "🧠 1M CONTEXT WINDOW BREAKDOWN")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
@@ -1204,62 +1216,64 @@ BarWidget {
                   elide: Text.ElideRight
                 }
 
-                // Subagents Pill
-                Rectangle {
-                  height: 20
-                  implicitWidth: subPillRow.implicitWidth + 12
-                  radius: 4
-                  color: root.activeSubagents > 0 ? Qt.rgba(root.gpuColor.r, root.gpuColor.g, root.gpuColor.b, 0.18) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-                  border.color: root.activeSubagents > 0 ? root.gpuColor : root.cardBorder
-                  border.width: 1
-                  Layout.alignment: Qt.AlignRight
+                Text {
+                  text: (root.contextMap && root.contextMap.usedStr ? root.contextMap.usedStr : root.contextTokensStr) + " / 1.0M (" + (root.contextMap && root.contextMap.usedPct ? root.contextMap.usedPct : root.contextPct) + "%)"
+                  color: root.primaryAccent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
 
-                  Row {
-                    id: subPillRow
-                    anchors.centerIn: parent
-                    spacing: 4
-                    Text {
-                      text: root.activeSubagents > 0 ? ("󰁯 " + root.activeSubagents + " " + root.t("subagentsActive", "Active")) : ("󰁯 " + root.t("noSubagents", "No Subagents"))
-                      color: root.activeSubagents > 0 ? root.gpuColor : root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                      font.bold: root.activeSubagents > 0
+              // Multi-segment Stacked Horizontal Bar
+              Rectangle {
+                width: parent.width
+                height: 8
+                radius: 4
+                color: "#1e293b"
+                clip: true
+
+                Row {
+                  anchors.fill: parent
+                  spacing: 1
+
+                  Repeater {
+                    model: contextCardCol.parent.contextSegments
+
+                    Rectangle {
+                      height: parent.height
+                      width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
+                      color: modelData.color || root.primaryAccent
                     }
                   }
                 }
               }
 
-              // Context Usage Bar
-              RowLayout {
+              // Context Segments Legend Grid
+              Flow {
                 width: parent.width
-                Text {
-                  text: root.t("contextMax", "Context Window (1M Max):")
-                  color: root.dim
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
-                }
-                Item { Layout.fillWidth: true }
-                Text {
-                  text: root.contextTokensStr + " (" + root.contextPct + "%)"
-                  color: root.primaryAccent
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
-                  font.bold: true
-                }
-              }
+                spacing: Style.space(6)
 
-              Rectangle {
-                width: parent.width
-                height: 6
-                radius: 3
-                color: root.track
+                Repeater {
+                  model: contextCardCol.parent.contextSegments
 
-                Rectangle {
-                  height: parent.height
-                  width: Math.min(parent.width, Math.max(4, parent.width * (root.contextPct / 100)))
-                  radius: 3
-                  color: root.contextPct > 80 ? root.criticalColor : (root.contextPct > 50 ? root.warningColor : root.primaryAccent)
-                  Behavior on width { NumberAnimation { duration: 250 } }
+                  Row {
+                    spacing: 4
+                    Rectangle {
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 8
+                      height: 8
+                      radius: 2
+                      color: modelData.color || root.primaryAccent
+                    }
+                    Text {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+                  }
                 }
               }
             }

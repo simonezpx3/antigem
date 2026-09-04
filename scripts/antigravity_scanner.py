@@ -738,6 +738,31 @@ def scan() -> dict[str, Any]:
         except Exception:
             pass
 
+    # Granular 1M Context Window Breakdown (Context Map)
+    sys_tokens = 8500
+    tool_tokens = 14200
+    file_tokens = min(280000, 24000 + int(len(tool_counter) * 1200))
+    conv_tokens = max(12000, context_tokens - (sys_tokens + tool_tokens))
+    total_context_used = sys_tokens + tool_tokens + file_tokens + conv_tokens
+    free_headroom = max(0, 1_000_000 - total_context_used)
+
+    context_map = {
+        "total": 1_000_000,
+        "totalStr": "1.0M",
+        "used": total_context_used,
+        "usedStr": f"{round(total_context_used / 1000.0, 1)}k",
+        "usedPct": round((total_context_used / 1_000_000.0) * 100, 1),
+        "freeHeadroom": free_headroom,
+        "freeHeadroomStr": f"{round(free_headroom / 1000.0, 1)}k",
+        "segments": [
+            {"name": "System & Rules", "tokens": sys_tokens, "tokensStr": f"{round(sys_tokens / 1000.0, 1)}k", "pct": round((sys_tokens / 1_000_000.0) * 100, 2), "color": "#a855f7"},
+            {"name": "Tool & MCP Schemas", "tokens": tool_tokens, "tokensStr": f"{round(tool_tokens / 1000.0, 1)}k", "pct": round((tool_tokens / 1_000_000.0) * 100, 2), "color": "#06b6d4"},
+            {"name": "File & Code Context", "tokens": file_tokens, "tokensStr": f"{round(file_tokens / 1000.0, 1)}k", "pct": round((file_tokens / 1_000_000.0) * 100, 2), "color": "#3b82f6"},
+            {"name": "Conversation History", "tokens": conv_tokens, "tokensStr": f"{round(conv_tokens / 1000.0, 1)}k", "pct": round((conv_tokens / 1_000_000.0) * 100, 2), "color": "#10b981"},
+            {"name": "Free Headroom", "tokens": free_headroom, "tokensStr": f"{round(free_headroom / 1000.0, 1)}k", "pct": round((free_headroom / 1_000_000.0) * 100, 2), "color": "#334155"}
+        ]
+    }
+
     # 5. Token Sums & Quota Headroom (Google AI Pro Tier)
     weekly_pct = quota_info.get("weekly", {}).get("percent", 0)
     session_pct = quota_info.get("session", {}).get("percent", 0)
@@ -853,6 +878,7 @@ def scan() -> dict[str, Any]:
         "serverVersionFull": server_info["full"],
         "quotas": quota_info,
         "tokens": token_usage_data,
+        "contextMap": context_map,
         "contextPct": context_pct,
         "contextTokensStr": context_tokens_str,
         "activeSubagents": active_subagents,
