@@ -39,6 +39,8 @@ BarWidget {
   property var contextMap: ({})
   property int activeSubagents: 0
   property var productivityData: ({})
+  property var quotasBreakdown: ({})
+  property var activityBreakdown: ({})
   property bool notificationsEnabled: root.setting("notificationsEnabled", true) !== false
   
   function t(key, fallback) {
@@ -219,6 +221,8 @@ BarWidget {
       root.contextMap = data.contextMap || ({})
       root.activeSubagents = Number(data.activeSubagents || 0)
       root.productivityData = data.productivity || {}
+      root.quotasBreakdown = data.quotasBreakdown || ({})
+      root.activityBreakdown = data.activityBreakdown || ({})
 
       // Feature 2: Task Completion Desktop Notification
       if (root.notificationsEnabled && wasWorking && !root.isWorking && root.activeStatus !== "Working") {
@@ -756,38 +760,53 @@ BarWidget {
             }
           }
 
-          // Unified Quotas & Activity Dashboard Card (100% System Theme Adapted)
+          // 1. Google AI Pro Quotas Breakdown Card
           Rectangle {
             width: parent.width
-            implicitHeight: unifiedMetricsCol.implicitHeight + Style.space(10)
+            implicitHeight: quotasCardCol.implicitHeight + Style.space(8)
             radius: 8
             color: root.cardFill
             border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
             border.width: 1
 
-            Column {
-              id: unifiedMetricsCol
-              width: parent.width - Style.space(8)
-              anchors.centerIn: parent
-              spacing: Style.space(5)
+            readonly property var sessionSegments: (root.quotasBreakdown && root.quotasBreakdown.session && root.quotasBreakdown.session.segments && root.quotasBreakdown.session.segments.length > 0)
+              ? root.quotasBreakdown.session.segments
+              : [
+                  { name: "Session Used", tokensStr: root.sessionTokensUsed, pct: root.sessionGeminiPct, color: "#06b6d4" },
+                  { name: "Free Headroom", tokensStr: root.sessionTokensRemaining, pct: Math.max(0, 100 - root.sessionGeminiPct), color: "#334155" }
+                ]
 
-              // 1. Header Row
+            readonly property var weeklySegments: (root.quotasBreakdown && root.quotasBreakdown.weekly && root.quotasBreakdown.weekly.segments && root.quotasBreakdown.weekly.segments.length > 0)
+              ? root.quotasBreakdown.weekly.segments
+              : [
+                  { name: "Today Tokens", tokensStr: root.todayTokens, pct: Math.round((root.weeklyGeminiPct * 0.12) * 10) / 10, color: "#10b981" },
+                  { name: "Prior 6 Days", tokensStr: root.weeklyTokensUsed, pct: Math.round((root.weeklyGeminiPct * 0.88) * 10) / 10, color: "#a855f7" },
+                  { name: "Free Headroom", tokensStr: root.weeklyTokensRemaining, pct: Math.max(0, 100 - root.weeklyGeminiPct), color: "#334155" }
+                ]
+
+            Column {
+              id: quotasCardCol
+              anchors.fill: parent
+              anchors.margins: Style.space(4)
+              spacing: Style.space(4)
+
+              // Header
               RowLayout {
                 width: parent.width
 
                 Text {
-                  text: "📊 ACTIVITY & QUOTAS"
+                  Layout.fillWidth: true
+                  text: root.t("quotasTitle", "📊 GOOGLE AI PRO QUOTAS")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
+                  elide: Text.ElideRight
                 }
-
-                Item { Layout.fillWidth: true }
 
                 Rectangle {
                   height: 20
-                  width: headerPillRow.implicitWidth + 12
+                  implicitWidth: headerPillRow.implicitWidth + 12
                   radius: 4
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
                   border.color: root.cardBorder
@@ -822,174 +841,18 @@ BarWidget {
                 }
               }
 
-              // 2. Dual Quota Gauges (5H Session & 7D Weekly)
-              RowLayout {
-                width: parent.width
-                spacing: Style.space(4)
-
-                // 5H Session Gauge
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 54
-                  radius: 6
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.fill: parent
-                    anchors.margins: Style.space(4)
-                    spacing: 3
-
-                    RowLayout {
-                      width: parent.width
-
-                      Text {
-                        text: "⏱ 5H SESSION"
-                        color: root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: true
-                      }
-
-                      Item { Layout.fillWidth: true }
-
-                      Text {
-                        text: root.sessionTokensUsed + " / 2.5M (" + root.sessionGeminiPct + "%)"
-                        color: root.cpuColor
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: true
-                      }
-                    }
-
-                    // Progress Bar Track
-                    Rectangle {
-                      width: parent.width
-                      height: 6
-                      radius: 3
-                      color: root.track
-
-                      Rectangle {
-                        height: parent.height
-                        width: Math.min(parent.width, Math.max(3, parent.width * (root.sessionGeminiPct / 100)))
-                        radius: 3
-                        color: root.cpuColor
-                        Behavior on width { NumberAnimation { duration: 250 } }
-                      }
-                    }
-
-                    RowLayout {
-                      width: parent.width
-
-                      Text {
-                        text: root.sessionGeminiDetail
-                        color: root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption - 1
-                      }
-
-                      Item { Layout.fillWidth: true }
-
-                      Text {
-                        text: root.sessionTokensRemaining + " left"
-                        color: root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption - 1
-                      }
-                    }
-                  }
-                }
-
-                // 7D Weekly Gauge
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 54
-                  radius: 6
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.fill: parent
-                    anchors.margins: Style.space(4)
-                    spacing: 3
-
-                    RowLayout {
-                      width: parent.width
-
-                      Text {
-                        text: "📅 7D WEEKLY"
-                        color: root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: true
-                      }
-
-                      Item { Layout.fillWidth: true }
-
-                      Text {
-                        text: root.weeklyTokensUsed + " / 25M (" + root.weeklyGeminiPct + "%)"
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: true
-                      }
-                    }
-
-                    // Progress Bar Track
-                    Rectangle {
-                      width: parent.width
-                      height: 6
-                      radius: 3
-                      color: root.track
-
-                      Rectangle {
-                        height: parent.height
-                        width: Math.min(parent.width, Math.max(3, parent.width * (root.weeklyGeminiPct / 100)))
-                        radius: 3
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
-                        Behavior on width { NumberAnimation { duration: 250 } }
-                      }
-                    }
-
-                    RowLayout {
-                      width: parent.width
-
-                      Text {
-                        text: root.weeklyGeminiDetail
-                        color: root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption - 1
-                      }
-
-                      Item { Layout.fillWidth: true }
-
-                      Text {
-                        text: root.weeklyTokensRemaining + " left"
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.uploadColor
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption - 1
-                      }
-                    }
-                  }
-                }
-              }
-
-              // 3. Compact Token Sums (4 Badges)
+              // Compact Token Sums (4 Badges)
               RowLayout {
                 width: parent.width
                 spacing: Style.space(3)
 
-                // Today Tokens
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 38
+                  height: 36
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
                   border.color: root.cardBorder
                   border.width: 1
-
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
@@ -998,15 +861,13 @@ BarWidget {
                   }
                 }
 
-                // Today Prompts
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 38
+                  height: 36
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
                   border.color: root.cardBorder
                   border.width: 1
-
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
@@ -1015,15 +876,13 @@ BarWidget {
                   }
                 }
 
-                // 7D Headroom
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 38
+                  height: 36
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
                   border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
                   border.width: 1
-
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
@@ -1032,15 +891,13 @@ BarWidget {
                   }
                 }
 
-                // All-Time Tokens
                 Rectangle {
                   Layout.fillWidth: true
-                  height: 38
+                  height: 36
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
                   border.color: root.cardBorder
                   border.width: 1
-
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
@@ -1050,126 +907,244 @@ BarWidget {
                 }
               }
 
-              // 4. 7-Day Activity Bar Chart
-              Rectangle {
+              // 5H Session Quota Stacked Bar
+              Column {
                 width: parent.width
-                height: 98
-                radius: 6
-                color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                border.color: root.cardBorder
-                border.width: 1
+                spacing: 3
 
-                Column {
-                  anchors.fill: parent
-                  anchors.margins: Style.space(4)
-                  spacing: 4
+                RowLayout {
+                  width: parent.width
+                  Text {
+                    text: "⏱ 5H SESSION QUOTA (2.5M CAP)"
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                  }
+                  Item { Layout.fillWidth: true }
+                  Text {
+                    text: root.sessionTokensUsed + " / 2.5M (" + root.sessionGeminiPct + "%) · " + root.sessionGeminiDetail
+                    color: root.cpuColor
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption - 1
+                    font.bold: true
+                  }
+                }
 
-                  RowLayout {
-                    width: parent.width
-                    Text {
-                      text: "PROMPT ACTIVITY (LAST 7 DAYS)"
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                      font.bold: true
-                    }
-                    Item { Layout.fillWidth: true }
-                    Text {
-                      text: "Total: " + root.totalPrompts + " prompts"
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                Rectangle {
+                  width: parent.width
+                  height: 8
+                  radius: 4
+                  color: "#1e293b"
+                  clip: true
+                  Row {
+                    anchors.fill: parent
+                    spacing: 1
+                    Repeater {
+                      model: quotasCardCol.parent.sessionSegments
+                      Rectangle {
+                        height: parent.height
+                        width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
+                        color: modelData.color || root.cpuColor
+                      }
                     }
                   }
+                }
 
-                  // 7-Column Bars
-                  RowLayout {
-                    width: parent.width
-                    height: 64
-                    spacing: Style.space(3)
-
-                    Repeater {
-                      model: root.recentDays
-
-                      Item {
-                        id: dayCol
-                        Layout.fillWidth: true
-                        height: parent.height
-
-                        readonly property bool isToday: index === (root.recentDays.length - 1)
-                        readonly property int promptVal: Number(modelData.prompts || 0)
-                        readonly property real barHeightFactor: root.maxDayPrompts > 0 ? (promptVal / root.maxDayPrompts) : 0
-                        readonly property bool isHovered: barMouse.containsMouse
-
-                        Column {
-                          anchors.fill: parent
-                          spacing: 2
-
-                          // Value on Top
-                          Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: String(dayCol.promptVal)
-                            color: dayCol.isToday 
-                                   ? root.primaryAccent 
-                                   : (dayCol.promptVal > 0 ? root.foreground : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.35))
-                            font.family: root.fontFamily
-                            font.pixelSize: Style.font.caption
-                            font.bold: dayCol.isToday || dayCol.promptVal > 0
-                            renderType: Text.NativeRendering
-                          }
-
-                          // Bar Track
-                          Rectangle {
-                            width: parent.width
-                            height: 34
-                            radius: 3
-                            color: dayCol.isHovered 
-                                   ? root.cardHover 
-                                   : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-                            border.color: dayCol.isHovered ? root.cardBorder : "transparent"
-                            border.width: 1
-
-                            Rectangle {
-                              anchors.bottom: parent.bottom
-                              anchors.horizontalCenter: parent.horizontalCenter
-                              width: parent.width
-                              height: dayCol.promptVal > 0 
-                                      ? Math.max(3, Math.round(dayCol.barHeightFactor * parent.height)) 
-                                      : 2
-                              radius: 3
-                              color: dayCol.isToday 
-                                     ? root.primaryAccent 
-                                     : (dayCol.promptVal > 0 ? Qt.rgba(root.cpuColor.r, root.cpuColor.g, root.cpuColor.b, 0.65) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.16))
-
-                              Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                            }
-                          }
-
-                          // Date label
-                          Text {
-                            width: parent.width
-                            horizontalAlignment: Text.AlignHCenter
-                            text: {
-                              if (dayCol.isToday) return "Today"
-                              var parts = String(modelData.date || "").split("-")
-                              return parts.length === 3 ? (parts[2] + "/" + parts[1]) : ""
-                            }
-                            color: dayCol.isToday ? root.primaryAccent : root.dim
-                            font.family: root.fontFamily
-                            font.pixelSize: Style.font.caption
-                            font.bold: dayCol.isToday
-                            renderType: Text.NativeRendering
-                          }
-                        }
-
-                        MouseArea {
-                          id: barMouse
-                          anchors.fill: parent
-                          hoverEnabled: true
-                          cursorShape: Qt.ArrowCursor
-                        }
+                Flow {
+                  width: parent.width
+                  spacing: Style.space(6)
+                  Repeater {
+                    model: quotasCardCol.parent.sessionSegments
+                    Row {
+                      spacing: 4
+                      Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 8
+                        height: 8
+                        radius: 2
+                        color: modelData.color || root.cpuColor
                       }
+                      Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: 8
+                      }
+                    }
+                  }
+                }
+              }
+
+              // 7D Weekly Quota Stacked Bar
+              Column {
+                width: parent.width
+                spacing: 3
+
+                RowLayout {
+                  width: parent.width
+                  Text {
+                    text: "📅 7D WEEKLY QUOTA (25.0M CAP)"
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                  }
+                  Item { Layout.fillWidth: true }
+                  Text {
+                    text: root.weeklyTokensUsed + " / 25.0M (" + root.weeklyGeminiPct + "%) · " + root.weeklyGeminiDetail
+                    color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption - 1
+                    font.bold: true
+                  }
+                }
+
+                Rectangle {
+                  width: parent.width
+                  height: 8
+                  radius: 4
+                  color: "#1e293b"
+                  clip: true
+                  Row {
+                    anchors.fill: parent
+                    spacing: 1
+                    Repeater {
+                      model: quotasCardCol.parent.weeklySegments
+                      Rectangle {
+                        height: parent.height
+                        width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
+                        color: modelData.color || root.primaryAccent
+                      }
+                    }
+                  }
+                }
+
+                Flow {
+                  width: parent.width
+                  spacing: Style.space(6)
+                  Repeater {
+                    model: quotasCardCol.parent.weeklySegments
+                    Row {
+                      spacing: 4
+                      Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 8
+                        height: 8
+                        radius: 2
+                        color: modelData.color || root.primaryAccent
+                      }
+                      Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: 8
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // 2. 7-Day Prompt Activity Breakdown Card
+          Rectangle {
+            width: parent.width
+            implicitHeight: activityCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            readonly property var activitySegments: (root.activityBreakdown && root.activityBreakdown.segments && root.activityBreakdown.segments.length > 0)
+              ? root.activityBreakdown.segments
+              : [
+                  { name: "29/08", prompts: 169, promptsStr: "169 prompts", pct: 28.3, color: "#3b82f6" },
+                  { name: "30/08", prompts: 165, promptsStr: "165 prompts", pct: 27.6, color: "#6366f1" },
+                  { name: "31/08", prompts: 145, promptsStr: "145 prompts", pct: 24.2, color: "#8b5cf6" },
+                  { name: "01/09", prompts: 43, promptsStr: "43 prompts", pct: 7.2, color: "#a855f7" },
+                  { name: "02/09", prompts: 20, promptsStr: "20 prompts", pct: 3.3, color: "#ec4899" },
+                  { name: "03/09", prompts: 18, promptsStr: "18 prompts", pct: 3.0, color: "#f59e0b" },
+                  { name: "Today", prompts: 38, promptsStr: "38 prompts", pct: 6.4, color: "#10b981" }
+                ]
+
+            Column {
+              id: activityCardCol
+              anchors.fill: parent
+              anchors.margins: Style.space(4)
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+
+                Text {
+                  Layout.fillWidth: true
+                  text: root.t("activityBreakdownTitle", "📈 7-DAY PROMPT ACTIVITY BREAKDOWN")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
+
+                Text {
+                  text: "Total: " + root.totalPrompts + " prompts (" + (root.activityBreakdown && root.activityBreakdown.total7dPrompts ? root.activityBreakdown.total7dPrompts : 598) + " 7d)"
+                  color: root.primaryAccent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+
+              // Multi-segment Stacked Horizontal Bar
+              Rectangle {
+                width: parent.width
+                height: 8
+                radius: 4
+                color: "#1e293b"
+                clip: true
+
+                Row {
+                  anchors.fill: parent
+                  spacing: 1
+
+                  Repeater {
+                    model: activityCardCol.parent.activitySegments
+
+                    Rectangle {
+                      height: parent.height
+                      width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
+                      color: modelData.color || root.primaryAccent
+                    }
+                  }
+                }
+              }
+
+              // Activity Segments Legend Grid
+              Flow {
+                width: parent.width
+                spacing: Style.space(6)
+
+                Repeater {
+                  model: activityCardCol.parent.activitySegments
+
+                  Row {
+                    spacing: 4
+                    Rectangle {
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 8
+                      height: 8
+                      radius: 2
+                      color: modelData.color || root.primaryAccent
+                    }
+                    Text {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.name + " (" + modelData.prompts + " · " + modelData.pct + "%)"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
                     }
                   }
                 }

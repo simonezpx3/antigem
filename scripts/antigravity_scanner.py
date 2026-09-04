@@ -782,6 +782,43 @@ def scan() -> dict[str, Any]:
     today_tokens_est = int(today_prompts_cnt * 14_200)
     all_time_tokens_est = int(total_prompts * 14_200)
 
+    # Quotas breakdown segments (5H Session and 7D Weekly)
+    session_used_pct = round((session_used / 2_500_000.0) * 100, 1)
+    session_rem_pct = max(0.0, round(100.0 - session_used_pct, 1))
+    session_quota_segments = [
+        {"name": "Session Used", "tokens": session_used, "tokensStr": f"~{round(session_used / 1_000_000.0, 2)}M", "pct": session_used_pct, "color": "#06b6d4"},
+        {"name": "Free Headroom", "tokens": session_rem, "tokensStr": f"~{round(session_rem / 1_000_000.0, 2)}M", "pct": session_rem_pct, "color": "#334155"}
+    ]
+
+    weekly_used_pct = round((weekly_used / 25_000_000.0) * 100, 1)
+    today_weekly_pct = round((today_tokens_est / 25_000_000.0) * 100, 1)
+    prior_weekly_pct = max(0.0, round(weekly_used_pct - today_weekly_pct, 1))
+    weekly_rem_pct = max(0.0, round(100.0 - weekly_used_pct, 1))
+
+    weekly_quota_segments = [
+        {"name": "Today Tokens", "tokens": today_tokens_est, "tokensStr": f"~{round(today_tokens_est / 1_000.0, 1)}k" if today_tokens_est < 1_000_000 else f"~{round(today_tokens_est / 1_000_000.0, 2)}M", "pct": today_weekly_pct, "color": "#10b981"},
+        {"name": "Prior 6 Days", "tokens": max(0, weekly_used - today_tokens_est), "tokensStr": f"~{round(max(0, weekly_used - today_tokens_est) / 1_000_000.0, 2)}M", "pct": prior_weekly_pct, "color": "#a855f7"},
+        {"name": "Free Headroom", "tokens": weekly_rem, "tokensStr": f"~{round(weekly_rem / 1_000_000.0, 2)}M", "pct": weekly_rem_pct, "color": "#334155"}
+    ]
+
+    quotas_breakdown = {
+        "plan": quota_info.get("plan", "Google AI Pro"),
+        "session": {
+            "usedStr": f"~{round(session_used / 1_000_000.0, 2)}M",
+            "capStr": "2.5M",
+            "pct": session_used_pct,
+            "resetDetail": session_detail,
+            "segments": session_quota_segments
+        },
+        "weekly": {
+            "usedStr": f"~{round(weekly_used / 1_000_000.0, 2)}M",
+            "capStr": "25.0M",
+            "pct": weekly_used_pct,
+            "resetDetail": weekly_detail,
+            "segments": weekly_quota_segments
+        }
+    }
+
     token_usage_data = {
         "weeklyPct": weekly_pct,
         "weeklyUsedStr": f"~{round(weekly_used / 1_000_000.0, 1)}M",
@@ -901,6 +938,29 @@ def scan() -> dict[str, Any]:
         for day in recent_dates
     ]
 
+    day_colors = ["#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#ec4899", "#f59e0b", "#10b981"]
+    total_7d_prompts = sum(d["prompts"] for d in recent_days_data) or 1
+    activity_segments = []
+    for i, d in enumerate(recent_days_data):
+        p_cnt = d["prompts"]
+        is_today = (i == len(recent_days_data) - 1)
+        d_parts = d["date"].split("-")
+        label = "Today" if is_today else (f"{d_parts[2]}/{d_parts[1]}" if len(d_parts) == 3 else d["date"])
+        pct = round((p_cnt / total_7d_prompts) * 100, 1)
+        activity_segments.append({
+            "name": label,
+            "date": d["date"],
+            "prompts": p_cnt,
+            "promptsStr": f"{p_cnt} prompts",
+            "pct": pct,
+            "color": day_colors[i % len(day_colors)]
+        })
+    activity_breakdown = {
+        "total7dPrompts": total_7d_prompts,
+        "totalPrompts": total_prompts,
+        "segments": activity_segments
+    }
+
     tools_list = [
         {"name": k, "count": v}
         for k, v in tool_counter.most_common(8)
@@ -931,11 +991,13 @@ def scan() -> dict[str, Any]:
         "serverVersion": server_info["display"],
         "serverVersionFull": server_info["full"],
         "quotas": quota_info,
+        "quotasBreakdown": quotas_breakdown,
         "tokens": token_usage_data,
         "contextMap": context_map,
         "contextPct": context_pct,
         "contextTokensStr": context_tokens_str,
         "activeSubagents": active_subagents,
+        "activityBreakdown": activity_breakdown,
         "productivity": productivity_data,
         "todayPrompts": daily_prompts.get(today_str, 0),
         "totalPrompts": total_prompts,
