@@ -1965,7 +1965,8 @@ BarWidget {
                         name: "arci-coder",
                         id: "arci-coder",
                         fallback: "qwen2.5-coder:7b",
-                        desc: root.t("arciCoderDesc", "Fast Code & Syntax"),
+                        modelName: "qwen2.5-coder:7b",
+                        desc: "qwen2.5-coder:7b",
                         icon: "󰘦",
                         isWorking: (root.localAiInfo && (root.localAiInfo.coderWorking || root.localAiInfo.qwenWorking)) || false
                       },
@@ -1973,7 +1974,8 @@ BarWidget {
                         name: "arci-auditor",
                         id: "arci-auditor",
                         fallback: "deepseek-r1:7b",
-                        desc: root.t("arciAuditorDesc", "Reasoning & Audit"),
+                        modelName: "deepseek-r1:7b",
+                        desc: "deepseek-r1:7b",
                         icon: "󰚩",
                         isWorking: (root.localAiInfo && (root.localAiInfo.auditorWorking || root.localAiInfo.deepseekWorking)) || false
                       }
