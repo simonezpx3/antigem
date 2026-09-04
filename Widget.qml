@@ -1636,8 +1636,8 @@ BarWidget {
                   height: 44
                   radius: 6
                   color: sessionMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: modelData.isActive ? (modelData.type === "ide" ? root.gpuColor : root.primaryAccent) : root.cardBorder
-                  border.width: 1
+                  border.color: modelData.isActive ? (modelData.type === "ide" ? root.gpuColor : root.primaryAccent) : "transparent"
+                  border.width: modelData.isActive ? 1 : 0
 
                   RowLayout {
                     anchors.fill: parent
@@ -1650,8 +1650,7 @@ BarWidget {
                       height: 32
                       radius: 5
                       color: modelData.type === "ide" ? Qt.rgba(244/255, 114/255, 182/255, 0.2) : Qt.rgba(97/255, 213/255, 248/255, 0.2)
-                      border.color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
-                      border.width: 1
+                      border.width: 0
 
                       Column {
                         anchors.centerIn: parent
@@ -1843,8 +1842,8 @@ BarWidget {
                     height: 42
                     radius: 6
                     color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                    border.color: isSubWorking ? root.uploadColor : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.30)
-                    border.width: isSubWorking ? 2 : 1
+                    border.color: isSubWorking ? root.uploadColor : "transparent"
+                    border.width: isSubWorking ? 1 : 0
 
                     RowLayout {
                       anchors.fill: parent
@@ -1856,8 +1855,7 @@ BarWidget {
                         height: 26
                         radius: 4
                         color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
-                        border.color: isSubWorking ? root.uploadColor : root.primaryAccent
-                        border.width: 1
+                        border.width: 0
 
                         Text {
                           anchors.centerIn: parent
@@ -1904,14 +1902,6 @@ BarWidget {
                           radius: 4
                           color: isSubOnline ? root.uploadColor : root.criticalColor
 
-                          Rectangle {
-                            anchors.centerIn: parent
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: isSubOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.20)
-                            z: -1
-                          }
 
                           SequentialAnimation on scale {
                             running: isSubWorking && root.popupOpen
@@ -1988,8 +1978,8 @@ BarWidget {
                       height: 42
                       radius: 6
                       color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                      border.color: isModelWorking ? root.uploadColor : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.30)
-                      border.width: isModelWorking ? 2 : 1
+                      border.color: isModelWorking ? root.uploadColor : "transparent"
+                      border.width: isModelWorking ? 1 : 0
 
                       RowLayout {
                         anchors.fill: parent
@@ -2001,8 +1991,7 @@ BarWidget {
                           height: 26
                           radius: 4
                           color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.25) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
-                          border.color: isModelWorking ? root.uploadColor : root.primaryAccent
-                          border.width: 1
+                          border.width: 0
 
                           Text {
                             anchors.centerIn: parent
@@ -2051,14 +2040,6 @@ BarWidget {
                             radius: 4
                             color: isModelOnline ? root.uploadColor : root.criticalColor
 
-                            Rectangle {
-                              anchors.centerIn: parent
-                              width: 14
-                              height: 14
-                              radius: 7
-                              color: isModelOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.20)
-                              z: -1
-                            }
 
                             SequentialAnimation on scale {
                               running: isModelWorking && root.popupOpen
@@ -2079,8 +2060,7 @@ BarWidget {
                   height: 42
                   radius: 6
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
+                  border.width: 0
 
                   Column {
                     anchors.centerIn: parent
@@ -2308,8 +2288,7 @@ BarWidget {
                   height: 32
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
+                  border.width: 0
 
                   RowLayout {
                     anchors.fill: parent
@@ -2339,8 +2318,7 @@ BarWidget {
                   height: 32
                   radius: 5
                   color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
+                  border.width: 0
 
                   RowLayout {
                     anchors.fill: parent
