@@ -2346,7 +2346,356 @@ BarWidget {
           width: parent.width
           spacing: Style.space(10)
 
-          // Omarchy ASCII Logo Banner (Original size: 153x50 / Canvas 153x36, centered above refresh card)
+          // Card 1: ⏱️ Telemetry & Auto-Refresh Engine
+          Rectangle {
+            width: parent.width
+            implicitHeight: refreshCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: refreshCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              // Header Row (Title on left, Interval Pill centered in total width)
+              Item {
+                width: parent.width
+                implicitHeight: 22
+
+                Text {
+                  anchors.left: parent.left
+                  anchors.verticalCenter: parent.verticalCenter
+                  text: root.t("telemetryTitle", "⏱️ TELEMETRY & AUTO-REFRESH")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+
+                Rectangle {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  anchors.verticalCenter: parent.verticalCenter
+                  height: 20
+                  width: curIntText.implicitWidth + 14
+                  radius: 4
+                  color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                  border.color: root.primaryAccent
+                  border.width: 1
+
+                  Text {
+                    id: curIntText
+                    anchors.centerIn: parent
+                    text: root.refreshIntervalSec + "s interval"
+                    color: root.primaryAccent
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                  }
+                }
+              }
+
+              Text {
+                text: "Controls background scanning frequency for sessions, active tools, and Google AI quota resets."
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
+              }
+
+              // Quick Presets
+              Row {
+                spacing: Style.space(4)
+
+                Repeater {
+                  model: [10, 30, 60, 120, 300]
+
+                  Rectangle {
+                    height: 26
+                    width: presetText.implicitWidth + 16
+                    radius: 4
+                    scale: presetMouse.pressed ? 0.92 : 1.0
+                    color: presetMouse.containsMouse ? root.cardHover : root.cardFill
+                    border.color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.cardBorder
+                    border.width: 1
+
+                    Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                    Text {
+                      id: presetText
+                      anchors.centerIn: parent
+                      text: modelData + "s"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.bodySmall
+                      font.bold: root.refreshIntervalSec === modelData
+                    }
+
+                    MouseArea {
+                      id: presetMouse
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: root.setRefreshInterval(modelData)
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 2: 💓 Working Heartbeat Pulse
+          Rectangle {
+            width: parent.width
+            implicitHeight: pulseCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: pulseCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+
+                Row {
+                  spacing: Style.space(4)
+                  Layout.alignment: Qt.AlignVCenter
+
+                  Text {
+                    text: root.t("heartbeatTitle", "💓 WORKING HEARTBEAT ANIMATION")
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.body
+                    font.bold: true
+                  }
+
+                  Text {
+                    text: root.pulseEnabled ? ("(" + root.t("active", "Active") + ")") : ("(" + root.t("disabled", "Disabled") + ")")
+                    color: root.pulseEnabled ? root.uploadColor : root.dim
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // Jumper Toggle Switch
+                Rectangle {
+                  id: pulseJumper
+                  width: 28
+                  height: 16
+                  radius: 8
+                  color: root.pulseEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
+                  border.color: root.pulseEnabled ? root.uploadColor : root.cardBorder
+                  border.width: 1
+
+                  Behavior on color { ColorAnimation { duration: 160 } }
+
+                  // Jumper Knob
+                  Rectangle {
+                    id: jumperKnob
+                    width: 12
+                    height: 12
+                    radius: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: root.pulseEnabled ? (parent.width - width - 2) : 2
+                    color: root.pulseEnabled ? root.uploadColor : root.foreground
+
+                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnimation { duration: 160 } }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.setPulseEnabled(!root.pulseEnabled)
+                  }
+                }
+              }
+
+              Text {
+                text: "Animates the tray icon and hero logo with an anatomical heartbeat rhythm during active agent code processing."
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
+              }
+
+              // Pulse BPM Controls
+              Column {
+                width: parent.width
+                spacing: Style.space(3)
+                visible: root.pulseEnabled
+
+                RowLayout {
+                  width: parent.width
+                  Text {
+                    text: root.t("pulseCadence", "🎚️ Pulse Cadence:")
+                    color: root.dim
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.bodySmall
+                  }
+                  Item { Layout.fillWidth: true }
+                  Text {
+                    text: root.pulseBpm + " BPM (" + (Math.round(60000 / root.pulseBpm) / 1000).toFixed(1) + " s/beat)"
+                    color: root.primaryAccent
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.bodySmall
+                    font.bold: true
+                  }
+                }
+
+                // Quick BPM Presets
+                Row {
+                  spacing: Style.space(4)
+
+                  Repeater {
+                    model: [
+                      { name: "Sleep", bpm: 40 },
+                      { name: "Rest", bpm: 60 },
+                      { name: "Walk", bpm: 85 },
+                      { name: "Sprint", bpm: 130 }
+                    ]
+
+                    Rectangle {
+                      height: 26
+                      width: bpmPresetText.implicitWidth + 16
+                      radius: 4
+                      scale: bpmPresetMouse.pressed ? 0.92 : 1.0
+                      color: bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill
+                      border.color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.cardBorder
+                      border.width: 1
+
+                      Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                      Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                      Text {
+                        id: bpmPresetText
+                        anchors.centerIn: parent
+                        text: modelData.name + " (" + modelData.bpm + ")"
+                        color: root.foreground
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.bodySmall
+                        font.bold: root.pulseBpm === modelData.bpm
+                      }
+
+                      MouseArea {
+                        id: bpmPresetMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.setPulseBpm(modelData.bpm)
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 3: 🔔 Task Completion Desktop Notifications (v1.2)
+          Rectangle {
+            width: parent.width
+            implicitHeight: notifCardCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            Column {
+              id: notifCardCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+
+                Row {
+                  spacing: Style.space(4)
+                  Layout.alignment: Qt.AlignVCenter
+
+                  Text {
+                    text: root.t("notifTitle", "🔔 TASK COMPLETION NOTIFICATIONS")
+                    color: root.foreground
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.body
+                    font.bold: true
+                  }
+
+                  Text {
+                    text: root.notificationsEnabled ? ("(" + root.t("enabled", "Enabled") + ")") : ("(" + root.t("muted", "Muted") + ")")
+                    color: root.notificationsEnabled ? root.uploadColor : root.dim
+                    font.family: root.fontFamily
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
+                  }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // Notification Jumper Switch
+                Rectangle {
+                  id: notifJumper
+                  width: 28
+                  height: 16
+                  radius: 8
+                  color: root.notificationsEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
+                  border.color: root.notificationsEnabled ? root.uploadColor : root.cardBorder
+                  border.width: 1
+
+                  Behavior on color { ColorAnimation { duration: 160 } }
+
+                  Rectangle {
+                    id: notifKnob
+                    width: 12
+                    height: 12
+                    radius: 6
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: root.notificationsEnabled ? (parent.width - width - 2) : 2
+                    color: root.notificationsEnabled ? root.uploadColor : root.foreground
+
+                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnimation { duration: 160 } }
+                  }
+
+                  MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.setNotificationsEnabled(!root.notificationsEnabled)
+                  }
+                }
+              }
+
+              Text {
+                text: root.t("notifDesc", "Sends a discreet desktop notification via notify-send whenever an autonomous coding turn or background task finishes.")
+                color: root.dim
+                font.family: root.fontFamily
+                font.pixelSize: Style.font.caption
+                width: parent.width
+                wrapMode: Text.WordWrap
+              }
+            }
+          }
+
+
+          // Omarchy ASCII Logo Banner (Original size: 153x50 / Canvas 153x36, centered above system card)
           Item {
             id: omarchyLogoBox
             anchors.horizontalCenter: parent.horizontalCenter
@@ -2743,355 +3092,6 @@ BarWidget {
               omarchyLogoBox.activeGradient = omarchyLogoBox.allPalettes[0]
             }
           }
-
-          // Card 1: ⏱️ Telemetry & Auto-Refresh Engine
-          Rectangle {
-            width: parent.width
-            implicitHeight: refreshCardCol.implicitHeight + Style.space(8)
-            radius: 8
-            color: root.cardFill
-            border.color: root.cardBorder
-            border.width: 1
-
-            Column {
-              id: refreshCardCol
-              width: parent.width - Style.space(8)
-              anchors.centerIn: parent
-              spacing: Style.space(4)
-
-              // Header Row (Title on left, Interval Pill centered in total width)
-              Item {
-                width: parent.width
-                implicitHeight: 22
-
-                Text {
-                  anchors.left: parent.left
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: root.t("telemetryTitle", "⏱️ TELEMETRY & AUTO-REFRESH")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
-                  font.bold: true
-                }
-
-                Rectangle {
-                  anchors.horizontalCenter: parent.horizontalCenter
-                  anchors.verticalCenter: parent.verticalCenter
-                  height: 20
-                  width: curIntText.implicitWidth + 14
-                  radius: 4
-                  color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
-                  border.color: root.primaryAccent
-                  border.width: 1
-
-                  Text {
-                    id: curIntText
-                    anchors.centerIn: parent
-                    text: root.refreshIntervalSec + "s interval"
-                    color: root.primaryAccent
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                    font.bold: true
-                  }
-                }
-              }
-
-              Text {
-                text: "Controls background scanning frequency for sessions, active tools, and Google AI quota resets."
-                color: root.dim
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                width: parent.width
-                wrapMode: Text.WordWrap
-              }
-
-              // Quick Presets
-              Row {
-                spacing: Style.space(4)
-
-                Repeater {
-                  model: [10, 30, 60, 120, 300]
-
-                  Rectangle {
-                    height: 26
-                    width: presetText.implicitWidth + 16
-                    radius: 4
-                    scale: presetMouse.pressed ? 0.92 : 1.0
-                    color: presetMouse.containsMouse ? root.cardHover : root.cardFill
-                    border.color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.cardBorder
-                    border.width: 1
-
-                    Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                    Text {
-                      id: presetText
-                      anchors.centerIn: parent
-                      text: modelData + "s"
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: root.refreshIntervalSec === modelData
-                    }
-
-                    MouseArea {
-                      id: presetMouse
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: root.setRefreshInterval(modelData)
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // Card 2: 💓 Working Heartbeat Pulse
-          Rectangle {
-            width: parent.width
-            implicitHeight: pulseCardCol.implicitHeight + Style.space(8)
-            radius: 8
-            color: root.cardFill
-            border.color: root.cardBorder
-            border.width: 1
-
-            Column {
-              id: pulseCardCol
-              width: parent.width - Style.space(8)
-              anchors.centerIn: parent
-              spacing: Style.space(4)
-
-              RowLayout {
-                width: parent.width
-
-                Row {
-                  spacing: Style.space(4)
-                  Layout.alignment: Qt.AlignVCenter
-
-                  Text {
-                    text: root.t("heartbeatTitle", "💓 WORKING HEARTBEAT ANIMATION")
-                    color: root.foreground
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                    font.bold: true
-                  }
-
-                  Text {
-                    text: root.pulseEnabled ? ("(" + root.t("active", "Active") + ")") : ("(" + root.t("disabled", "Disabled") + ")")
-                    color: root.pulseEnabled ? root.uploadColor : root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                    font.bold: true
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                // Jumper Toggle Switch
-                Rectangle {
-                  id: pulseJumper
-                  width: 28
-                  height: 16
-                  radius: 8
-                  color: root.pulseEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
-                  border.color: root.pulseEnabled ? root.uploadColor : root.cardBorder
-                  border.width: 1
-
-                  Behavior on color { ColorAnimation { duration: 160 } }
-
-                  // Jumper Knob
-                  Rectangle {
-                    id: jumperKnob
-                    width: 12
-                    height: 12
-                    radius: 6
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: root.pulseEnabled ? (parent.width - width - 2) : 2
-                    color: root.pulseEnabled ? root.uploadColor : root.foreground
-
-                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-                    Behavior on color { ColorAnimation { duration: 160 } }
-                  }
-
-                  MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.setPulseEnabled(!root.pulseEnabled)
-                  }
-                }
-              }
-
-              Text {
-                text: "Animates the tray icon and hero logo with an anatomical heartbeat rhythm during active agent code processing."
-                color: root.dim
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                width: parent.width
-                wrapMode: Text.WordWrap
-              }
-
-              // Pulse BPM Controls
-              Column {
-                width: parent.width
-                spacing: Style.space(3)
-                visible: root.pulseEnabled
-
-                RowLayout {
-                  width: parent.width
-                  Text {
-                    text: root.t("pulseCadence", "🎚️ Pulse Cadence:")
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                  }
-                  Item { Layout.fillWidth: true }
-                  Text {
-                    text: root.pulseBpm + " BPM (" + (Math.round(60000 / root.pulseBpm) / 1000).toFixed(1) + " s/beat)"
-                    color: root.primaryAccent
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                    font.bold: true
-                  }
-                }
-
-                // Quick BPM Presets
-                Row {
-                  spacing: Style.space(4)
-
-                  Repeater {
-                    model: [
-                      { name: "Sleep", bpm: 40 },
-                      { name: "Rest", bpm: 60 },
-                      { name: "Walk", bpm: 85 },
-                      { name: "Sprint", bpm: 130 }
-                    ]
-
-                    Rectangle {
-                      height: 26
-                      width: bpmPresetText.implicitWidth + 16
-                      radius: 4
-                      scale: bpmPresetMouse.pressed ? 0.92 : 1.0
-                      color: bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill
-                      border.color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.cardBorder
-                      border.width: 1
-
-                      Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
-                      Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                      Text {
-                        id: bpmPresetText
-                        anchors.centerIn: parent
-                        text: modelData.name + " (" + modelData.bpm + ")"
-                        color: root.foreground
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.bodySmall
-                        font.bold: root.pulseBpm === modelData.bpm
-                      }
-
-                      MouseArea {
-                        id: bpmPresetMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: root.setPulseBpm(modelData.bpm)
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // Card 3: 🔔 Task Completion Desktop Notifications (v1.2)
-          Rectangle {
-            width: parent.width
-            implicitHeight: notifCardCol.implicitHeight + Style.space(8)
-            radius: 8
-            color: root.cardFill
-            border.color: root.cardBorder
-            border.width: 1
-
-            Column {
-              id: notifCardCol
-              width: parent.width - Style.space(8)
-              anchors.centerIn: parent
-              spacing: Style.space(4)
-
-              RowLayout {
-                width: parent.width
-
-                Row {
-                  spacing: Style.space(4)
-                  Layout.alignment: Qt.AlignVCenter
-
-                  Text {
-                    text: root.t("notifTitle", "🔔 TASK COMPLETION NOTIFICATIONS")
-                    color: root.foreground
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                    font.bold: true
-                  }
-
-                  Text {
-                    text: root.notificationsEnabled ? ("(" + root.t("enabled", "Enabled") + ")") : ("(" + root.t("muted", "Muted") + ")")
-                    color: root.notificationsEnabled ? root.uploadColor : root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
-                    font.bold: true
-                    anchors.verticalCenter: parent.verticalCenter
-                  }
-                }
-
-                Item { Layout.fillWidth: true }
-
-                // Notification Jumper Switch
-                Rectangle {
-                  id: notifJumper
-                  width: 28
-                  height: 16
-                  radius: 8
-                  color: root.notificationsEnabled ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.35) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.14)
-                  border.color: root.notificationsEnabled ? root.uploadColor : root.cardBorder
-                  border.width: 1
-
-                  Behavior on color { ColorAnimation { duration: 160 } }
-
-                  Rectangle {
-                    id: notifKnob
-                    width: 12
-                    height: 12
-                    radius: 6
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: root.notificationsEnabled ? (parent.width - width - 2) : 2
-                    color: root.notificationsEnabled ? root.uploadColor : root.foreground
-
-                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-                    Behavior on color { ColorAnimation { duration: 160 } }
-                  }
-
-                  MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.setNotificationsEnabled(!root.notificationsEnabled)
-                  }
-                }
-              }
-
-              Text {
-                text: root.t("notifDesc", "Sends a discreet desktop notification via notify-send whenever an autonomous coding turn or background task finishes.")
-                color: root.dim
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                width: parent.width
-                wrapMode: Text.WordWrap
-              }
-            }
-          }
-
 
           // Card 5: 🔧 System & Environment Integration
           Rectangle {
