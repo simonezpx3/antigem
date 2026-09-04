@@ -1138,13 +1138,14 @@ BarWidget {
 
               // Day labels row
               Row {
+                id: dayRow
                 width: parent.width
                 spacing: 0
                 readonly property var days: (root.recentDays && root.recentDays.length > 0) ? root.recentDays : []
                 Repeater {
-                  model: parent.days
+                  model: dayRow.days
                   Item {
-                    width: sparkCanvas.width / Math.max(1, parent.days.length)
+                    width: sparkCanvas.width / Math.max(1, dayRow.days.length)
                     height: 16
                     Text {
                       anchors.centerIn: parent
@@ -1154,10 +1155,10 @@ BarWidget {
                         var dateStr = parts.length >= 3 ? parts[1] + "/" + parts[2] : d
                         return dateStr
                       }
-                      color: index === parent.days.length - 1 ? root.primaryAccent : root.dim
+                      color: (dayRow.days && index === dayRow.days.length - 1) ? root.primaryAccent : root.dim
                       font.family: root.fontFamily
                       font.pixelSize: 8
-                      font.bold: index === parent.days.length - 1
+                      font.bold: (dayRow.days && index === dayRow.days.length - 1)
                     }
                   }
                 }
