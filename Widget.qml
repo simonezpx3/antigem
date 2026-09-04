@@ -2343,23 +2343,6 @@ BarWidget {
           width: parent.width
           spacing: Style.space(10)
 
-          // Omarchy Animated Logo Banner from project assets (180x46)
-          Item {
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 180
-            height: 46
-
-            AnimatedImage {
-              id: omarchyAnimLogo
-              anchors.centerIn: parent
-              source: Qt.resolvedUrl("assets/omarchy_anim.webp")
-              playing: root.selectedTab === 2 && root.popupOpen
-              fillMode: Image.PreserveAspectFit
-              smooth: true
-              mipmap: true
-            }
-          }
-
           // Card 1: ⏱️ Telemetry & Auto-Refresh Engine
           Rectangle {
             width: parent.width
@@ -2866,6 +2849,23 @@ BarWidget {
                   }
                 }
               }
+            }
+          }
+
+          // Omarchy Animated Logo Banner from project assets (180x46)
+          Item {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 180
+            height: 46
+
+            AnimatedImage {
+              id: omarchyAnimLogo
+              anchors.centerIn: parent
+              source: Qt.resolvedUrl("assets/omarchy_anim.webp")
+              playing: root.selectedTab === 2 && root.popupOpen
+              fillMode: Image.PreserveAspectFit
+              smooth: true
+              mipmap: true
             }
           }
         }
