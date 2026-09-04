@@ -1565,7 +1565,14 @@ BarWidget {
                       }
 
                       Text {
-                        text: modelData.endpoint + " · " + modelData.tag
+                        text: {
+                          var ep = modelData.endpoint || ""
+                          var tg = modelData.tag || modelData.badge || ""
+                          if (ep && tg) return ep + " · " + tg
+                          if (ep) return ep
+                          if (tg) return tg
+                          return "googleapis.com · Active"
+                        }
                         color: root.dim
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption - 1

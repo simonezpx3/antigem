@@ -248,6 +248,8 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
         "services": [
             {
                 "name": "Gemini 3.8 Flash / Pro (Interactions API)",
+                "endpoint": "generativelanguage.googleapis.com",
+                "tag": "Live Chat & Code",
                 "status": "Operational",
                 "ping": f"{latency_ms} ms",
                 "latency": f"{latency_ms} ms",
@@ -256,6 +258,8 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
             },
             {
                 "name": "Cloud Code & Multi-Agent Fleet",
+                "endpoint": "aiplatform.googleapis.com",
+                "tag": "Agent Reasoning & AGY",
                 "status": "Operational",
                 "ping": f"{max(1, latency_ms - 2)} ms",
                 "latency": f"{max(1, latency_ms - 2)} ms",
@@ -264,6 +268,8 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
             },
             {
                 "name": "Google AI Cloud Storage & Snapshots",
+                "endpoint": "storage.googleapis.com",
+                "tag": "Session Snapshots & Brain",
                 "status": "Operational",
                 "ping": f"{latency_ms + 4} ms",
                 "latency": f"{latency_ms + 4} ms",
@@ -272,6 +278,8 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
             },
             {
                 "name": "Gemini Live Multimodal Streaming (VAD/Audio)",
+                "endpoint": "generativelanguage.googleapis.com/live",
+                "tag": "WebSocket Audio Streaming",
                 "status": "Standby",
                 "ping": f"{latency_ms + 1} ms",
                 "latency": f"{latency_ms + 1} ms",
