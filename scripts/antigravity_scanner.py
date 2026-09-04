@@ -471,6 +471,21 @@ def parse_transcript_tools_cached(path: Path, cache: dict[str, Any]) -> tuple[di
     return dict(tools), subagents, types, True
 
 
+def is_valid_model_name(name: str) -> bool:
+    if not name or len(name) < 3 or len(name) > 40:
+        return False
+    lower = name.lower()
+    if any(bad in lower for bad in ("comment", "user", "change", "setting", "ask", "report")):
+        return False
+    return any(brand in lower for brand in ("gemini", "claude", "gpt", "qwen", "deepseek", "gemma", "flash", "pro"))
+
+
+def clean_model_name(raw: str) -> str:
+    cleaned = re.sub(r"\s*\((?:High|Medium|Low|Default|None|\d+k?)\)", "", str(raw), flags=re.IGNORECASE)
+    cleaned = re.sub(r"[`.,;]+$", "", cleaned).strip()
+    return sanitize_plain_text(cleaned, 40)
+
+
 def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
     """Detect active model from cli.log or recent transcript session settings."""
     cli_log = base_dir / "cli.log"
@@ -479,19 +494,18 @@ def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
             target_log = cli_log.resolve()
             if target_log.is_file() and target_log.is_relative_to(base_dir.resolve()):
                 sz = target_log.stat().st_size
-                read_sz = min(sz, 65536)  # Read last 64 KB
+                read_sz = min(sz, 512 * 1024)  # Read last 512 KB
                 with open(target_log, "rb") as f:
                     if sz > read_sz:
                         f.seek(sz - read_sz)
                     raw = f.read(read_sz).decode("utf-8", errors="ignore")
-                    last_label = None
-                    for line in raw.splitlines():
+                    for line in reversed(raw.splitlines()):
                         if "model_config_manager.go" in line and "label=" in line:
                             m = re.search(r'label="([^"]+)"', line)
                             if m:
-                                last_label = m.group(1).strip()
-                    if last_label:
-                        return sanitize_plain_text(last_label, 50)
+                                cand = clean_model_name(m.group(1).strip())
+                                if is_valid_model_name(cand):
+                                    return cand
         except Exception:
             pass
 
@@ -502,29 +516,31 @@ def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
                 key=lambda p: p.stat().st_mtime,
                 reverse=True
             )
-            for s in sessions[:6]:
+            for s in sessions[:8]:
                 t_file = s / ".system_generated" / "logs" / "transcript.jsonl"
                 if t_file.is_file():
                     try:
                         with open(t_file, "r", encoding="utf-8", errors="ignore") as f:
                             for idx, line in enumerate(f):
-                                if idx > 20:
+                                if idx > 60:
                                     break
                                 if "Model Selection" in line:
-                                    m = re.search(r"Model Selection` from [^`]+ to ([^.\n<]+)", line)
+                                    m = re.search(r"Model Selection`\s*from\s+.*?to\s+([A-Za-z0-9. -]+(?:\s*\([^)]*\))?)", line)
                                     if m:
-                                        return sanitize_plain_text(m.group(1).strip(), 50)
+                                        cand = clean_model_name(m.group(1).strip())
+                                        if is_valid_model_name(cand):
+                                            return cand
                     except Exception:
                         pass
         except Exception:
             pass
 
-    return "Gemini 3.8 Flash (High)"
+    return "Gemini 3.8 Flash"
 
 
-def detect_server_version() -> dict[str, str]:
-    """Detect Antigravity CLI and IDE server versions."""
-    cli_ver = "1.1.25"
+def detect_server_version(active_client: str = "cli") -> dict[str, str]:
+    """Detect Antigravity CLI and IDE server versions and determine active client."""
+    cli_ver = "1.1.26"
     ide_ver = "2.10.0"
     try:
         res = subprocess.run(["agy", "--version"], capture_output=True, text=True, timeout=0.3)
@@ -532,11 +548,15 @@ def detect_server_version() -> dict[str, str]:
             cli_ver = res.stdout.strip()
     except Exception:
         pass
+
+    active_display = f"CLI v{cli_ver}" if active_client == "cli" else f"IDE v{ide_ver}"
     return {
         "ide": ide_ver,
         "cli": cli_ver,
-        "display": f"v{ide_ver}",
-        "full": f"v{ide_ver} (CLI {cli_ver})"
+        "activeClient": active_client,
+        "activeVersion": active_display,
+        "display": active_display,
+        "full": f"CLI v{cli_ver} (IDE v{ide_ver})"
     }
 
 
@@ -671,7 +691,9 @@ def scan() -> dict[str, Any]:
 
                 m_cand = step.get("model") or step.get("model_name")
                 if m_cand:
-                    latest_model = sanitize_plain_text(m_cand, 50)
+                    m_cleaned = clean_model_name(m_cand)
+                    if is_valid_model_name(m_cleaned):
+                        latest_model = m_cleaned
 
                 created_at = step.get("created_at") or step.get("timestamp") or 0
                 step_time = 0
@@ -947,6 +969,14 @@ def scan() -> dict[str, Any]:
     latest_ide = next((s for s in all_sessions if s.get("clientType") == "ide"), None)
     featured_sessions = [s for s in [latest_cli, latest_ide] if s is not None]
 
+    active_client = "cli"
+    if active_sessions:
+        active_client = active_sessions[0].get("clientType") or "cli"
+    elif all_sessions:
+        active_client = all_sessions[0].get("clientType") or "cli"
+
+    server_info = detect_server_version(active_client)
+
     has_active_session = len(active_lock_ids) > 0 or agent_working
     active_status = "Working" if agent_working else ("Waiting" if has_active_session else "Idle")
 
@@ -1055,8 +1085,12 @@ def scan() -> dict[str, Any]:
         "activeStatus": active_status,
         "tierLabel": quota_info["plan"],
         "currentModel": latest_model,
+        "activeClient": active_client,
+        "activeVersion": server_info["activeVersion"],
         "serverVersion": server_info["display"],
         "serverVersionFull": server_info["full"],
+        "cliVersion": server_info["cli"],
+        "ideVersion": server_info["ide"],
         "quotas": quota_info,
         "quotasBreakdown": quotas_breakdown,
         "tokens": token_usage_data,

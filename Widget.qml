@@ -13,9 +13,10 @@ BarWidget {
   property bool active: false
   property string activeStatus: "Idle"
   property string tierLabel: "Google AI Pro"
-  property string currentModel: "Gemini 3.8 Flash (High)"
-  property string serverVersion: "v2.10.0"
-  property string serverVersionFull: "v2.10.0 (CLI 1.1.25)"
+  property string currentModel: "Gemini 3.8 Flash"
+  property string activeVersion: "CLI v1.1.26"
+  property string serverVersion: "CLI v1.1.26"
+  property string serverVersionFull: "CLI v1.1.26"
   property int sessionGeminiPct: 0
   property string sessionGeminiDetail: "Resets in ~5h"
   property int weeklyGeminiPct: 0
@@ -218,9 +219,10 @@ BarWidget {
       root.active = data.active === true
       root.activeStatus = String(data.activeStatus || "Idle")
       root.tierLabel = String(data.tierLabel || "Google AI Pro")
-      root.currentModel = String(data.currentModel || "Gemini 3.8 Flash (High)")
-      root.serverVersion = String(data.serverVersion || "v2.10.0")
-      root.serverVersionFull = String(data.serverVersionFull || "v2.10.0 (CLI 1.1.25)")
+      root.currentModel = String(data.currentModel || "Gemini 3.8 Flash")
+      root.activeVersion = String(data.activeVersion || data.serverVersion || "CLI v1.1.26")
+      root.serverVersion = String(data.serverVersion || "CLI v1.1.26")
+      root.serverVersionFull = String(data.serverVersionFull || "CLI v1.1.26")
       root.todayPrompts = Number(data.todayPrompts || 0)
       root.totalPrompts = Number(data.totalPrompts || 0)
       root.recentDays = data.recentDays || []
@@ -508,7 +510,7 @@ BarWidget {
     text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyTokensUsed + " / 25M · " + (root.weeklyGeminiPct >= 90 ? "🚨 CRITICAL LIMIT! Remaining " + root.weeklyTokensRemaining : root.weeklyGeminiDetail) + ")"
     text += "\n🪙 Today Tokens: " + root.todayTokens + " (Total: " + root.allTimeTokens + ")"
     text += "\n🧠 Model: " + root.currentModel
-    text += "\n⚙️ AGY Server: " + root.serverVersionFull
+    text += "\n⚙️ Client: " + (root.activeVersion || root.serverVersion)
     text += "\nStatus: " + (root.isWorking ? "Working 💓" : (root.isWaiting ? "Waiting for input" : "Idle"))
     text += "\n[Tap: Open panel · Right-tap: Settings]"
     return text
@@ -3149,7 +3151,7 @@ BarWidget {
             }
 
             Text {
-              text: root.currentModel + " · AGY " + root.serverVersion + " · " + root.secondsRemaining + "s"
+              text: root.currentModel + " · " + (root.activeVersion || root.serverVersion)
               color: root.dim
               font.family: root.fontFamily
               font.pixelSize: Style.font.bodySmall
