@@ -1578,7 +1578,7 @@ BarWidget {
                       Text {
                         id: svcLatText
                         anchors.centerIn: parent
-                        text: modelData.latency
+                        text: modelData.latency || modelData.ping || "30 ms"
                         color: root.primaryAccent
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption

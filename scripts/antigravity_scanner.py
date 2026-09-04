@@ -12,6 +12,7 @@ import os
 import re
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.request
@@ -249,6 +250,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
                 "name": "Gemini 3.8 Flash / Pro (Interactions API)",
                 "status": "Operational",
                 "ping": f"{latency_ms} ms",
+                "latency": f"{latency_ms} ms",
                 "badge": "Active",
                 "code": 1
             },
@@ -256,6 +258,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
                 "name": "Cloud Code & Multi-Agent Fleet",
                 "status": "Operational",
                 "ping": f"{max(1, latency_ms - 2)} ms",
+                "latency": f"{max(1, latency_ms - 2)} ms",
                 "badge": "Healthy",
                 "code": 1
             },
@@ -263,6 +266,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
                 "name": "Google AI Cloud Storage & Snapshots",
                 "status": "Operational",
                 "ping": f"{latency_ms + 4} ms",
+                "latency": f"{latency_ms + 4} ms",
                 "badge": "Connected",
                 "code": 1
             },
@@ -270,6 +274,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
                 "name": "Gemini Live Multimodal Streaming (VAD/Audio)",
                 "status": "Standby",
                 "ping": f"{latency_ms + 1} ms",
+                "latency": f"{latency_ms + 1} ms",
                 "badge": "Ready",
                 "code": 2
             }
@@ -395,6 +400,63 @@ def read_tail_step(path: Path, max_bytes: int = 8192) -> dict[str, Any] | None:
     except Exception:
         pass
     return None
+
+
+def parse_transcript_tools_cached(path: Path, cache: dict[str, Any]) -> tuple[dict[str, int], int, set[str], bool]:
+    """Efficient incremental parser for tool calls and subagents in a transcript file with mtime/size caching."""
+    tools_cache = cache.setdefault("transcript_tools", {})
+    path_key = str(path)
+    try:
+        st = path.stat()
+        file_key = f"{st.st_mtime}_{st.st_size}"
+    except Exception:
+        return {}, 0, set(), False
+
+    cached_entry = tools_cache.get(path_key)
+    if isinstance(cached_entry, dict) and cached_entry.get("key") == file_key:
+        tools = cached_entry.get("tools", {})
+        subagents = cached_entry.get("subagents", 0)
+        types = set(cached_entry.get("types", []))
+        return tools, subagents, types, False
+
+    tools: dict[str, int] = defaultdict(int)
+    subagents = 0
+    types: set[str] = set()
+
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                if '"tool_calls"' in line:
+                    try:
+                        step_data = json.loads(line)
+                        calls = step_data.get("tool_calls", [])
+                        if isinstance(calls, list):
+                            for tc in calls:
+                                if isinstance(tc, dict):
+                                    fn = tc.get("function") or tc.get("name") or tc.get("tool") or ""
+                                    if fn:
+                                        tools[sanitize_plain_text(fn, 40)] += 1
+                                    if fn == "invoke_subagent":
+                                        subagents += 1
+                                        args = tc.get("arguments") or tc.get("args") or {}
+                                        if isinstance(args, dict):
+                                            subs = args.get("Subagents") or args.get("subagents") or []
+                                            if isinstance(subs, list):
+                                                for sa in subs:
+                                                    if isinstance(sa, dict) and sa.get("TypeName"):
+                                                        types.add(str(sa.get("TypeName")))
+                    except Exception:
+                        continue
+    except Exception:
+        return {}, 0, set(), False
+
+    tools_cache[path_key] = {
+        "key": file_key,
+        "tools": dict(tools),
+        "subagents": subagents,
+        "types": list(types)
+    }
+    return dict(tools), subagents, types, True
 
 
 def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
@@ -624,22 +686,15 @@ def scan() -> dict[str, Any]:
                     s["preview"] = clean_content
                     s["promptCount"] = max(1, s["promptCount"])
 
-                calls = step.get("tool_calls", [])
-                if isinstance(calls, list):
-                    for tc in calls:
-                        if isinstance(tc, dict):
-                            fn = tc.get("function") or tc.get("name") or tc.get("tool") or ""
-                            if fn:
-                                tool_counter[sanitize_plain_text(fn, 40)] += 1
-                            if fn == "invoke_subagent":
-                                active_subagents += 1
-                                args = tc.get("arguments") or tc.get("args") or {}
-                                if isinstance(args, dict):
-                                    subs = args.get("Subagents") or args.get("subagents") or []
-                                    if isinstance(subs, list):
-                                        for sa in subs:
-                                            if isinstance(sa, dict) and sa.get("TypeName"):
-                                                active_subagent_types.add(str(sa.get("TypeName")))
+            # Fast incremental tool & subagents aggregation across all transcript files
+            for _, t_file, _ in entries:
+                f_tools, f_subs, f_types, f_dirty = parse_transcript_tools_cached(t_file, cache)
+                if f_dirty:
+                    cache_dirty = True
+                for t_name, t_cnt in f_tools.items():
+                    tool_counter[t_name] += t_cnt
+                active_subagents += f_subs
+                active_subagent_types.update(f_types)
         except Exception:
             pass
 
@@ -819,4 +874,15 @@ def scan() -> dict[str, Any]:
 
 if __name__ == "__main__":
     data = scan()
-    print(json.dumps(data, indent=2))
+    payload = json.dumps(data)
+    try:
+        cache_dir = Path.home() / ".cache" / "antigravity-scanner"
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        latest_file = cache_dir / "latest_telemetry.json"
+        temp_file = cache_dir / "latest_telemetry.json.tmp"
+        temp_file.write_text(payload, encoding="utf-8")
+        temp_file.replace(latest_file)
+    except Exception:
+        pass
+    sys.stdout.write(payload + "\n")
+    sys.stdout.flush()
