@@ -14,7 +14,7 @@ A native, high-performance telemetry dashboard, multi-agent fleet monitor, quota
   <img src="assets/omarchy_anim.webp" alt="Omarchy ASCII Lightning Discharge Animation" width="180">
 </p>
 
-Designed in strict compliance with Omarchy plugin guidelines, following the visual language, palette tokens, and 3-tab UX structure of **System Monitor** (`bitr0t.system-monitor`).
+Designed in strict compliance with Omarchy plugin guidelines
 
 ---
 
