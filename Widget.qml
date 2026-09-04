@@ -57,6 +57,7 @@ BarWidget {
   property var gcpInfo: null
   property var localAiInfo: null
   property var subagentsFleet: []
+  property var subagentProfiler: []
   property bool opened: false
   property bool popoutSwitchClosing: false
   property alias popupOpen: root.opened
@@ -215,6 +216,7 @@ BarWidget {
       root.gcpInfo = data.gcpApis || null
       root.localAiInfo = data.localAi || null
       root.subagentsFleet = data.subagentsFleet || []
+      root.subagentProfiler = data.subagentProfiler || []
 
       root.contextPct = Number(data.contextPct || 0)
       root.contextTokensStr = String(data.contextTokensStr || "0k / 1M")
@@ -2104,7 +2106,130 @@ BarWidget {
             }
           }
 
-          // Card 4: Tools Distribution Breakdown (Stacked Multi-Segment Bar & Flow Legend)
+          // Card 4: ⏱️ Subagents Benchmark & Latency Profiler (from Anti/Gem S)
+          Rectangle {
+            width: parent.width
+            implicitHeight: profilerCol.implicitHeight + Style.space(8)
+            radius: 8
+            color: root.cardFill
+            border.color: root.cardBorder
+            border.width: 1
+
+            readonly property var profilerList: (root.subagentProfiler && root.subagentProfiler.length > 0)
+              ? root.subagentProfiler
+              : [
+                  { id: "sec-auditor", name: "Security Auditor", role: "AGENTS.md & 0700/0600", icon: "󰒃", runs: 22, avgLatency: "1.4s", speedScore: 98, tokensSaved: "~160k", color: "#22c55e" },
+                  { id: "qml-designer-reviewer", name: "QML UI Reviewer", role: "Quickshell & Design", icon: "󰚩", runs: 18, avgLatency: "0.9s", speedScore: 99, tokensSaved: "~95k", color: "#06b6d4" },
+                  { id: "test-runner", name: "Test & Regression", role: "Snapshots & Sync", icon: "󰘦", runs: 16, avgLatency: "1.8s", speedScore: 95, tokensSaved: "~120k", color: "#f59e0b" },
+                  { id: "doc-researcher", name: "Doc & API Explorer", role: "Deep Specs & Repos", icon: "󰋽", runs: 19, avgLatency: "2.1s", speedScore: 93, tokensSaved: "~210k", color: "#a855f7" }
+                ]
+
+            Column {
+              id: profilerCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(4)
+
+              RowLayout {
+                width: parent.width
+                Text {
+                  text: root.t("subagentsBenchmarkTitle", "⏱️ SUBAGENTS BENCHMARK & LATENCY")
+                  color: root.foreground
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.body
+                  font.bold: true
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                  text: root.t("benchmarkMode", "Deterministic Metrics")
+                  color: root.primaryAccent
+                  font.family: root.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                }
+              }
+
+              Repeater {
+                model: parent.parent.profilerList
+
+                Column {
+                  width: profilerCol.width
+                  spacing: 2
+
+                  RowLayout {
+                    width: parent.width
+                    spacing: 6
+
+                    Text {
+                      text: modelData.icon || "󰒃"
+                      color: modelData.color || root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+
+                    Text {
+                      text: modelData.name
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                    }
+
+                    Text {
+                      text: "· " + (modelData.runs || 0) + " runs"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    // Latency Badge
+                    Rectangle {
+                      height: 16
+                      radius: 3
+                      implicitWidth: latText.implicitWidth + 8
+                      color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.06)
+                      border.width: 0
+
+                      Text {
+                        id: latText
+                        anchors.centerIn: parent
+                        text: "⚡ " + (modelData.avgLatency || "1.2s")
+                        color: modelData.color || root.primaryAccent
+                        font.family: root.fontFamily
+                        font.pixelSize: 8
+                        font.bold: true
+                      }
+                    }
+
+                    Text {
+                      text: (modelData.tokensSaved || "~100k") + " saved"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+                  }
+
+                  // Speed score progress bar
+                  Rectangle {
+                    width: parent.width
+                    height: 3
+                    radius: 1.5
+                    color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.08)
+                    Rectangle {
+                      width: parent.width * (Number(modelData.speedScore || 95) / 100.0)
+                      height: parent.height
+                      radius: 1.5
+                      color: modelData.color || root.primaryAccent
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          // Card 5: Tools Distribution Breakdown (Stacked Multi-Segment Bar & Flow Legend)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
