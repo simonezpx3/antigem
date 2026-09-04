@@ -157,6 +157,18 @@ BarWidget {
     root.close()
   }
 
+  function resolveSegmentColor(item, fallback) {
+    if (!item) return fallback || root.primaryAccent
+    var name = String(item.name || item.id || "").toLowerCase()
+    if (name.indexOf("headroom") !== -1 || name.indexOf("volný") !== -1) return root.headroomColor
+    if (name.indexOf("code") !== -1 || name.indexOf("kód") !== -1 || name.indexOf("today") !== -1 || name.indexOf("dnes") !== -1 || name.indexOf("security") !== -1 || name.indexOf("sec-auditor") !== -1 || name.indexOf("chat") !== -1 || name.indexOf("history") !== -1) return root.uploadColor
+    if (name.indexOf("term") !== -1 || name.indexOf("command") !== -1 || name.indexOf("příkaz") !== -1 || name.indexOf("test") !== -1) return root.loadColor
+    if (name.indexOf("search") !== -1 || name.indexOf("hled") !== -1 || name.indexOf("navig") !== -1 || name.indexOf("tool") !== -1 || name.indexOf("nástroj") !== -1 || name.indexOf("mcp") !== -1 || name.indexOf("qml") !== -1 || name.indexOf("session") !== -1) return root.primaryAccent
+    if (name.indexOf("arch") !== -1 || name.indexOf("plan") !== -1 || name.indexOf("syst") !== -1 || name.indexOf("rule") !== -1 || name.indexOf("pravid") !== -1 || name.indexOf("doc") !== -1 || name.indexOf("prior") !== -1 || name.indexOf("minul") !== -1) return root.memoryColor
+    if (name.indexOf("file") !== -1 || name.indexOf("soubor") !== -1) return root.downloadColor
+    return item.color || fallback || root.primaryAccent
+  }
+
   readonly property color primaryAccent: cpuColor
   readonly property color cardFill: Qt.rgba(accent.r, accent.g, accent.b, 0.045)
   readonly property color cardHover: Qt.rgba(accent.r, accent.g, accent.b, 0.09)
@@ -949,7 +961,7 @@ BarWidget {
                       Rectangle {
                         height: parent.height
                         width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.cpuColor)
+                        color: root.resolveSegmentColor(modelData, root.primaryAccent)
                       }
                     }
                   }
@@ -967,7 +979,7 @@ BarWidget {
                         width: 8
                         height: 8
                         radius: 2
-                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.cpuColor)
+                        color: root.resolveSegmentColor(modelData, root.primaryAccent)
                       }
                       Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -1019,7 +1031,7 @@ BarWidget {
                       Rectangle {
                         height: parent.height
                         width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
+                        color: root.resolveSegmentColor(modelData, root.primaryAccent)
                       }
                     }
                   }
@@ -1037,7 +1049,7 @@ BarWidget {
                         width: 8
                         height: 8
                         radius: 2
-                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
+                        color: root.resolveSegmentColor(modelData, root.primaryAccent)
                       }
                       Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -1255,7 +1267,7 @@ BarWidget {
                     Rectangle {
                       height: parent.height
                       width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                      color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
+                      color: root.resolveSegmentColor(modelData, root.primaryAccent)
                     }
                   }
                 }
@@ -1276,7 +1288,7 @@ BarWidget {
                       width: 8
                       height: 8
                       radius: 2
-                      color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
+                      color: root.resolveSegmentColor(modelData, root.primaryAccent)
                     }
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
@@ -1358,7 +1370,7 @@ BarWidget {
                     Rectangle {
                       height: parent.height
                       width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                      color: modelData.color || root.primaryAccent
+                      color: root.resolveSegmentColor(modelData, root.primaryAccent)
                     }
                   }
                 }
@@ -1379,7 +1391,7 @@ BarWidget {
                       width: 8
                       height: 8
                       radius: 2
-                      color: modelData.color || root.primaryAccent
+                      color: root.resolveSegmentColor(modelData, root.primaryAccent)
                     }
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
@@ -2207,7 +2219,7 @@ BarWidget {
                         id: latText
                         anchors.centerIn: parent
                         text: "⚡ " + (modelData.avgLatency || "1.2s")
-                        color: modelData.color || root.primaryAccent
+                        color: root.resolveSegmentColor(modelData, root.primaryAccent)
                         font.family: root.fontFamily
                         font.pixelSize: 8
                         font.bold: true
@@ -2232,7 +2244,7 @@ BarWidget {
                       width: parent.width * (Number(modelData.speedScore || 95) / 100.0)
                       height: parent.height
                       radius: 1.5
-                      color: modelData.color || root.primaryAccent
+                      color: root.resolveSegmentColor(modelData, root.primaryAccent)
                     }
                   }
                 }
