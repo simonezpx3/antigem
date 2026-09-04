@@ -2108,7 +2108,7 @@ BarWidget {
             }
           }
 
-          // Card 4: Tools Distribution Card (Enlarged Donut Pie Chart, Stats Legend & Summary)
+          // Card 4: Tools Distribution Breakdown (Stacked Multi-Segment Bar & Flow Legend)
           Rectangle {
             width: parent.width
             implicitHeight: toolsListCol.implicitHeight + Style.space(8)
@@ -2126,181 +2126,76 @@ BarWidget {
               RowLayout {
                 width: parent.width
                 Text {
+                  Layout.fillWidth: true
                   text: root.t("toolsTitle", "🛠️ TOOL CALLS BREAKDOWN")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
+                  elide: Text.ElideRight
                 }
-                Item { Layout.fillWidth: true }
                 Text {
-                  text: root.t("total", "Total") + ": " + root.totalToolCalls + " " + root.t("totalCalls", "calls")
-                  color: root.dim
+                  text: root.t("total", "Total") + ": " + root.totalToolCalls + " " + root.t("totalCalls", "calls") + " (" + (root.toolsList ? root.toolsList.length : 0) + " types)"
+                  color: root.primaryAccent
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
                 }
               }
 
-              // Donut Chart & Legend Row
-              RowLayout {
+              // Multi-segment Stacked Horizontal Bar
+              Rectangle {
                 width: parent.width
-                spacing: Style.space(6)
+                height: 8
+                radius: 4
+                color: "#1e293b"
+                clip: true
 
-                // 1. Large Donut Pie Chart
-                Item {
-                  width: 154
-                  height: 154
-                  Layout.alignment: Qt.AlignVCenter
-
-                  Canvas {
-                    id: toolDonutCanvas
-                    anchors.fill: parent
-                    antialiasing: true
-                    readonly property var sliceColors: root.sliceColors
-                    onVisibleChanged: if (visible) requestPaint()
-
-                    onPaint: {
-                      var ctx = getContext("2d")
-                      ctx.clearRect(0, 0, width, height)
-
-                      var tools = root.toolsList || []
-                      var total = root.totalToolCalls
-                      var cx = width / 2
-                      var cy = height / 2
-                      var outerR = width / 2 - 4
-                      var innerR = width / 2 - 26
-
-                      if (total <= 0 || tools.length === 0) {
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, outerR, 0, 2 * Math.PI, false)
-                        ctx.arc(cx, cy, innerR, 2 * Math.PI, 0, true)
-                        ctx.fillStyle = Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.12)
-                        ctx.fill()
-                        return
-                      }
-
-                      var startAngle = -Math.PI / 2
-                      var gapAngle = tools.length > 1 ? 0.035 : 0
-
-                      for (var i = 0; i < tools.length; i++) {
-                        var count = Number(tools[i].count || 0)
-                        if (count <= 0) continue
-                        var sliceAngle = (count / total) * (2 * Math.PI)
-                        var endAngle = startAngle + sliceAngle - (sliceAngle > gapAngle ? gapAngle : 0)
-
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, outerR, startAngle, endAngle, false)
-                        ctx.arc(cx, cy, innerR, endAngle, startAngle, true)
-                        ctx.closePath()
-
-                        ctx.fillStyle = root.sliceColors[i % root.sliceColors.length]
-                        ctx.fill()
-
-                        startAngle += sliceAngle
-                      }
-                    }
-
-                    Connections {
-                      target: root
-                      function onToolsListChanged() {
-                        if (root.popupOpen && root.selectedTab === 1 && toolDonutCanvas.visible) {
-                          toolDonutCanvas.requestPaint()
-                        }
-                      }
-                    }
-                  }
-
-                  // Center Total in Donut Hole
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 0
-
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: {
-                        var n = root.totalToolCalls
-                        return n > 9999 ? (Math.round(n / 1000) + "k") : String(n)
-                      }
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.heading
-                      font.bold: true
-                      renderType: Text.NativeRendering
-                    }
-
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("totalCalls", "calls")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      renderType: Text.NativeRendering
-                    }
-                  }
-                }
-
-                // 2. Legend & Meter Rows (All Top 8 tools with spacious rows)
-                Column {
-                  Layout.fillWidth: true
-                  spacing: Style.space(2)
-                  Layout.alignment: Qt.AlignVCenter
+                Row {
+                  anchors.fill: parent
+                  spacing: 1
 
                   Repeater {
                     model: root.topToolsList
 
-                    Column {
-                      width: parent.width
-                      spacing: 2
-
-                      RowLayout {
-                        width: parent.width
-                        spacing: Style.space(3)
-
-                        Rectangle {
-                          width: 8
-                          height: 8
-                          radius: 4
-                          color: (toolDonutCanvas.sliceColors && toolDonutCanvas.sliceColors.length > 0) ? toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length] : root.primaryAccent
-                        }
-
-                        Text {
-                          text: modelData.name
-                          color: root.foreground
-                          font.family: root.fontFamily
-                          font.pixelSize: Style.font.bodySmall
-                          font.bold: true
-                          elide: Text.ElideRight
-                          Layout.fillWidth: true
-                        }
-
-                        Text {
-                          text: modelData.count + "x (" + Math.round((Number(modelData.count) / Math.max(1, root.totalToolCalls)) * 100) + "%)"
-                          color: root.dim
-                          font.family: root.fontFamily
-                          font.pixelSize: Style.font.caption
-                          font.bold: true
-                        }
-                      }
-
-                      Rectangle {
-                        width: parent.width
-                        height: 3.5
-                        radius: 1.75
-                        color: root.track
-
-                        Rectangle {
-                          height: parent.height
-                          width: Math.min(parent.width, parent.width * (Number(modelData.count) / Math.max(1, root.totalToolCalls)))
-                          radius: 1.75
-                          color: (toolDonutCanvas.sliceColors && toolDonutCanvas.sliceColors.length > 0) ? toolDonutCanvas.sliceColors[index % toolDonutCanvas.sliceColors.length] : root.primaryAccent
-                        }
-                      }
+                    Rectangle {
+                      height: parent.height
+                      width: Math.max(Number(modelData.count || 0) > 0 ? 3 : 0, (parent.width * (Number(modelData.count || 0) / Math.max(1, root.totalToolCalls))))
+                      color: (root.sliceColors && root.sliceColors.length > 0) ? root.sliceColors[index % root.sliceColors.length] : root.primaryAccent
                     }
                   }
                 }
               }
 
-              // 3. Bottom Tool Summary Badges Row
+              // Tools Segments Legend Grid
+              Flow {
+                width: parent.width
+                spacing: Style.space(6)
+
+                Repeater {
+                  model: root.topToolsList
+
+                  Row {
+                    spacing: 4
+                    Rectangle {
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 8
+                      height: 8
+                      radius: 2
+                      color: (root.sliceColors && root.sliceColors.length > 0) ? root.sliceColors[index % root.sliceColors.length] : root.primaryAccent
+                    }
+                    Text {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.name + " (" + modelData.count + " · " + Math.round((Number(modelData.count || 0) / Math.max(1, root.totalToolCalls)) * 100) + "%)"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+                  }
+                }
+              }
+
+              // Bottom Tool Summary Badges Row
               RowLayout {
                 width: parent.width
                 spacing: Style.space(4)
