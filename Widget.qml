@@ -819,42 +819,6 @@ BarWidget {
                   font.bold: true
                   elide: Text.ElideRight
                 }
-
-                Rectangle {
-                  height: 20
-                  implicitWidth: headerPillRow.implicitWidth + 12
-                  radius: 4
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Row {
-                    id: headerPillRow
-                    anchors.centerIn: parent
-                    spacing: 5
-
-                    Text {
-                      text: root.tierLabel
-                      color: root.primaryAccent
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                      font.bold: true
-                    }
-
-                    Text {
-                      text: "·"
-                      color: root.dim
-                      font.pixelSize: Style.font.caption
-                    }
-
-                    Text {
-                      text: root.weeklyGeminiDetail
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                }
               }
 
               // Compact Token Sums (4 Badges)
