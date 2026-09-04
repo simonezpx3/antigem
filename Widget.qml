@@ -1838,6 +1838,7 @@ BarWidget {
 
                   Rectangle {
                     readonly property bool isSubWorking: modelData.status === "Working" || modelData.status === "Active"
+                    readonly property bool isSubOnline: root.ready && (modelData.status !== "Offline")
                     width: (parent.width - Style.space(3)) / 2
                     height: 42
                     radius: 6
@@ -1880,30 +1881,44 @@ BarWidget {
                           width: parent.width
                         }
                         Text {
-                          text: modelData.role
-                          color: root.dim
+                          text: isSubWorking ? root.t("subWorking", "Working 💓") : modelData.role
+                          color: isSubWorking ? root.uploadColor : root.dim
                           font.family: root.fontFamily
                           font.pixelSize: 8
+                          font.bold: isSubWorking
                           elide: Text.ElideRight
                           width: parent.width
                         }
                       }
 
-                      Rectangle {
-                        width: isSubWorking ? 54 : 44
-                        height: 18
-                        radius: 3
-                        color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15)
-                        border.color: isSubWorking ? root.uploadColor : root.primaryAccent
-                        border.width: 1
+                      // Status Dot (Green = Online, Red = Offline)
+                      Item {
+                        width: 14
+                        height: 14
+                        Layout.alignment: Qt.AlignVCenter
 
-                        Text {
+                        Rectangle {
                           anchors.centerIn: parent
-                          text: isSubWorking ? root.t("subWorking", "Working 💓") : root.t("subReady", "Ready")
-                          color: isSubWorking ? root.uploadColor : root.primaryAccent
-                          font.family: root.fontFamily
-                          font.pixelSize: 8
-                          font.bold: true
+                          width: 8
+                          height: 8
+                          radius: 4
+                          color: isSubOnline ? root.uploadColor : root.criticalColor
+
+                          Rectangle {
+                            anchors.centerIn: parent
+                            width: 14
+                            height: 14
+                            radius: 7
+                            color: isSubOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.20)
+                            z: -1
+                          }
+
+                          SequentialAnimation on scale {
+                            running: isSubWorking && root.popupOpen
+                            loops: Animation.Infinite
+                            NumberAnimation { to: 1.35; duration: 500; easing.type: Easing.InOutQuad }
+                            NumberAnimation { to: 1.0; duration: 500; easing.type: Easing.InOutQuad }
+                          }
                         }
                       }
                     }
@@ -1968,6 +1983,7 @@ BarWidget {
 
                     Rectangle {
                       readonly property bool isModelWorking: modelData.isWorking
+                      readonly property bool isModelOnline: (root.localAiInfo && root.localAiInfo.status === "Online" && root.localAiInfo.models && root.localAiInfo.models.indexOf(modelData.name) !== -1)
                       width: (parent.width - Style.space(3)) / 2
                       height: 42
                       radius: 6
@@ -2013,29 +2029,43 @@ BarWidget {
 
                           Text {
                             text: isModelWorking ? root.t("subWorking", "Working 💓") : modelData.desc
-                            color: root.dim
+                            color: isModelWorking ? root.uploadColor : root.dim
                             font.family: root.fontFamily
                             font.pixelSize: 8
+                            font.bold: isModelWorking
                             elide: Text.ElideRight
                             width: parent.width
                           }
                         }
 
-                        Rectangle {
-                          width: isModelWorking ? 54 : 44
-                          height: 18
-                          radius: 3
-                          color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15)
-                          border.color: isModelWorking ? root.uploadColor : root.primaryAccent
-                          border.width: 1
+                        // Status Dot (Green = Online, Red = Offline)
+                        Item {
+                          width: 14
+                          height: 14
+                          Layout.alignment: Qt.AlignVCenter
 
-                          Text {
+                          Rectangle {
                             anchors.centerIn: parent
-                            text: isModelWorking ? root.t("subWorking", "Working 💓") : root.t("subReady", "Ready")
-                            color: isModelWorking ? root.uploadColor : root.primaryAccent
-                            font.family: root.fontFamily
-                            font.pixelSize: 8
-                            font.bold: true
+                            width: 8
+                            height: 8
+                            radius: 4
+                            color: isModelOnline ? root.uploadColor : root.criticalColor
+
+                            Rectangle {
+                              anchors.centerIn: parent
+                              width: 14
+                              height: 14
+                              radius: 7
+                              color: isModelOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.20)
+                              z: -1
+                            }
+
+                            SequentialAnimation on scale {
+                              running: isModelWorking && root.popupOpen
+                              loops: Animation.Infinite
+                              NumberAnimation { to: 1.35; duration: 500; easing.type: Easing.InOutQuad }
+                              NumberAnimation { to: 1.0; duration: 500; easing.type: Easing.InOutQuad }
+                            }
                           }
                         }
                       }
