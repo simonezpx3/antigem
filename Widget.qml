@@ -424,6 +424,17 @@ BarWidget {
     Qt.callLater(function() { root.popoutSwitchClosing = false })
   }
 
+  IpcHandler {
+    target: "simonez.antigem"
+    function open(): void { root.open() }
+    function close(): void { root.close() }
+    function toggle(): void { root.toggle() }
+    function selectTab(tab: int): void {
+      root.open()
+      root.selectedTab = tab
+    }
+  }
+
   // Initial startup delay timer to let Quickshell finish layout before spawning Python scanner
   Timer {
     id: initialStartupTimer
@@ -2713,167 +2724,6 @@ BarWidget {
                 font.pixelSize: Style.font.caption
                 width: parent.width
                 wrapMode: Text.WordWrap
-              }
-            }
-          }
-
-
-          // Card 5: 🔧 System & Environment Integration
-          Rectangle {
-            width: parent.width
-            implicitHeight: sysInfoCol.implicitHeight + Style.space(8)
-            radius: 8
-            color: root.cardFill
-            border.color: root.cardBorder
-            border.width: 1
-
-            Column {
-              id: sysInfoCol
-              width: parent.width - Style.space(8)
-              anchors.centerIn: parent
-              spacing: Style.space(4)
-
-              RowLayout {
-                width: parent.width
-
-                Text {
-                  text: root.t("sysTitle", "🔧 SYSTEM & PLUGIN ENVIRONMENT")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
-                  font.bold: true
-                }
-
-                Item { Layout.fillWidth: true }
-
-                Text {
-                  text: "v1.2-preview · Local Pro"
-                  color: root.dim
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
-                }
-              }
-
-              // Metadata 3-col grid
-              RowLayout {
-                width: parent.width
-                spacing: Style.space(4)
-
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 38
-                  radius: 5
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.tierLabel
-                      color: root.primaryAccent
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("planTier", "Plan Tier")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                }
-
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 38
-                  radius: 5
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.currentModel
-                      color: root.foreground
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("activeModel", "Active Model")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                }
-
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 38
-                  radius: 5
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.serverVersion
-                      color: root.cpuColor
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("serverCore", "Server Core")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                }
-
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 38
-                  radius: 5
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: "QuickShell"
-                      color: root.uploadColor
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: "Shell Host"
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                    }
-                  }
-                }
               }
             }
           }
