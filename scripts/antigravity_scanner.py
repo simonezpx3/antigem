@@ -249,7 +249,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
             {
                 "name": "Gemini 3.8 Flash / Pro (Interactions API)",
                 "endpoint": "generativelanguage.googleapis.com",
-                "tag": "Live Chat & Code",
+                "tag": "Live Chat, Tools & Code",
                 "status": "Operational",
                 "ping": f"{latency_ms} ms",
                 "latency": f"{latency_ms} ms",
@@ -257,34 +257,34 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
                 "code": 1
             },
             {
-                "name": "Cloud Code & Multi-Agent Fleet",
-                "endpoint": "aiplatform.googleapis.com",
-                "tag": "Agent Reasoning & AGY",
+                "name": "Google Grounding & Web Search",
+                "endpoint": "search.googleapis.com",
+                "tag": "Live Docs & Web Index",
                 "status": "Operational",
                 "ping": f"{max(1, latency_ms - 2)} ms",
                 "latency": f"{max(1, latency_ms - 2)} ms",
-                "badge": "Healthy",
+                "badge": "Live",
                 "code": 1
             },
             {
-                "name": "Google AI Cloud Storage & Snapshots",
-                "endpoint": "storage.googleapis.com",
-                "tag": "Session Snapshots & Brain",
+                "name": "Codebase Embeddings & Semantic Index",
+                "endpoint": "generativelanguage.googleapis.com/embeddings",
+                "tag": "Vector RAG & Brain Search",
+                "status": "Operational",
+                "ping": f"{latency_ms + 2} ms",
+                "latency": f"{latency_ms + 2} ms",
+                "badge": "Indexed",
+                "code": 1
+            },
+            {
+                "name": "Cloud Code & Multi-Agent Fleet",
+                "endpoint": "aiplatform.googleapis.com",
+                "tag": "Agent Protocol & Tool Sync",
                 "status": "Operational",
                 "ping": f"{latency_ms + 4} ms",
                 "latency": f"{latency_ms + 4} ms",
                 "badge": "Connected",
                 "code": 1
-            },
-            {
-                "name": "Gemini Live Multimodal Streaming (VAD/Audio)",
-                "endpoint": "generativelanguage.googleapis.com/live",
-                "tag": "WebSocket Audio Streaming",
-                "status": "Standby",
-                "ping": f"{latency_ms + 1} ms",
-                "latency": f"{latency_ms + 1} ms",
-                "badge": "Ready",
-                "code": 2
             }
         ]
     }

@@ -1522,10 +1522,10 @@ BarWidget {
               // Service & API Endpoints Table
               Repeater {
                 model: (root.gcpInfo && root.gcpInfo.services && root.gcpInfo.services.length > 0) ? root.gcpInfo.services : [
-                  { name: "Gemini 3.8 Flash / Pro (Interactions API)", endpoint: "generativelanguage.googleapis.com", status: "Operational", latency: "30 ms", tag: "Live Chat & Code" },
-                  { name: "Vertex AI / Cloud Inference", endpoint: "aiplatform.googleapis.com", status: "Operational", latency: "33 ms", tag: "Agent Reasoning & AGY" },
-                  { name: "Google Grounding & Search", endpoint: "google.com/search/api", status: "Operational", latency: "27 ms", tag: "Live Web Index" },
-                  { name: "Cloud Code Sandbox Runner", endpoint: "gcp-sandbox-runner", status: "Ready", latency: "< 5 ms", tag: "Isolated Tool Execution" }
+                  { name: "Gemini 3.8 Flash / Pro (Interactions API)", endpoint: "generativelanguage.googleapis.com", status: "Operational", latency: "30 ms", tag: "Live Chat, Tools & Code" },
+                  { name: "Google Grounding & Web Search", endpoint: "search.googleapis.com", status: "Operational", latency: "27 ms", tag: "Live Docs & Web Index" },
+                  { name: "Codebase Embeddings & Semantic Index", endpoint: "generativelanguage.googleapis.com/embeddings", status: "Operational", latency: "32 ms", tag: "Vector RAG & Brain Search" },
+                  { name: "Cloud Code & Multi-Agent Fleet", endpoint: "aiplatform.googleapis.com", status: "Operational", latency: "33 ms", tag: "Agent Protocol & Tool Sync" }
                 ]
 
                 Rectangle {
