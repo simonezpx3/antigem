@@ -1955,22 +1955,40 @@ BarWidget {
                   Repeater {
                     model: [
                       {
-                        name: "qwen2.5-coder:7b",
-                        desc: root.t("qwenDesc", "Fast Code & Syntax"),
+                        name: "arci-coder",
+                        id: "arci-coder",
+                        fallback: "qwen2.5-coder:7b",
+                        desc: root.t("arciCoderDesc", "Fast Code & Syntax"),
                         icon: "󰘦",
-                        isWorking: (root.localAiInfo && root.localAiInfo.qwenWorking) || false
+                        isWorking: (root.localAiInfo && (root.localAiInfo.coderWorking || root.localAiInfo.qwenWorking)) || false
                       },
                       {
-                        name: "deepseek-r1:7b",
-                        desc: root.t("deepseekDesc", "Reasoning & Audit"),
+                        name: "arci-auditor",
+                        id: "arci-auditor",
+                        fallback: "deepseek-r1:7b",
+                        desc: root.t("arciAuditorDesc", "Reasoning & Audit"),
                         icon: "󰚩",
-                        isWorking: (root.localAiInfo && root.localAiInfo.deepseekWorking) || false
+                        isWorking: (root.localAiInfo && (root.localAiInfo.auditorWorking || root.localAiInfo.deepseekWorking)) || false
                       }
                     ]
 
                     Rectangle {
                       readonly property bool isModelWorking: modelData.isWorking
-                      readonly property bool isModelOnline: (root.localAiInfo && root.localAiInfo.status === "Online" && root.localAiInfo.models && root.localAiInfo.models.indexOf(modelData.name) !== -1)
+                      readonly property bool isModelOnline: {
+                        if (!root.localAiInfo || root.localAiInfo.status !== "Online" || !root.localAiInfo.models) return false
+                        var list = root.localAiInfo.models
+                        var targets = [modelData.name, modelData.id, modelData.fallback, modelData.name + ":latest"]
+                        for (var i = 0; i < list.length; i++) {
+                          var m = list[i]
+                          for (var j = 0; j < targets.length; j++) {
+                            var t = targets[j]
+                            if (t && (m === t || m.startsWith(t + ":") || t.startsWith(m.split(":")[0]))) {
+                              return true
+                            }
+                          }
+                        }
+                        return false
+                      }
                       width: (parent.width - Style.space(3)) / 2
                       height: 42
                       radius: 6

@@ -283,13 +283,22 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
     qwen_working = False
     deepseek_working = False
 
+    # Check lock files from ai-worker
+    try:
+        if os.path.exists("/tmp/ai_worker_active_arci-coder.lock") or os.path.exists("/tmp/ai_worker_active_qwen2.5-coder:7b.lock"):
+            qwen_working = True
+        if os.path.exists("/tmp/ai_worker_active_arci-auditor.lock") or os.path.exists("/tmp/ai_worker_active_deepseek-r1:7b.lock"):
+            deepseek_working = True
+    except Exception:
+        pass
+
     # 1. Check Antigravity subagent locks or recent activity
     try:
         proc = subprocess.run(["pgrep", "-fa", "antigravity.*worker|ollama|ai-worker"], capture_output=True, text=True, timeout=0.2)
         proc_out = proc.stdout.lower()
-        if "qwen" in proc_out or "coder" in proc_out:
+        if "qwen" in proc_out or "coder" in proc_out or "arci-coder" in proc_out:
             qwen_working = True
-        if "deepseek" in proc_out or "r1" in proc_out:
+        if "deepseek" in proc_out or "r1" in proc_out or "arci-auditor" in proc_out:
             deepseek_working = True
     except Exception:
         pass
@@ -303,9 +312,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                 for mf in md.glob("*.json"):
                     if now_ts - mf.stat().st_mtime < 15.0:
                         txt = mf.read_text(encoding="utf-8", errors="ignore").lower()
-                        if "qwen" in txt or "coder" in txt:
+                        if "qwen" in txt or "coder" in txt or "arci-coder" in txt:
                             qwen_working = True
-                        if "deepseek" in txt or "r1" in txt:
+                        if "deepseek" in txt or "r1" in txt or "arci-auditor" in txt:
                             deepseek_working = True
             except Exception:
                 pass
@@ -330,6 +339,8 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             res_data = dict(data)
             res_data["qwenWorking"] = qwen_working
             res_data["deepseekWorking"] = deepseek_working
+            res_data["coderWorking"] = qwen_working
+            res_data["auditorWorking"] = deepseek_working
             return res_data, False
 
     local_ai_info = {
@@ -338,7 +349,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
         "models": [],
         "vramAllocated": "0 GB / 8 GB",
         "qwenWorking": qwen_working,
-        "deepseekWorking": deepseek_working
+        "deepseekWorking": deepseek_working,
+        "coderWorking": qwen_working,
+        "auditorWorking": deepseek_working
     }
     try:
         req = urllib.request.Request("http://127.0.0.1:11434/api/tags", headers={"User-Agent": "AntigravityScanner"})
@@ -353,7 +366,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                 "models": local_models,
                 "vramAllocated": "4.7 GB / 8 GB" if len(local_models) > 0 else "0 GB / 8 GB",
                 "qwenWorking": qwen_working,
-                "deepseekWorking": deepseek_working
+                "deepseekWorking": deepseek_working,
+                "coderWorking": qwen_working,
+                "auditorWorking": deepseek_working
             }
     except Exception:
         pass
