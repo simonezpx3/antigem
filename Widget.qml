@@ -1049,48 +1049,34 @@ BarWidget {
             }
           }
 
-          // 2. 7-Day Prompt Activity Breakdown Card
+          // 2. 7-Day Activity Trend Card (AntigemS Sparkline Style)
           Rectangle {
             width: parent.width
-            implicitHeight: activityCardCol.implicitHeight + Style.space(8)
+            implicitHeight: activityCol.implicitHeight + Style.space(8)
             radius: 8
             color: root.cardFill
             border.color: root.cardBorder
             border.width: 1
 
-            readonly property var activitySegments: (root.activityBreakdown && root.activityBreakdown.segments && root.activityBreakdown.segments.length > 0)
-              ? root.activityBreakdown.segments
-              : [
-                  { name: "29/08", prompts: 169, promptsStr: "169 prompts", pct: 28.3, color: "#3b82f6" },
-                  { name: "30/08", prompts: 165, promptsStr: "165 prompts", pct: 27.6, color: "#6366f1" },
-                  { name: "31/08", prompts: 145, promptsStr: "145 prompts", pct: 24.2, color: "#8b5cf6" },
-                  { name: "01/09", prompts: 43, promptsStr: "43 prompts", pct: 7.2, color: "#a855f7" },
-                  { name: "02/09", prompts: 20, promptsStr: "20 prompts", pct: 3.3, color: "#ec4899" },
-                  { name: "03/09", prompts: 18, promptsStr: "18 prompts", pct: 3.0, color: "#f59e0b" },
-                  { name: "Today", prompts: 38, promptsStr: "38 prompts", pct: 6.4, color: "#10b981" }
-                ]
-
             Column {
-              id: activityCardCol
+              id: activityCol
               anchors.fill: parent
               anchors.margins: Style.space(4)
               spacing: Style.space(4)
 
               RowLayout {
                 width: parent.width
-
                 Text {
                   Layout.fillWidth: true
-                  text: root.t("activityBreakdownTitle", "📈 7-DAY PROMPT ACTIVITY BREAKDOWN")
+                  text: root.t("activityTrendTitle", "📈 PROMPTS & TOOL CALLS TREND (7 DAYS)")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
                   elide: Text.ElideRight
                 }
-
                 Text {
-                  text: "Total: " + root.totalPrompts + " prompts (" + (root.activityBreakdown && root.activityBreakdown.total7dPrompts ? root.activityBreakdown.total7dPrompts : 598) + " 7d)"
+                  text: (root.todayPrompts || 0) + " today · " + (root.totalPrompts || 0) + " total"
                   color: root.primaryAccent
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.caption
@@ -1098,53 +1084,100 @@ BarWidget {
                 }
               }
 
-              // Multi-segment Stacked Horizontal Bar
-              Rectangle {
+              // Sparkline Canvas
+              Canvas {
+                id: sparkCanvas
                 width: parent.width
-                height: 8
-                radius: 4
-                color: "#1e293b"
-                clip: true
+                height: 60
 
-                Row {
-                  anchors.fill: parent
-                  spacing: 1
+                readonly property var recentDays: (root.recentDays && root.recentDays.length > 0) ? root.recentDays : []
+                onRecentDaysChanged: requestPaint()
+                Component.onCompleted: requestPaint()
 
-                  Repeater {
-                    model: activityCardCol.parent.activitySegments
+                onPaint: {
+                  var ctx = getContext("2d")
+                  ctx.clearRect(0, 0, width, height)
 
-                    Rectangle {
-                      height: parent.height
-                      width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                      color: modelData.color || root.primaryAccent
-                    }
+                  var days = recentDays
+                  if (!days || days.length < 2) return
+
+                  var maxP = 1
+                  for (var i = 0; i < days.length; i++) {
+                    var p = Number(days[i].prompts || 0)
+                    if (p > maxP) maxP = p
+                  }
+
+                  var stepX = width / (days.length - 1)
+                  var padY = 8
+                  var availH = height - padY * 2
+
+                  // Background Area Gradient
+                  var grad = ctx.createLinearGradient(0, 0, 0, height)
+                  grad.addColorStop(0, Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.28))
+                  grad.addColorStop(1, Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.01))
+
+                  ctx.beginPath()
+                  for (var j = 0; j < days.length; j++) {
+                    var px = j * stepX
+                    var py = height - padY - (Number(days[j].prompts || 0) / maxP) * availH
+                    if (j === 0) ctx.moveTo(px, py)
+                    else ctx.lineTo(px, py)
+                  }
+                  ctx.lineTo(width, height)
+                  ctx.lineTo(0, height)
+                  ctx.closePath()
+                  ctx.fillStyle = grad
+                  ctx.fill()
+
+                  // Foreground Polyline
+                  ctx.beginPath()
+                  for (var k = 0; k < days.length; k++) {
+                    var kx = k * stepX
+                    var ky = height - padY - (Number(days[k].prompts || 0) / maxP) * availH
+                    if (k === 0) ctx.moveTo(kx, ky)
+                    else ctx.lineTo(kx, ky)
+                  }
+                  ctx.strokeStyle = root.primaryAccent
+                  ctx.lineWidth = 2.0
+                  ctx.stroke()
+
+                  // Data Points
+                  for (var m = 0; m < days.length; m++) {
+                    var mx = m * stepX
+                    var my = height - padY - (Number(days[m].prompts || 0) / maxP) * availH
+                    ctx.beginPath()
+                    ctx.arc(mx, my, 3, 0, 2 * Math.PI)
+                    ctx.fillStyle = m === days.length - 1 ? root.uploadColor : root.primaryAccent
+                    ctx.fill()
+                    ctx.strokeStyle = root.cardFill
+                    ctx.lineWidth = 1.5
+                    ctx.stroke()
                   }
                 }
               }
 
-              // Activity Segments Legend Grid
-              Flow {
+              // Day labels row
+              Row {
                 width: parent.width
-                spacing: Style.space(6)
-
+                spacing: 0
+                readonly property var days: (root.recentDays && root.recentDays.length > 0) ? root.recentDays : []
                 Repeater {
-                  model: activityCardCol.parent.activitySegments
-
-                  Row {
-                    spacing: 4
-                    Rectangle {
-                      anchors.verticalCenter: parent.verticalCenter
-                      width: 8
-                      height: 8
-                      radius: 2
-                      color: modelData.color || root.primaryAccent
-                    }
+                  model: parent.days
+                  Item {
+                    width: sparkCanvas.width / Math.max(1, parent.days.length)
+                    height: 16
                     Text {
-                      anchors.verticalCenter: parent.verticalCenter
-                      text: modelData.name + " (" + modelData.prompts + " · " + modelData.pct + "%)"
-                      color: root.dim
+                      anchors.centerIn: parent
+                      text: {
+                        var d = String(modelData.date || "")
+                        var parts = d.split("-")
+                        var dateStr = parts.length >= 3 ? parts[1] + "/" + parts[2] : d
+                        return dateStr
+                      }
+                      color: index === parent.days.length - 1 ? root.primaryAccent : root.dim
                       font.family: root.fontFamily
                       font.pixelSize: 8
+                      font.bold: index === parent.days.length - 1
                     }
                   }
                 }
