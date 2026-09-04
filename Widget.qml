@@ -1635,9 +1635,8 @@ BarWidget {
                   width: parent.width
                   height: 44
                   radius: 6
-                  color: sessionMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                  border.color: modelData.isActive ? (modelData.type === "ide" ? root.gpuColor : root.primaryAccent) : "transparent"
-                  border.width: modelData.isActive ? 1 : 0
+                  color: sessionMouse.containsMouse ? root.cardHover : (modelData.isActive ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.08) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03))
+                  border.width: 0
 
                   RowLayout {
                     anchors.fill: parent
@@ -1705,9 +1704,8 @@ BarWidget {
                       width: copyBtnText.implicitWidth + 12
                       height: 24
                       radius: 4
-                      color: copyBtnMouse.containsMouse ? root.cardHover : root.cardFill
-                      border.color: copyBtnBox.copied ? root.uploadColor : (copyBtnMouse.containsMouse ? root.downloadColor : root.cardBorder)
-                      border.width: 1
+                      color: copyBtnBox.copied ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.20) : (copyBtnMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.06))
+                      border.width: 0
                       scale: copyBtnMouse.pressed ? 0.90 : 1.0
 
                       Behavior on scale { NumberAnimation { duration: 90 } }
@@ -1747,9 +1745,8 @@ BarWidget {
                       width: launchText.implicitWidth + 14
                       height: 24
                       radius: 4
-                      color: launchMouse.containsMouse ? root.cardHover : root.cardFill
-                      border.color: launchMouse.containsMouse ? root.primaryAccent : root.cardBorder
-                      border.width: 1
+                      color: launchMouse.containsMouse ? root.cardHover : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.06)
+                      border.width: 0
                       scale: launchMouse.pressed ? 0.90 : 1.0
 
                       Behavior on scale { NumberAnimation { duration: 90 } }
