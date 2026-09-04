@@ -163,6 +163,8 @@ BarWidget {
   readonly property color cardBorder: Qt.rgba(accent.r, accent.g, accent.b, 0.22)
   readonly property color graphGrid: Qt.rgba(accent.r, accent.g, accent.b, 0.12)
   readonly property color track: Qt.rgba(accent.r, accent.g, accent.b, 0.22)
+  readonly property color barTrack: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.08)
+  readonly property color headroomColor: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.18)
   readonly property color dim: Qt.darker(foreground, 1.45)
   readonly property string fontFamily: (bar && bar.fontFamily) ? bar.fontFamily : Style.font.family
 
@@ -556,7 +558,7 @@ BarWidget {
         id: barPctText
         anchors.verticalCenter: parent.verticalCenter
         text: root.sessionGeminiPct + "%"
-        color: root.isWorking ? root.uploadColor : (root.sessionGeminiPct > 80 ? root.criticalColor : "#ffffff")
+        color: root.isWorking ? root.uploadColor : (root.sessionGeminiPct > 80 ? root.criticalColor : root.foreground)
         font.family: root.fontFamily
         font.pixelSize: Style.font.caption
         renderType: Text.NativeRendering
@@ -775,7 +777,7 @@ BarWidget {
               ? root.quotasBreakdown.session.segments
               : [
                   { name: "Session Used", tokensStr: root.sessionTokensUsed, pct: root.sessionGeminiPct, color: "#06b6d4" },
-                  { name: "Free Headroom", tokensStr: root.sessionTokensRemaining, pct: Math.max(0, 100 - root.sessionGeminiPct), color: "#334155" }
+                  { name: "Free Headroom", tokensStr: root.sessionTokensRemaining, pct: Math.max(0, 100 - root.sessionGeminiPct), color: root.headroomColor }
                 ]
 
             readonly property var weeklySegments: (root.quotasBreakdown && root.quotasBreakdown.weekly && root.quotasBreakdown.weekly.segments && root.quotasBreakdown.weekly.segments.length > 0)
@@ -783,7 +785,7 @@ BarWidget {
               : [
                   { name: "Today Tokens", tokensStr: root.todayTokens, pct: Math.round((root.weeklyGeminiPct * 0.12) * 10) / 10, color: "#10b981" },
                   { name: "Prior 6 Days", tokensStr: root.weeklyTokensUsed, pct: Math.round((root.weeklyGeminiPct * 0.88) * 10) / 10, color: "#a855f7" },
-                  { name: "Free Headroom", tokensStr: root.weeklyTokensRemaining, pct: Math.max(0, 100 - root.weeklyGeminiPct), color: "#334155" }
+                  { name: "Free Headroom", tokensStr: root.weeklyTokensRemaining, pct: Math.max(0, 100 - root.weeklyGeminiPct), color: root.headroomColor }
                 ]
 
             Column {
@@ -937,7 +939,7 @@ BarWidget {
                   width: parent.width
                   height: 8
                   radius: 4
-                  color: "#1e293b"
+                  color: root.barTrack
                   clip: true
                   Row {
                     anchors.fill: parent
@@ -947,7 +949,7 @@ BarWidget {
                       Rectangle {
                         height: parent.height
                         width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                        color: modelData.color || root.cpuColor
+                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.cpuColor)
                       }
                     }
                   }
@@ -965,7 +967,7 @@ BarWidget {
                         width: 8
                         height: 8
                         radius: 2
-                        color: modelData.color || root.cpuColor
+                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.cpuColor)
                       }
                       Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -1007,7 +1009,7 @@ BarWidget {
                   width: parent.width
                   height: 8
                   radius: 4
-                  color: "#1e293b"
+                  color: root.barTrack
                   clip: true
                   Row {
                     anchors.fill: parent
@@ -1017,7 +1019,7 @@ BarWidget {
                       Rectangle {
                         height: parent.height
                         width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                        color: modelData.color || root.primaryAccent
+                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
                       }
                     }
                   }
@@ -1035,7 +1037,7 @@ BarWidget {
                         width: 8
                         height: 8
                         radius: 2
-                        color: modelData.color || root.primaryAccent
+                        color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
                       }
                       Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -1203,7 +1205,7 @@ BarWidget {
                   { name: "Tool Schemas", tokensStr: "14.2k", pct: 1.42, color: "#06b6d4" },
                   { name: "File Context", tokensStr: "43.2k", pct: 4.32, color: "#3b82f6" },
                   { name: "Chat History", tokensStr: "12.0k", pct: 1.20, color: "#10b981" },
-                  { name: "Free Headroom", tokensStr: "922.1k", pct: 92.21, color: "#334155" }
+                  { name: "Free Headroom", tokensStr: "922.1k", pct: 92.21, color: root.headroomColor }
                 ]
 
             Column {
@@ -1240,7 +1242,7 @@ BarWidget {
                 width: parent.width
                 height: 8
                 radius: 4
-                color: "#1e293b"
+                color: root.barTrack
                 clip: true
 
                 Row {
@@ -1253,7 +1255,7 @@ BarWidget {
                     Rectangle {
                       height: parent.height
                       width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
-                      color: modelData.color || root.primaryAccent
+                      color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
                     }
                   }
                 }
@@ -1274,7 +1276,7 @@ BarWidget {
                       width: 8
                       height: 8
                       radius: 2
-                      color: modelData.color || root.primaryAccent
+                      color: (modelData.name && (modelData.name.indexOf("Headroom") !== -1 || modelData.name.indexOf("Volný") !== -1)) ? root.headroomColor : (modelData.color || root.primaryAccent)
                     }
                     Text {
                       anchors.verticalCenter: parent.verticalCenter
@@ -1343,7 +1345,7 @@ BarWidget {
                 width: parent.width
                 height: 8
                 radius: 4
-                color: "#1e293b"
+                color: root.barTrack
                 clip: true
 
                 Row {
@@ -1586,7 +1588,7 @@ BarWidget {
                       height: 18
                       width: svcLatText.implicitWidth + 10
                       radius: 3
-                      color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.06)
+                      color: root.barTrack
 
                       Text {
                         id: svcLatText
@@ -2127,7 +2129,7 @@ BarWidget {
             readonly property var profilerList: (root.subagentProfiler && root.subagentProfiler.length > 0)
               ? root.subagentProfiler
               : [
-                  { id: "sec-auditor", name: "Security Auditor", role: "AGENTS.md & 0700/0600", icon: "󰒃", runs: 22, avgLatency: "1.4s", speedScore: 98, tokensSaved: "~160k", color: "#22c55e" },
+                  { id: "sec-auditor", name: "Security Auditor", role: "AGENTS.md & 0700/0600", icon: "󰒃", runs: 22, avgLatency: "1.4s", speedScore: 98, tokensSaved: "~160k", color: "#10b981" },
                   { id: "qml-designer-reviewer", name: "QML UI Reviewer", role: "Quickshell & Design", icon: "󰚩", runs: 18, avgLatency: "0.9s", speedScore: 99, tokensSaved: "~95k", color: "#06b6d4" },
                   { id: "test-runner", name: "Test & Regression", role: "Snapshots & Sync", icon: "󰘦", runs: 16, avgLatency: "1.8s", speedScore: 95, tokensSaved: "~120k", color: "#f59e0b" },
                   { id: "doc-researcher", name: "Doc & API Explorer", role: "Deep Specs & Repos", icon: "󰋽", runs: 19, avgLatency: "2.1s", speedScore: 93, tokensSaved: "~210k", color: "#a855f7" }
@@ -2225,7 +2227,7 @@ BarWidget {
                     width: parent.width
                     height: 3
                     radius: 1.5
-                    color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.08)
+                    color: root.barTrack
                     Rectangle {
                       width: parent.width * (Number(modelData.speedScore || 95) / 100.0)
                       height: parent.height
@@ -2278,7 +2280,7 @@ BarWidget {
                 width: parent.width
                 height: 8
                 radius: 4
-                color: "#1e293b"
+                color: root.barTrack
                 clip: true
 
                 Row {
@@ -2471,18 +2473,19 @@ BarWidget {
                     width: presetText.implicitWidth + 16
                     radius: 4
                     scale: presetMouse.pressed ? 0.92 : 1.0
-                    color: presetMouse.containsMouse ? root.cardHover : root.cardFill
+                    color: (root.refreshIntervalSec === modelData) ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.18) : (presetMouse.containsMouse ? root.cardHover : root.cardFill)
                     border.color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.cardBorder
                     border.width: 1
 
                     Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
                     Behavior on border.color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: 150 } }
 
                     Text {
                       id: presetText
                       anchors.centerIn: parent
                       text: modelData + "s"
-                      color: root.foreground
+                      color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.foreground
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.bodySmall
                       font.bold: root.refreshIntervalSec === modelData
@@ -2628,18 +2631,19 @@ BarWidget {
                       width: bpmPresetText.implicitWidth + 16
                       radius: 4
                       scale: bpmPresetMouse.pressed ? 0.92 : 1.0
-                      color: bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill
+                      color: (root.pulseBpm === modelData.bpm) ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.18) : (bpmPresetMouse.containsMouse ? root.cardHover : root.cardFill)
                       border.color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.cardBorder
                       border.width: 1
 
                       Behavior on scale { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
                       Behavior on border.color { ColorAnimation { duration: 150 } }
+                      Behavior on color { ColorAnimation { duration: 150 } }
 
                       Text {
                         id: bpmPresetText
                         anchors.centerIn: parent
                         text: modelData.name + " (" + modelData.bpm + ")"
-                        color: root.foreground
+                        color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.foreground
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.bodySmall
                         font.bold: root.pulseBpm === modelData.bpm

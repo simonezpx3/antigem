@@ -991,7 +991,7 @@ def scan() -> dict[str, Any]:
             "speedScore": 98,
             "tokensSaved": "~160k",
             "status": "Working" if ("sec-auditor" in active_subagent_types or (active_subagents > 0 and agent_working)) else "Ready",
-            "color": "#22c55e"
+            "color": "#10b981"
         },
         {
             "id": "qml-designer-reviewer",
