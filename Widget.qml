@@ -1846,8 +1846,7 @@ BarWidget {
                     height: 42
                     radius: 6
                     color: isSubWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                    border.color: isSubWorking ? root.uploadColor : "transparent"
-                    border.width: isSubWorking ? 1 : 0
+                    border.width: 0
 
                     RowLayout {
                       anchors.fill: parent
@@ -2000,8 +1999,7 @@ BarWidget {
                       height: 42
                       radius: 6
                       color: isModelWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.10) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
-                      border.color: isModelWorking ? root.uploadColor : "transparent"
-                      border.width: isModelWorking ? 1 : 0
+                      border.width: 0
 
                       RowLayout {
                         anchors.fill: parent
