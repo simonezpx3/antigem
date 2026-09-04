@@ -15,12 +15,13 @@ mkdir -p "${TARGET_PLUGIN_DIR}" "${TARGET_BIN_DIR}"
 echo "-> Deploying plugin files to ${TARGET_PLUGIN_DIR}..."
 cp "${SCRIPT_DIR}/manifest.json" "${SCRIPT_DIR}/Widget.qml" "${TARGET_PLUGIN_DIR}/"
 cp -r "${SCRIPT_DIR}/assets" "${SCRIPT_DIR}/scripts" "${TARGET_PLUGIN_DIR}/"
-chmod +x "${TARGET_PLUGIN_DIR}/scripts/antigravity_scanner.py"
+find "${TARGET_PLUGIN_DIR}" -type f -exec chmod 0644 {} +
+chmod 0755 "${TARGET_PLUGIN_DIR}/scripts/antigravity_scanner.py"
 
 # 3. Copy Companion Launcher
 echo "-> Deploying launcher to ${TARGET_BIN_DIR}/omarchy-launch-antigravity..."
 cp "${SCRIPT_DIR}/bin/omarchy-launch-antigravity" "${TARGET_BIN_DIR}/"
-chmod +x "${TARGET_BIN_DIR}/omarchy-launch-antigravity"
+chmod 0755 "${TARGET_BIN_DIR}/omarchy-launch-antigravity"
 
 # 4. Validate Plugin
 echo "-> Validating plugin schema with Omarchy CLI..."

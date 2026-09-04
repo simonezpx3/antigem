@@ -231,8 +231,8 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
     operational = True
     start = time.perf_counter()
     try:
-        s = socket.create_connection(("generativelanguage.googleapis.com", 443), timeout=0.2)
-        s.close()
+        with socket.create_connection(("generativelanguage.googleapis.com", 443), timeout=0.2) as s:
+            pass
         latency_ms = max(1, int((time.perf_counter() - start) * 1000))
     except Exception:
         operational = False
@@ -432,8 +432,12 @@ def parse_transcript_tools_cached(path: Path, cache: dict[str, Any]) -> tuple[di
     types: set[str] = set()
 
     try:
+        bytes_read = 0
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
+                bytes_read += len(line.encode("utf-8", errors="ignore"))
+                if bytes_read > 2_097_152:  # Bounded I/O: 2 MB limit per file
+                    break
                 if '"tool_calls"' in line:
                     try:
                         step_data = json.loads(line)
@@ -473,10 +477,15 @@ def detect_active_model(base_dir: Path, brain_dir: Path) -> str:
     if cli_log.is_file():
         try:
             target_log = cli_log.resolve()
-            if target_log.is_file():
-                with open(target_log, "r", encoding="utf-8", errors="ignore") as f:
+            if target_log.is_file() and target_log.is_relative_to(base_dir.resolve()):
+                sz = target_log.stat().st_size
+                read_sz = min(sz, 65536)  # Read last 64 KB
+                with open(target_log, "rb") as f:
+                    if sz > read_sz:
+                        f.seek(sz - read_sz)
+                    raw = f.read(read_sz).decode("utf-8", errors="ignore")
                     last_label = None
-                    for line in f:
+                    for line in raw.splitlines():
                         if "model_config_manager.go" in line and "label=" in line:
                             m = re.search(r'label="([^"]+)"', line)
                             if m:
