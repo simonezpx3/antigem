@@ -802,16 +802,70 @@ def scan() -> dict[str, Any]:
         "contextPct": context_pct
     }
 
-    # 6. Developer Productivity & Time Saved
-    time_saved_mins = total_prompts * 3.5 + sum(tool_counter.values()) * 2.0
-    time_saved_hours = max(0.5, round(time_saved_mins / 60.0, 1))
+    # 6. Developer Productivity & Time Saved Breakdown
+    code_actions = tool_counter.get("replace_file_content", 0) + tool_counter.get("write_to_file", 0)
+    term_actions = tool_counter.get("run_command", 0) + tool_counter.get("manage_task", 0)
+    search_actions = tool_counter.get("view_file", 0) + tool_counter.get("grep_search", 0) + tool_counter.get("find_by_name", 0) + tool_counter.get("list_dir", 0)
+    other_actions = max(0, sum(tool_counter.values()) - (code_actions + term_actions + search_actions))
+
+    code_mins = code_actions * 4.0
+    term_mins = term_actions * 2.0
+    search_mins = (search_actions + other_actions) * 1.5
+    prompt_mins = total_prompts * 2.5
+
+    total_mins = code_mins + term_mins + search_mins + prompt_mins
+    if total_mins <= 0:
+        total_mins = 60.0
+
+    total_hours = max(0.5, round(total_mins / 60.0, 1))
+    code_hours = round(code_mins / 60.0, 1)
+    term_hours = round(term_mins / 60.0, 1)
+    search_hours = round(search_mins / 60.0, 1)
+    prompt_hours = max(0.1, round(total_hours - (code_hours + term_hours + search_hours), 1))
+
+    prod_segments = [
+        {
+            "name": "Code Generation & Edits",
+            "hours": code_hours,
+            "hoursStr": f"{code_hours}h",
+            "actions": code_actions,
+            "pct": round((code_mins / total_mins) * 100, 1),
+            "color": "#10b981"
+        },
+        {
+            "name": "Terminal & Commands",
+            "hours": term_hours,
+            "hoursStr": f"{term_hours}h",
+            "actions": term_actions,
+            "pct": round((term_mins / total_mins) * 100, 1),
+            "color": "#f59e0b"
+        },
+        {
+            "name": "Search & Navigation",
+            "hours": search_hours,
+            "hoursStr": f"{search_hours}h",
+            "actions": search_actions,
+            "pct": round((search_mins / total_mins) * 100, 1),
+            "color": "#06b6d4"
+        },
+        {
+            "name": "Architecture & Planning",
+            "hours": prompt_hours,
+            "hoursStr": f"{prompt_hours}h",
+            "actions": total_prompts,
+            "pct": round((prompt_mins / total_mins) * 100, 1),
+            "color": "#a855f7"
+        }
+    ]
+
     productivity_data = {
-        "timeSavedStr": f"~{time_saved_hours}h saved",
-        "timeSavedHours": time_saved_hours,
+        "timeSavedStr": f"~{total_hours}h saved",
+        "timeSavedHours": total_hours,
         "promptsProcessed": total_prompts,
         "tokensProcessedStr": f"~{round((total_prompts * 14.2) / 1000.0, 2)}M",
         "toolsExecuted": sum(tool_counter.values()),
-        "tokenUsage": token_usage_data
+        "tokenUsage": token_usage_data,
+        "segments": prod_segments
     }
 
     # 7. Format sessions list

@@ -1279,7 +1279,7 @@ BarWidget {
             }
           }
 
-          // 4. Developer Productivity & Time Saved Card (v1.2)
+          // 4. Developer Productivity & Time Saved Breakdown Card
           Rectangle {
             width: parent.width
             implicitHeight: prodCardCol.implicitHeight + Style.space(8)
@@ -1288,122 +1288,93 @@ BarWidget {
             border.color: root.cardBorder
             border.width: 1
 
+            property var prodSegments: {
+              if (root.productivityData && root.productivityData.segments && root.productivityData.segments.length > 0) {
+                return root.productivityData.segments;
+              }
+              return [
+                { "name": "Code Generation & Edits", "hoursStr": "79.2h", "pct": 29.2, "color": "#10b981" },
+                { "name": "Terminal & Commands", "hoursStr": "85.0h", "pct": 31.4, "color": "#f59e0b" },
+                { "name": "Search & Navigation", "hoursStr": "79.2h", "pct": 29.2, "color": "#06b6d4" },
+                { "name": "Architecture & Planning", "hoursStr": "27.7h", "pct": 10.2, "color": "#a855f7" }
+              ];
+            }
+
             Column {
               id: prodCardCol
               anchors.fill: parent
               anchors.margins: Style.space(4)
-              spacing: Style.space(3)
+              spacing: Style.space(4)
 
               RowLayout {
                 width: parent.width
+
                 Text {
+                  Layout.fillWidth: true
                   text: root.t("prodTitle", "⚡ DEV PRODUCTIVITY & TIME SAVED")
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
+                  elide: Text.ElideRight
                 }
-                Item { Layout.fillWidth: true }
+
                 Text {
-                  text: root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr : "~28h saved"
+                  text: (root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr : "~271h saved") + " (" + (root.productivityData && root.productivityData.toolsExecuted ? root.productivityData.toolsExecuted : 6906) + " tools)"
                   color: root.uploadColor
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
+                  font.pixelSize: Style.font.caption
                   font.bold: true
                 }
               }
 
-              // 3-Col Productivity Grid
-              RowLayout {
+              // Multi-segment Stacked Horizontal Bar
+              Rectangle {
                 width: parent.width
-                spacing: Style.space(4)
+                height: 8
+                radius: 4
+                color: "#1e293b"
+                clip: true
 
-                // Metric 1: Saved Dev Hours
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 48
-                  radius: 6
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                  border.color: root.cardBorder
-                  border.width: 1
+                Row {
+                  anchors.fill: parent
+                  spacing: 1
 
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr.replace(" saved", "") : "28.8h"
-                      color: root.uploadColor
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("devTimeSaved", "Dev Time Saved")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption - 1
+                  Repeater {
+                    model: prodCardCol.parent.prodSegments
+
+                    Rectangle {
+                      height: parent.height
+                      width: Math.max(modelData.pct > 0 ? 3 : 0, (parent.width * (Number(modelData.pct || 0) / 100.0)))
+                      color: modelData.color || root.primaryAccent
                     }
                   }
                 }
+              }
 
-                // Metric 2: Tools Executed
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 48
-                  radius: 6
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                  border.color: root.cardBorder
-                  border.width: 1
+              // Productivity Segments Legend Grid
+              Flow {
+                width: parent.width
+                spacing: Style.space(6)
 
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: String(root.totalToolCalls || (root.productivityData && root.productivityData.toolsExecuted) || 0)
-                      color: root.primaryAccent
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
-                      font.bold: true
+                Repeater {
+                  model: prodCardCol.parent.prodSegments
+
+                  Row {
+                    spacing: 4
+                    Rectangle {
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 8
+                      height: 8
+                      radius: 2
+                      color: modelData.color || root.primaryAccent
                     }
                     Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("toolsRun", "Tools Run")
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: modelData.name + " (" + modelData.hoursStr + " · " + modelData.pct + "%)"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption - 1
-                    }
-                  }
-                }
-
-                // Metric 3: Tokens Processed
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 48
-                  radius: 6
-                  color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.04)
-                  border.color: root.cardBorder
-                  border.width: 1
-
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.productivityData && root.productivityData.tokensProcessedStr ? root.productivityData.tokensProcessedStr : "~6.2M"
-                      color: root.memoryColor
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.body
-                      font.bold: true
-                    }
-                    Text {
-                      anchors.horizontalCenter: parent.horizontalCenter
-                      text: root.t("tokensProcessed", "Tokens Processed")
-                      color: root.dim
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption - 1
+                      font.pixelSize: 8
                     }
                   }
                 }
