@@ -648,47 +648,6 @@ BarWidget {
               }
             }
           }
-
-          // Status Pill (Working / Waiting / Idle) - Right aligned
-          Rectangle {
-            id: statusPillRect
-            anchors.right: parent.right
-            anchors.rightMargin: Style.space(8)
-            anchors.verticalCenter: parent.verticalCenter
-            height: 22
-            width: statusPillRow.implicitWidth + 14
-            radius: 4
-            color: root.isWorking ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.12) : (root.isWaiting ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12) : root.cardFill)
-            border.color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.cardBorder)
-            border.width: 1
-
-            Behavior on border.color { ColorAnimation { duration: 150 } }
-
-            Row {
-              id: statusPillRow
-              anchors.centerIn: parent
-              spacing: 4
-
-              Rectangle {
-                width: 6
-                height: 6
-                radius: 3
-                color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.dim)
-                anchors.verticalCenter: parent.verticalCenter
-              }
-
-              Text {
-                id: statusPillText
-                text: root.isWorking ? root.t("statusWorking", "Working") : (root.isWaiting ? root.t("statusWaiting", "Waiting") : root.t("statusIdle", "Idle"))
-                color: root.isWorking ? root.uploadColor : (root.isWaiting ? root.primaryAccent : root.foreground)
-                font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
-                font.bold: true
-                anchors.verticalCenter: parent.verticalCenter
-                renderType: Text.NativeRendering
-              }
-            }
-          }
         }
 
         // 2. Navigation Tabs (System Monitor style)
@@ -784,13 +743,13 @@ BarWidget {
             }
           }
 
-          // Unified Quotas & Activity Dashboard Card
+          // Unified Quotas & Activity Dashboard Card (Dark Background & White Text)
           Rectangle {
             width: parent.width
             implicitHeight: unifiedMetricsCol.implicitHeight + Style.space(10)
             radius: 8
-            color: root.cardFill
-            border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+            color: Qt.rgba(14/255, 16/255, 22/255, 0.95)
+            border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : Qt.rgba(255, 255, 255, 0.12)
             border.width: 1
 
             Column {
@@ -805,7 +764,7 @@ BarWidget {
 
                 Text {
                   text: "📊 ACTIVITY & QUOTAS"
-                  color: root.foreground
+                  color: "#ffffff"
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
@@ -817,8 +776,8 @@ BarWidget {
                   height: 20
                   width: headerPillRow.implicitWidth + 12
                   radius: 4
-                  color: root.subcardFill
-                  border.color: root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.06)
+                  border.color: Qt.rgba(255, 255, 255, 0.12)
                   border.width: 1
 
                   Row {
@@ -828,7 +787,7 @@ BarWidget {
 
                     Text {
                       text: root.tierLabel
-                      color: root.primaryAccent
+                      color: "#38bdf8"
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
                       font.bold: true
@@ -836,13 +795,13 @@ BarWidget {
 
                     Text {
                       text: "·"
-                      color: root.dim
+                      color: "#94a3b8"
                       font.pixelSize: Style.font.caption
                     }
 
                     Text {
                       text: root.weeklyGeminiDetail
-                      color: root.dim
+                      color: "#f1f5f9"
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
                     }
@@ -860,8 +819,8 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 54
                   radius: 6
-                  color: root.subcardFill
-                  border.color: root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
@@ -874,7 +833,7 @@ BarWidget {
 
                       Text {
                         text: "⏱ 5H SESSION"
-                        color: root.dim
+                        color: "#ffffff"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption
                         font.bold: true
@@ -884,7 +843,7 @@ BarWidget {
 
                       Text {
                         text: root.sessionTokensUsed + " / 2.5M (" + root.sessionGeminiPct + "%)"
-                        color: root.cpuColor
+                        color: "#38bdf8"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption
                         font.bold: true
@@ -896,13 +855,13 @@ BarWidget {
                       width: parent.width
                       height: 6
                       radius: 3
-                      color: root.track
+                      color: Qt.rgba(255, 255, 255, 0.12)
 
                       Rectangle {
                         height: parent.height
                         width: Math.min(parent.width, Math.max(3, parent.width * (root.sessionGeminiPct / 100)))
                         radius: 3
-                        color: root.cpuColor
+                        color: "#38bdf8"
                         Behavior on width { NumberAnimation { duration: 250 } }
                       }
                     }
@@ -912,7 +871,7 @@ BarWidget {
 
                       Text {
                         text: root.sessionGeminiDetail
-                        color: root.dim
+                        color: "#cbd5e1"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption - 1
                       }
@@ -921,7 +880,7 @@ BarWidget {
 
                       Text {
                         text: root.sessionTokensRemaining + " left"
-                        color: root.dim
+                        color: "#cbd5e1"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption - 1
                       }
@@ -934,8 +893,8 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 54
                   radius: 6
-                  color: root.subcardFill
-                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
@@ -948,7 +907,7 @@ BarWidget {
 
                       Text {
                         text: "📅 7D WEEKLY"
-                        color: root.dim
+                        color: "#ffffff"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption
                         font.bold: true
@@ -958,7 +917,7 @@ BarWidget {
 
                       Text {
                         text: root.weeklyTokensUsed + " / 25M (" + root.weeklyGeminiPct + "%)"
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : "#c084fc"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption
                         font.bold: true
@@ -970,13 +929,13 @@ BarWidget {
                       width: parent.width
                       height: 6
                       radius: 3
-                      color: root.track
+                      color: Qt.rgba(255, 255, 255, 0.12)
 
                       Rectangle {
                         height: parent.height
                         width: Math.min(parent.width, Math.max(3, parent.width * (root.weeklyGeminiPct / 100)))
                         radius: 3
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : "#c084fc"
                         Behavior on width { NumberAnimation { duration: 250 } }
                       }
                     }
@@ -986,7 +945,7 @@ BarWidget {
 
                       Text {
                         text: root.weeklyGeminiDetail
-                        color: root.dim
+                        color: "#cbd5e1"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption - 1
                       }
@@ -995,7 +954,7 @@ BarWidget {
 
                       Text {
                         text: root.weeklyTokensRemaining + " left"
-                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : "#34d399"
                         font.family: root.fontFamily
                         font.pixelSize: Style.font.caption - 1
                       }
@@ -1014,15 +973,15 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 38
                   radius: 5
-                  color: root.subcardFill
-                  border.color: root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "TODAY TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "TODAY TOKENS"; color: "#94a3b8"; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.todayTokens; color: "#ffffff"; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -1031,15 +990,15 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 38
                   radius: 5
-                  color: root.subcardFill
-                  border.color: root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "TODAY PROMPTS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: String(root.todayPrompts); color: root.primaryAccent; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "TODAY PROMPTS"; color: "#94a3b8"; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: String(root.todayPrompts); color: "#ffffff"; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -1048,15 +1007,15 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 38
                   radius: 5
-                  color: root.subcardFill
-                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "HEADROOM (7D)"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.weeklyTokensRemaining; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "HEADROOM (7D)"; color: "#94a3b8"; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.weeklyTokensRemaining; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : "#ffffff"; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -1065,15 +1024,15 @@ BarWidget {
                   Layout.fillWidth: true
                   height: 38
                   radius: 5
-                  color: root.subcardFill
-                  border.color: root.cardBorder
+                  color: Qt.rgba(255, 255, 255, 0.05)
+                  border.color: Qt.rgba(255, 255, 255, 0.10)
                   border.width: 1
 
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "ALL-TIME TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "ALL-TIME TOKENS"; color: "#94a3b8"; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.allTimeTokens; color: "#ffffff"; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
               }
@@ -1083,8 +1042,8 @@ BarWidget {
                 width: parent.width
                 height: 98
                 radius: 6
-                color: root.subcardFill
-                border.color: root.cardBorder
+                color: Qt.rgba(255, 255, 255, 0.05)
+                border.color: Qt.rgba(255, 255, 255, 0.10)
                 border.width: 1
 
                 Column {
@@ -1096,7 +1055,7 @@ BarWidget {
                     width: parent.width
                     Text {
                       text: "PROMPT ACTIVITY (LAST 7 DAYS)"
-                      color: root.dim
+                      color: "#ffffff"
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
                       font.bold: true
@@ -1104,7 +1063,7 @@ BarWidget {
                     Item { Layout.fillWidth: true }
                     Text {
                       text: "Total: " + root.totalPrompts + " prompts"
-                      color: root.dim
+                      color: "#cbd5e1"
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
                     }
@@ -1139,8 +1098,8 @@ BarWidget {
                             horizontalAlignment: Text.AlignHCenter
                             text: String(dayCol.promptVal)
                             color: dayCol.isToday 
-                                   ? root.primaryAccent 
-                                   : (dayCol.promptVal > 0 ? root.foreground : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.35))
+                                   ? "#38bdf8" 
+                                   : (dayCol.promptVal > 0 ? "#ffffff" : Qt.rgba(255, 255, 255, 0.35))
                             font.family: root.fontFamily
                             font.pixelSize: Style.font.caption
                             font.bold: dayCol.isToday || dayCol.promptVal > 0
@@ -1153,9 +1112,9 @@ BarWidget {
                             height: 34
                             radius: 3
                             color: dayCol.isHovered 
-                                   ? root.cardHover 
-                                   : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-                            border.color: dayCol.isHovered ? root.cardBorder : "transparent"
+                                   ? Qt.rgba(255, 255, 255, 0.14) 
+                                   : Qt.rgba(255, 255, 255, 0.08)
+                            border.color: dayCol.isHovered ? Qt.rgba(255, 255, 255, 0.25) : "transparent"
                             border.width: 1
 
                             Rectangle {
@@ -1167,8 +1126,8 @@ BarWidget {
                                       : 2
                               radius: 3
                               color: dayCol.isToday 
-                                     ? root.primaryAccent 
-                                     : (dayCol.promptVal > 0 ? Qt.rgba(97/255, 213/255, 248/255, 0.65) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.16))
+                                     ? "#38bdf8" 
+                                     : (dayCol.promptVal > 0 ? Qt.rgba(56/255, 189/255, 248/255, 0.65) : Qt.rgba(255, 255, 255, 0.18))
 
                               Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                             }
@@ -1183,7 +1142,7 @@ BarWidget {
                               var parts = String(modelData.date || "").split("-")
                               return parts.length === 3 ? (parts[2] + "/" + parts[1]) : ""
                             }
-                            color: dayCol.isToday ? root.primaryAccent : root.dim
+                            color: dayCol.isToday ? "#38bdf8" : "#ffffff"
                             font.family: root.fontFamily
                             font.pixelSize: Style.font.caption
                             font.bold: dayCol.isToday
@@ -1442,7 +1401,7 @@ BarWidget {
               anchors.centerIn: parent
               spacing: Style.space(4)
 
-              // Header Row (Title on left, Online/Offline Pill centered in total width)
+              // Header Row
               Item {
                 width: parent.width
                 implicitHeight: 22
@@ -1455,42 +1414,6 @@ BarWidget {
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
-                }
-
-                // Online/Offline Status Pill (Centered in total width)
-                Rectangle {
-                  id: gcpPillBox
-                  readonly property bool isOnline: (!root.gcpInfo || root.gcpInfo.status === "Online" || root.gcpInfo.status === "Operational" || (root.gcpInfo.latencyMs > 0))
-                  anchors.horizontalCenter: parent.horizontalCenter
-                  anchors.verticalCenter: parent.verticalCenter
-                  height: 20
-                  width: gcpStatusRow.implicitWidth + 14
-                  radius: 4
-                  color: isOnline ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.12) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.12)
-                  border.color: isOnline ? root.uploadColor : root.criticalColor
-                  border.width: 1
-
-                  Row {
-                    id: gcpStatusRow
-                    anchors.centerIn: parent
-                    spacing: 4
-
-                    Rectangle {
-                      width: 6
-                      height: 6
-                      radius: 3
-                      color: gcpPillBox.isOnline ? root.uploadColor : root.criticalColor
-                      anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                      text: gcpPillBox.isOnline ? "Online" : "Offline"
-                      color: gcpPillBox.isOnline ? root.uploadColor : root.criticalColor
-                      font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
-                      font.bold: true
-                    }
-                  }
                 }
               }
 
@@ -2016,29 +1939,6 @@ BarWidget {
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
-                }
-                Item { Layout.fillWidth: true }
-                // Online Pill (Green when online, Red if offline)
-                Rectangle {
-                  height: 18
-                  width: localGpuStatusRow.implicitWidth + 10
-                  radius: 3
-                  color: (root.localAiInfo && root.localAiInfo.status === "Online") ? Qt.rgba(root.uploadColor.r, root.uploadColor.g, root.uploadColor.b, 0.15) : Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.15)
-                  border.color: (root.localAiInfo && root.localAiInfo.status === "Online") ? root.uploadColor : root.criticalColor
-                  border.width: 1
-
-                  Row {
-                    id: localGpuStatusRow
-                    anchors.centerIn: parent
-                    spacing: 3
-                    Text {
-                      text: "● " + ((root.localAiInfo && root.localAiInfo.status) ? root.localAiInfo.status : "Online")
-                      color: (root.localAiInfo && root.localAiInfo.status === "Online") ? root.uploadColor : root.criticalColor
-                      font.family: root.fontFamily
-                      font.pixelSize: 8
-                      font.bold: true
-                    }
-                  }
                 }
               }
 
