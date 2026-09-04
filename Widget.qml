@@ -472,8 +472,8 @@ BarWidget {
   readonly property string barTooltip: {
     var text = "Antigravity — Google AI Pro"
     text += "\n⏱ 5h Session: " + root.sessionGeminiPct + "% (" + root.sessionTokensUsed + " · " + root.sessionGeminiDetail + ")"
-    text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyTokensUsed + " / 25M · " + (root.weeklyGeminiPct >= 90 ? "🚨 KRITICKÝ LIMIT! Zbývá " + root.weeklyTokensRemaining : root.weeklyGeminiDetail) + ")"
-    text += "\n🪙 Dnes tokenů: " + root.todayTokens + " (Celkem: " + root.allTimeTokens + ")"
+    text += "\n📅 7d Weekly: " + root.weeklyGeminiPct + "% (" + root.weeklyTokensUsed + " / 25M · " + (root.weeklyGeminiPct >= 90 ? "🚨 CRITICAL LIMIT! Remaining " + root.weeklyTokensRemaining : root.weeklyGeminiDetail) + ")"
+    text += "\n🪙 Today Tokens: " + root.todayTokens + " (Total: " + root.allTimeTokens + ")"
     text += "\n🧠 Model: " + root.currentModel
     text += "\n⚙️ AGY Server: " + root.serverVersionFull
     text += "\nStatus: " + (root.isWorking ? "Working 💓" : (root.isWaiting ? "Waiting for input" : "Idle"))
@@ -622,22 +622,6 @@ BarWidget {
                 fillMode: Image.PreserveAspectFit
                 mipmap: true
                 smooth: true
-                transformOrigin: Item.Center
-
-                SequentialAnimation {
-                  id: heroHeartbeatAnim
-                  running: root.isWorking && root.pulseEnabled && root.popupOpen
-                  loops: Animation.Infinite
-                  onRunningChanged: {
-                    if (!running) heroAppLogo.scale = 1.0
-                  }
-
-                  NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.30; duration: root.pulseT1Up; easing.type: Easing.OutBack; easing.overshoot: 1.4 }
-                  NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.0; duration: root.pulseT1Down; easing.type: Easing.InOutQuad }
-                  NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.20; duration: root.pulseT2Up; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
-                  NumberAnimation { target: heroAppLogo; property: "scale"; to: 1.0; duration: root.pulseT2Down; easing.type: Easing.InOutQuad }
-                  PauseAnimation { duration: root.pulsePause }
-                }
               }
             }
 
@@ -767,171 +751,29 @@ BarWidget {
           width: parent.width
           spacing: Style.space(10)
 
-          // Quotas Grid (5h Session & 7d Weekly)
-          RowLayout {
-            width: parent.width
-            spacing: Style.space(10)
-
-            // 5h Session Card (CPU Electric Cyan #61d5f8)
-            Rectangle {
-              Layout.fillWidth: true
-              height: 74
-              radius: 8
-              color: root.cardFill
-              border.color: root.cardBorder
-              border.width: 1
-
-              Column {
-                anchors.fill: parent
-                anchors.margins: Style.space(4)
-                spacing: 2
-
-                RowLayout {
-                  width: parent.width
-                  Text {
-                    text: root.t("quota5h", "⏱ 5H SESSION")
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                    font.bold: true
-                  }
-                  Item { Layout.fillWidth: true }
-                  Text {
-                    text: root.sessionGeminiDetail
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                  }
-                }
-
-                RowLayout {
-                  width: parent.width
-                  Text {
-                    text: root.sessionGeminiPct + "%"
-                    color: root.cpuColor
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.title + 6
-                    font.bold: true
-                  }
-                  Item { Layout.fillWidth: true }
-                  Text {
-                    text: root.t("usage", "Usage")
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                  }
-                }
-
-                // Progress Track
-                Rectangle {
-                  width: parent.width
-                  height: 6
-                  radius: 3
-                  color: root.track
-
-                  Rectangle {
-                    height: parent.height
-                    width: Math.min(parent.width, parent.width * (root.sessionGeminiPct / 100))
-                    radius: 3
-                    color: root.cpuColor
-                    Behavior on width { NumberAnimation { duration: 250 } }
-                  }
-                }
-              }
-            }
-
-            // 7d Weekly Card (Memory Lavender Purple #c7a6ff)
-            Rectangle {
-              Layout.fillWidth: true
-              height: 74
-              radius: 8
-              color: root.cardFill
-              border.color: root.cardBorder
-              border.width: 1
-
-              Column {
-                anchors.fill: parent
-                anchors.margins: Style.space(4)
-                spacing: 2
-
-                RowLayout {
-                  width: parent.width
-                  Text {
-                    text: root.t("quota7d", "📅 7D WEEKLY")
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                    font.bold: true
-                  }
-                  Item { Layout.fillWidth: true }
-                  Text {
-                    text: root.weeklyGeminiDetail
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
-                  }
-                }
-
-                RowLayout {
-                  width: parent.width
-                  Text {
-                    text: root.weeklyGeminiPct + "%"
-                    color: root.memoryColor
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.title + 6
-                    font.bold: true
-                  }
-                  Item { Layout.fillWidth: true }
-                  Text {
-                    text: root.t("limit", "Limit")
-                    color: root.dim
-                    font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
-                  }
-                }
-
-                // Progress Track
-                Rectangle {
-                  width: parent.width
-                  height: 6
-                  radius: 3
-                  color: root.track
-
-                  Rectangle {
-                    height: parent.height
-                    width: Math.min(parent.width, parent.width * (root.weeklyGeminiPct / 100))
-                    radius: 3
-                    color: root.memoryColor
-                    Behavior on width { NumberAnimation { duration: 250 } }
-                  }
-                }
-              }
-            }
-          }
-
           // Critical Token Warning Banner (when weekly tokens are >= 90%)
           Rectangle {
             visible: root.weeklyGeminiPct >= 90
             width: parent.width
-            height: 38
-            radius: 8
+            height: 34
+            radius: 6
             color: Qt.rgba(root.criticalColor.r, root.criticalColor.g, root.criticalColor.b, 0.18)
             border.color: root.criticalColor
             border.width: 1
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.space(8)
-              anchors.rightMargin: Style.space(8)
-              spacing: Style.space(6)
+              anchors.leftMargin: Style.space(6)
+              anchors.rightMargin: Style.space(6)
+              spacing: Style.space(4)
 
               Text {
                 text: "🚨"
-                font.pixelSize: Style.font.bodyLarge
+                font.pixelSize: Style.font.body
               }
 
               Text {
-                text: "KRITICKÝ LIMIT: Zbývá pouze " + (100 - root.weeklyGeminiPct) + "% týdenních tokenů (" + root.weeklyTokensRemaining + ")! Reset za " + root.weeklyGeminiDetail
+                text: "CRITICAL LIMIT: Only " + (100 - root.weeklyGeminiPct) + "% weekly tokens left (" + root.weeklyTokensRemaining + ")! Reset in " + root.weeklyGeminiDetail
                 color: root.criticalColor
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.bodySmall
@@ -942,221 +784,420 @@ BarWidget {
             }
           }
 
-          // Total Token Sums & Quota Headroom Card
+          // Unified Quotas & Activity Dashboard Card
           Rectangle {
             width: parent.width
-            implicitHeight: tokenBreakdownCol.implicitHeight + Style.space(8)
+            implicitHeight: unifiedMetricsCol.implicitHeight + Style.space(10)
             radius: 8
             color: root.cardFill
             border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
             border.width: 1
 
             Column {
-              id: tokenBreakdownCol
-              width: parent.width
-              anchors.margins: Style.space(6)
-              spacing: Style.space(6)
+              id: unifiedMetricsCol
+              width: parent.width - Style.space(8)
+              anchors.centerIn: parent
+              spacing: Style.space(5)
 
+              // 1. Header Row
               RowLayout {
                 width: parent.width
+
                 Text {
-                  text: root.t("tokenBreakdownTitle", "🪙 SUMA TOKENŮ & SPOTŘEBA (GOOGLE AI PRO)")
-                  color: root.foreground
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
-                  font.bold: true
-                }
-                Item { Layout.fillWidth: true }
-                Text {
-                  text: root.tierLabel
-                  color: root.accentColor
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
-                  font.bold: true
-                }
-              }
-
-              // 4-Metric Grid of Token Sums
-              RowLayout {
-                width: parent.width
-                spacing: Style.space(6)
-
-                // 1. Týdenní spotřeba (Weekly Used)
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 52
-                  radius: 6
-                  color: root.subcardFill
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text { text: root.t("weeklyTokens", "Týdně spotřebováno"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.weeklyTokensUsed + " / 25M"; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
-                  }
-                }
-
-                // 2. Týdenní zbývající kapacita (Weekly Remaining Headroom)
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 52
-                  radius: 6
-                  color: root.subcardFill
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text { text: root.t("remainingTokens", "Zbývá do resetu"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.weeklyTokensRemaining + " (" + (100 - root.weeklyGeminiPct) + "%)"; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
-                  }
-                }
-
-                // 3. Dnešní tokeny (Today's Tokens)
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 52
-                  radius: 6
-                  color: root.subcardFill
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text { text: root.t("todayTokens", "Dnes celkem"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
-                  }
-                }
-
-                // 4. Celková historická suma (All-time Tokens)
-                Rectangle {
-                  Layout.fillWidth: true
-                  height: 52
-                  radius: 6
-                  color: root.subcardFill
-                  Column {
-                    anchors.centerIn: parent
-                    spacing: 1
-                    Text { text: root.t("allTimeTokens", "Celkem historie"); color: root.dim; font.pixelSize: Style.font.bodySmall - 1; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: Style.font.body; anchors.horizontalCenter: parent.horizontalCenter }
-                  }
-                }
-              }
-            }
-          }
-
-          // 7-Day Activity Bar Chart Card (System Monitor style with exact values)
-          Rectangle {
-            width: parent.width
-            implicitHeight: promptChartCol.implicitHeight + Style.space(8)
-            radius: 8
-            color: root.cardFill
-            border.color: root.cardBorder
-            border.width: 1
-
-            Column {
-              id: promptChartCol
-              anchors.fill: parent
-              anchors.margins: Style.space(4)
-              spacing: Style.space(3)
-
-              RowLayout {
-                width: parent.width
-                Text {
-                  text: root.t("activityTitle", "📊 7-DAY PROMPT ACTIVITY")
+                  text: "📊 ACTIVITY & QUOTAS"
                   color: root.foreground
                   font.family: root.fontFamily
                   font.pixelSize: Style.font.body
                   font.bold: true
                 }
+
                 Item { Layout.fillWidth: true }
-                Text {
-                  text: root.t("today", "Today") + ": " + root.todayPrompts + " " + root.t("prompts", "prompts") + " (" + root.t("total", "Total") + ": " + root.totalPrompts + ")"
-                  color: root.dim
-                  font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
+
+                Rectangle {
+                  height: 20
+                  width: headerPillRow.implicitWidth + 12
+                  radius: 4
+                  color: root.subcardFill
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Row {
+                    id: headerPillRow
+                    anchors.centerIn: parent
+                    spacing: 5
+
+                    Text {
+                      text: root.tierLabel
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                    }
+
+                    Text {
+                      text: "·"
+                      color: root.dim
+                      font.pixelSize: Style.font.caption
+                    }
+
+                    Text {
+                      text: root.weeklyGeminiDetail
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
                 }
               }
 
-              // Bar Chart Columns
+              // 2. Dual Quota Gauges (5H Session & 7D Weekly)
+              RowLayout {
+                width: parent.width
+                spacing: Style.space(4)
+
+                // 5H Session Gauge
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 54
+                  radius: 6
+                  color: root.subcardFill
+                  border.color: root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.fill: parent
+                    anchors.margins: Style.space(4)
+                    spacing: 3
+
+                    RowLayout {
+                      width: parent.width
+
+                      Text {
+                        text: "⏱ 5H SESSION"
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: true
+                      }
+
+                      Item { Layout.fillWidth: true }
+
+                      Text {
+                        text: root.sessionTokensUsed + " / 2.5M (" + root.sessionGeminiPct + "%)"
+                        color: root.cpuColor
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: true
+                      }
+                    }
+
+                    // Progress Bar Track
+                    Rectangle {
+                      width: parent.width
+                      height: 6
+                      radius: 3
+                      color: root.track
+
+                      Rectangle {
+                        height: parent.height
+                        width: Math.min(parent.width, Math.max(3, parent.width * (root.sessionGeminiPct / 100)))
+                        radius: 3
+                        color: root.cpuColor
+                        Behavior on width { NumberAnimation { duration: 250 } }
+                      }
+                    }
+
+                    RowLayout {
+                      width: parent.width
+
+                      Text {
+                        text: root.sessionGeminiDetail
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption - 1
+                      }
+
+                      Item { Layout.fillWidth: true }
+
+                      Text {
+                        text: root.sessionTokensRemaining + " left"
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption - 1
+                      }
+                    }
+                  }
+                }
+
+                // 7D Weekly Gauge
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 54
+                  radius: 6
+                  color: root.subcardFill
+                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+                  border.width: 1
+
+                  Column {
+                    anchors.fill: parent
+                    anchors.margins: Style.space(4)
+                    spacing: 3
+
+                    RowLayout {
+                      width: parent.width
+
+                      Text {
+                        text: "📅 7D WEEKLY"
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: true
+                      }
+
+                      Item { Layout.fillWidth: true }
+
+                      Text {
+                        text: root.weeklyTokensUsed + " / 25M (" + root.weeklyGeminiPct + "%)"
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption
+                        font.bold: true
+                      }
+                    }
+
+                    // Progress Bar Track
+                    Rectangle {
+                      width: parent.width
+                      height: 6
+                      radius: 3
+                      color: root.track
+
+                      Rectangle {
+                        height: parent.height
+                        width: Math.min(parent.width, Math.max(3, parent.width * (root.weeklyGeminiPct / 100)))
+                        radius: 3
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
+                        Behavior on width { NumberAnimation { duration: 250 } }
+                      }
+                    }
+
+                    RowLayout {
+                      width: parent.width
+
+                      Text {
+                        text: root.weeklyGeminiDetail
+                        color: root.dim
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption - 1
+                      }
+
+                      Item { Layout.fillWidth: true }
+
+                      Text {
+                        text: root.weeklyTokensRemaining + " left"
+                        color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor
+                        font.family: root.fontFamily
+                        font.pixelSize: Style.font.caption - 1
+                      }
+                    }
+                  }
+                }
+              }
+
+              // 3. Compact Token Sums (4 Badges)
               RowLayout {
                 width: parent.width
                 spacing: Style.space(3)
 
-                Repeater {
-                  model: root.recentDays
+                // Today Tokens
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: root.subcardFill
+                  border.color: root.cardBorder
+                  border.width: 1
 
-                  Item {
-                    id: dayCol
-                    Layout.fillWidth: true
-                    height: 82
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: "TODAY TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
 
-                    readonly property bool isToday: index === (root.recentDays.length - 1)
-                    readonly property int promptVal: Number(modelData.prompts || 0)
-                    readonly property real barHeightFactor: root.maxDayPrompts > 0 ? (promptVal / root.maxDayPrompts) : 0
-                    readonly property bool isHovered: barMouse.containsMouse
+                // Today Prompts
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: root.subcardFill
+                  border.color: root.cardBorder
+                  border.width: 1
 
-                    Column {
-                      anchors.fill: parent
-                      spacing: 2
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: "TODAY PROMPTS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: String(root.todayPrompts); color: root.primaryAccent; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
 
-                      // 1. Exact Value on Top
-                      Text {
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
-                        text: String(dayCol.promptVal)
-                        color: dayCol.isToday 
-                               ? root.primaryAccent 
-                               : (dayCol.promptVal > 0 ? root.foreground : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.35))
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: dayCol.isToday || dayCol.promptVal > 0
-                        renderType: Text.NativeRendering
-                      }
+                // 7D Headroom
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: root.subcardFill
+                  border.color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.cardBorder
+                  border.width: 1
 
-                      // 2. Bar Track & Filled Column
-                      Rectangle {
-                        width: parent.width
-                        height: 48
-                        radius: 3
-                        color: dayCol.isHovered 
-                               ? root.cardHover 
-                               : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
-                        border.color: dayCol.isHovered ? root.cardBorder : "transparent"
-                        border.width: 1
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: "HEADROOM (7D)"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.weeklyTokensRemaining; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.accentColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
 
-                        Rectangle {
-                          anchors.bottom: parent.bottom
-                          anchors.horizontalCenter: parent.horizontalCenter
-                          width: parent.width
-                          height: dayCol.promptVal > 0 
-                                  ? Math.max(3, Math.round(dayCol.barHeightFactor * parent.height)) 
-                                  : 2
-                          radius: 3
-                          color: dayCol.isToday 
-                                 ? root.primaryAccent 
-                                 : (dayCol.promptVal > 0 ? Qt.rgba(97/255, 213/255, 248/255, 0.65) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.16))
+                // All-Time Tokens
+                Rectangle {
+                  Layout.fillWidth: true
+                  height: 38
+                  radius: 5
+                  color: root.subcardFill
+                  border.color: root.cardBorder
+                  border.width: 1
 
-                          Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                        }
-                      }
+                  Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { text: "ALL-TIME TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                  }
+                }
+              }
 
-                      // 3. Date Label at Bottom
-                      Text {
-                        width: parent.width
-                        horizontalAlignment: Text.AlignHCenter
-                        text: {
-                          var parts = String(modelData.date || "").split("-")
-                          return parts.length === 3 ? (parts[2] + "/" + parts[1]) : ""
-                        }
-                        color: dayCol.isToday ? root.primaryAccent : root.dim
-                        font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
-                        font.bold: dayCol.isToday
-                        renderType: Text.NativeRendering
-                      }
+              // 4. 7-Day Activity Bar Chart
+              Rectangle {
+                width: parent.width
+                height: 98
+                radius: 6
+                color: root.subcardFill
+                border.color: root.cardBorder
+                border.width: 1
+
+                Column {
+                  anchors.fill: parent
+                  anchors.margins: Style.space(4)
+                  spacing: 4
+
+                  RowLayout {
+                    width: parent.width
+                    Text {
+                      text: "PROMPT ACTIVITY (LAST 7 DAYS)"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
                     }
+                    Item { Layout.fillWidth: true }
+                    Text {
+                      text: "Total: " + root.totalPrompts + " prompts"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                    }
+                  }
 
-                    MouseArea {
-                      id: barMouse
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.ArrowCursor
+                  // 7-Column Bars
+                  RowLayout {
+                    width: parent.width
+                    height: 64
+                    spacing: Style.space(3)
+
+                    Repeater {
+                      model: root.recentDays
+
+                      Item {
+                        id: dayCol
+                        Layout.fillWidth: true
+                        height: parent.height
+
+                        readonly property bool isToday: index === (root.recentDays.length - 1)
+                        readonly property int promptVal: Number(modelData.prompts || 0)
+                        readonly property real barHeightFactor: root.maxDayPrompts > 0 ? (promptVal / root.maxDayPrompts) : 0
+                        readonly property bool isHovered: barMouse.containsMouse
+
+                        Column {
+                          anchors.fill: parent
+                          spacing: 2
+
+                          // Value on Top
+                          Text {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: String(dayCol.promptVal)
+                            color: dayCol.isToday 
+                                   ? root.primaryAccent 
+                                   : (dayCol.promptVal > 0 ? root.foreground : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.35))
+                            font.family: root.fontFamily
+                            font.pixelSize: Style.font.caption
+                            font.bold: dayCol.isToday || dayCol.promptVal > 0
+                            renderType: Text.NativeRendering
+                          }
+
+                          // Bar Track
+                          Rectangle {
+                            width: parent.width
+                            height: 34
+                            radius: 3
+                            color: dayCol.isHovered 
+                                   ? root.cardHover 
+                                   : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.05)
+                            border.color: dayCol.isHovered ? root.cardBorder : "transparent"
+                            border.width: 1
+
+                            Rectangle {
+                              anchors.bottom: parent.bottom
+                              anchors.horizontalCenter: parent.horizontalCenter
+                              width: parent.width
+                              height: dayCol.promptVal > 0 
+                                      ? Math.max(3, Math.round(dayCol.barHeightFactor * parent.height)) 
+                                      : 2
+                              radius: 3
+                              color: dayCol.isToday 
+                                     ? root.primaryAccent 
+                                     : (dayCol.promptVal > 0 ? Qt.rgba(97/255, 213/255, 248/255, 0.65) : Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.16))
+
+                              Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                            }
+                          }
+
+                          // Date label
+                          Text {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            text: {
+                              if (dayCol.isToday) return "Today"
+                              var parts = String(modelData.date || "").split("-")
+                              return parts.length === 3 ? (parts[2] + "/" + parts[1]) : ""
+                            }
+                            color: dayCol.isToday ? root.primaryAccent : root.dim
+                            font.family: root.fontFamily
+                            font.pixelSize: Style.font.caption
+                            font.bold: dayCol.isToday
+                            renderType: Text.NativeRendering
+                          }
+                        }
+
+                        MouseArea {
+                          id: barMouse
+                          anchors.fill: parent
+                          hoverEnabled: true
+                          cursorShape: Qt.ArrowCursor
+                        }
+                      }
                     }
                   }
                 }
@@ -2399,7 +2440,7 @@ BarWidget {
           }
         }
 
-        // 5. TAB 2: Settings (Nastavení)
+        // 5. TAB 2: Settings
         Column {
           visible: root.selectedTab === 2
           width: parent.width
