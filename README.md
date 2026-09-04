@@ -40,9 +40,9 @@ Designed in strict compliance with Omarchy plugin guidelines
   * Codebase Embeddings & Semantic Index (Vector RAG)
   * Cloud Code & Multi-Agent Fleet
 * 🤖 **Specialized Subagents Fleet & Profiler:** Live monitoring of autonomous subagents (`sec-auditor`, `qml-designer-reviewer`, `test-runner`, `doc-researcher`) with latency badges, speed scores, and cumulative cloud tokens saved (`~585k+ saved`).
-* 🖥️ **Local GPU Workers on RTX 3070:** Real-time status for zero-token local inference co-workers:
-  * `arci-coder` (`qwen2.5-coder:7b`)
-  * `arci-auditor` (`deepseek-r1:7b`)
+* 🖥️ **Local GPU Workers :** Real-time status for zero-token local inference co-workers:
+  * `arci-coder`
+  * `arci-auditor`
   * Dedicated 8 GB VRAM allocation gauge.
 * 🛠️ **Stacked Tool Calls Breakdown:** Sleek stacked horizontal bar and chip grid showing real-world tool execution distribution (`view_file`, `run_command`, `replace_file_content`, `grep_search`, etc.).
 * 🏷️ **Clean Status Bar:** Displays the exact active model (**`Gemini 3.8 Flash`**) and the client version currently in use (**`CLI v1.1.26`** or `IDE`).
@@ -72,7 +72,7 @@ Designed in strict compliance with Omarchy plugin guidelines
 2. **Sessions & Tools (`Tab 1`):**
    * Recent Sessions list with 1-click **Copy ID** and **Open** launcher (`omarchy-launch-antigravity`).
    * Specialized Subagents Fleet indicators.
-   * Local GPU Workers (RTX 3070) inference locks and VRAM usage.
+   * Local GPU Workers inference locks and VRAM usage.
    * Subagents Benchmark & Latency Profiler.
    * Tool Calls Breakdown stacked meter.
 3. **Settings (`Tab 2`):**
