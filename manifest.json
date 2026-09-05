@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "simonez.antigem",
   "name": "Anti/Gem",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "author": "simonez",
   "license": "MIT",
   "description": "Antigravity & Gemini system monitor dashboard with performance tabs, quota gauges, activity history graph, session manager, and live heartbeat telemetry.",

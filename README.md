@@ -1,7 +1,7 @@
 # 🚀 Anti/Gem (Antigravity 1.1) for Omarchy Linux
 
 <p align="left">
-  <img src="https://img.shields.io/badge/version-1.5.2-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.2">
+  <img src="https://img.shields.io/badge/version-1.5.3-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.3">
   <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
   <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
   <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
@@ -87,7 +87,7 @@ Designed in strict compliance with Omarchy plugin guidelines
 
 ```
 antigem/
-├── manifest.json                  # Plugin definition & schema (v1.5.2)
+├── manifest.json                  # Plugin definition & schema (v1.5.3)
 ├── Widget.qml                     # Main QML Bar Widget & 3-Tab Dashboard
 ├── preview.png                    # Primary visual preview
 ├── assets/                        # SVG icons, anim banner & branding
@@ -100,6 +100,7 @@ antigem/
 ├── bin/
 │   └── omarchy-launch-antigravity # Wayland session restorer & CLI/IDE launcher
 ├── install.sh                     # 1-click installer & permission hardener
+├── uninstall.sh                   # 1-click uninstaller & cleanup
 ├── LICENSE                        # MIT License
 └── README.md                      # Documentation
 ```
@@ -133,6 +134,40 @@ cd antigem
 
 3. Reload the shell:
 ```bash
+omarchy restart shell
+```
+
+---
+
+## 🗑️ Uninstallation & Removal
+
+### Method 1: Using Omarchy Plugin Manager
+```bash
+omarchy plugin remove simonez.antigem
+omarchy restart shell
+```
+
+### Method 2: One-Click Uninstaller Script
+If you cloned the repository or have the source directory:
+```bash
+./uninstall.sh
+```
+
+### Method 3: Manual Removal
+To completely remove the deployed files, companion launcher, and cache:
+```bash
+# 1. Remove deployed plugin files
+rm -rf ~/.config/omarchy/plugins/simonez.antigem
+
+# 2. Remove companion launcher binary
+rm -f ~/.local/bin/omarchy-launch-antigravity
+
+# 3. Remove cache data
+rm -rf ~/.cache/omarchy/antigem
+
+# 4. Remove "simonez.antigem" from ~/.config/omarchy/shell.json (in bar.layout.right)
+
+# 5. Restart Omarchy Shell to apply changes
 omarchy restart shell
 ```
 
