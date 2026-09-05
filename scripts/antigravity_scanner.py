@@ -319,9 +319,17 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
 
     # Check lock files from ai-worker
     try:
-        if os.path.exists("/tmp/ai_worker_active_arci-coder.lock") or os.path.exists("/tmp/ai_worker_active_qwen2.5-coder:7b.lock"):
+        if (
+            os.path.exists("/tmp/ai_worker_active_coder.lock")
+            or os.path.exists("/tmp/ai_worker_active_arci-coder.lock")
+            or os.path.exists("/tmp/ai_worker_active_qwen2.5-coder:7b.lock")
+        ):
             qwen_working = True
-        if os.path.exists("/tmp/ai_worker_active_arci-auditor.lock") or os.path.exists("/tmp/ai_worker_active_deepseek-r1:7b.lock"):
+        if (
+            os.path.exists("/tmp/ai_worker_active_auditor.lock")
+            or os.path.exists("/tmp/ai_worker_active_arci-auditor.lock")
+            or os.path.exists("/tmp/ai_worker_active_deepseek-r1:7b.lock")
+        ):
             deepseek_working = True
     except Exception:
         pass

@@ -1950,8 +1950,8 @@ BarWidget {
                   Repeater {
                     model: [
                       {
-                        name: "arci-coder",
-                        id: "arci-coder",
+                        name: "coder",
+                        id: "coder",
                         fallback: "qwen2.5-coder:7b",
                         modelName: "qwen2.5-coder:7b",
                         desc: "qwen2.5-coder:7b",
@@ -1959,8 +1959,8 @@ BarWidget {
                         isWorking: (root.localAiInfo && (root.localAiInfo.coderWorking || root.localAiInfo.qwenWorking)) || false
                       },
                       {
-                        name: "arci-auditor",
-                        id: "arci-auditor",
+                        name: "auditor",
+                        id: "auditor",
                         fallback: "deepseek-r1:7b",
                         modelName: "deepseek-r1:7b",
                         desc: "deepseek-r1:7b",
@@ -1974,7 +1974,7 @@ BarWidget {
                       readonly property bool isModelOnline: {
                         if (!root.localAiInfo || root.localAiInfo.status !== "Online" || !root.localAiInfo.models) return false
                         var list = root.localAiInfo.models
-                        var targets = [modelData.name, modelData.id, modelData.fallback, modelData.name + ":latest"]
+                        var targets = [modelData.name, modelData.id, modelData.fallback, "arci-" + modelData.name, modelData.name + ":latest"]
                         for (var i = 0; i < list.length; i++) {
                           var m = list[i]
                           for (var j = 0; j < targets.length; j++) {

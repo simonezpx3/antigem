@@ -1,7 +1,7 @@
 # 🚀 Anti/Gem (Antigravity 1.1) for Omarchy Linux
 
 <p align="left">
-  <img src="https://img.shields.io/badge/version-1.5.3-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.3">
+  <img src="https://img.shields.io/badge/version-1.5.4-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.4">
   <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
   <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
   <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
@@ -41,8 +41,8 @@ Designed in strict compliance with Omarchy plugin guidelines
   * Cloud Code & Multi-Agent Fleet
 * 🤖 **Specialized Subagents Fleet & Profiler:** Live monitoring of autonomous subagents (`sec-auditor`, `qml-designer-reviewer`, `test-runner`, `doc-researcher`) with latency badges, speed scores, and cumulative cloud tokens saved (`~585k+ saved`).
 * 🖥️ **Local GPU Workers :** Real-time status for zero-token local inference co-workers:
-  * `arci-coder`
-  * `arci-auditor`
+  * `coder`
+  * `auditor`
   * Dedicated 8 GB VRAM allocation gauge.
 * 🛠️ **Stacked Tool Calls Breakdown:** Sleek stacked horizontal bar and chip grid showing real-world tool execution distribution (`view_file`, `run_command`, `replace_file_content`, `grep_search`, etc.).
 * 🏷️ **Clean Status Bar:** Displays the exact active model (**`Gemini 3.8 Flash`**) and the client version currently in use (**`CLI v1.1.26`** or `IDE`).
@@ -87,7 +87,7 @@ Designed in strict compliance with Omarchy plugin guidelines
 
 ```
 antigem/
-├── manifest.json                  # Plugin definition & schema (v1.5.3)
+├── manifest.json                  # Plugin definition & schema (v1.5.4)
 ├── Widget.qml                     # Main QML Bar Widget & 3-Tab Dashboard
 ├── preview.png                    # Primary visual preview
 ├── assets/                        # SVG icons, anim banner & branding
