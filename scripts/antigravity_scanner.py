@@ -7,6 +7,7 @@ Hardened with descriptor-safe atomic caching, bounded I/O, token sums & quota he
 from __future__ import annotations
 
 import datetime as dt
+import fcntl
 import json
 import os
 import re
@@ -126,11 +127,31 @@ def parse_presence(presence_dir: Path) -> set[str]:
     active_ids = set()
     if not presence_dir.exists():
         return active_ids
+    now_ts = time.time()
     try:
         for p in presence_dir.glob("*.lock"):
             conv_id = sanitize_plain_text(p.stem, 100)
-            if conv_id:
-                active_ids.add(conv_id)
+            if not conv_id:
+                continue
+            try:
+                fd = os.open(str(p), os.O_RDWR)
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    # Succeeded in acquiring lock -> file is unlocked / stale
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                    try:
+                        st = p.stat()
+                        if st.st_size == 0 and (now_ts - st.st_mtime > 86400):
+                            p.unlink(missing_ok=True)
+                    except Exception:
+                        pass
+                except (BlockingIOError, OSError):
+                    # Lock is held exclusively by an active live process!
+                    active_ids.add(conv_id)
+                finally:
+                    os.close(fd)
+            except Exception:
+                pass
     except Exception:
         pass
     return active_ids
@@ -667,6 +688,7 @@ def scan() -> dict[str, Any]:
     agent_working = False
     active_subagents = 0
     active_subagent_types: set[str] = set()
+    total_subagent_invocations = 0
 
     if brain_dir.is_dir() and not brain_dir.is_symlink():
         try:
@@ -706,10 +728,29 @@ def scan() -> dict[str, Any]:
                         pass
 
                 is_active_conv = (cid in active_lock_ids)
-                if is_active_conv or (now_ts - step_time < 35.0):
+                if is_active_conv or (not active_lock_ids and (now_ts - step_time < 10.0)):
                     s_type = step.get("type", "")
                     s_status = step.get("status", "")
-                    if s_status == "RUNNING" or s_type in ("PLANNER_RESPONSE", "TOOL_CALL", "INVOKE_SUBAGENT"):
+                    tool_calls = step.get("tool_calls") or []
+
+                    if s_status == "RUNNING":
+                        agent_working = True
+                    elif s_type == "USER_INPUT":
+                        agent_working = True
+                    elif s_type == "PLANNER_RESPONSE" and len(tool_calls) > 0:
+                        agent_working = True
+                        for tc in tool_calls:
+                            if isinstance(tc, dict):
+                                fn = tc.get("function") or tc.get("name") or tc.get("tool") or ""
+                                if fn == "invoke_subagent":
+                                    args = tc.get("arguments") or tc.get("args") or {}
+                                    if isinstance(args, dict):
+                                        subs = args.get("Subagents") or args.get("subagents") or []
+                                        if isinstance(subs, list):
+                                            for sa in subs:
+                                                if isinstance(sa, dict) and sa.get("TypeName"):
+                                                    active_subagent_types.add(str(sa.get("TypeName")))
+                    elif s_type in ("GENERIC", "TOOL_CALL", "INVOKE_SUBAGENT"):
                         agent_working = True
 
                 s = sessions_map[cid]
@@ -732,8 +773,7 @@ def scan() -> dict[str, Any]:
                     cache_dirty = True
                 for t_name, t_cnt in f_tools.items():
                     tool_counter[t_name] += t_cnt
-                active_subagents += f_subs
-                active_subagent_types.update(f_types)
+                total_subagent_invocations += f_subs
         except Exception:
             pass
 
@@ -1029,7 +1069,7 @@ def scan() -> dict[str, Any]:
             "avgLatency": "1.4s",
             "speedScore": 98,
             "tokensSaved": "~160k",
-            "status": "Working" if ("sec-auditor" in active_subagent_types or (active_subagents > 0 and agent_working)) else "Ready",
+            "status": "Working" if "sec-auditor" in active_subagent_types else "Ready",
             "color": "#10b981"
         },
         {
@@ -1097,7 +1137,7 @@ def scan() -> dict[str, Any]:
         "contextMap": context_map,
         "contextPct": context_pct,
         "contextTokensStr": context_tokens_str,
-        "activeSubagents": active_subagents,
+        "activeSubagents": len(active_subagent_types),
         "activityBreakdown": activity_breakdown,
         "productivity": productivity_data,
         "todayPrompts": daily_prompts.get(today_str, 0),
