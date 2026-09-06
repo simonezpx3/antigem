@@ -1,4 +1,4 @@
-# 🚀 Anti/Gem (Antigravity 1.1) for Omarchy Linux
+# 🚀 Antigem (Antigravity) for Omarchy Linux
 
 <p align="left">
   <img src="https://img.shields.io/badge/version-1.5.4-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.4">
