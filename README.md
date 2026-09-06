@@ -173,6 +173,14 @@ omarchy restart shell
 
 ---
 
+## 👥 Authors & Creators
+
+* **Simonez** ([@simonezpx3](https://github.com/simonezpx3)) — Creator, Concept & Lead Developer
+* **Arci** — AI Orchestrator, Architecture & Co-Developer
+
+---
+
 ## 🛡️ License
 
 Released under the **MIT License**. Crafted with precision for Omarchy Linux.
+
