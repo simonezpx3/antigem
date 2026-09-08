@@ -1941,9 +1941,9 @@ BarWidget {
                 width: parent.width
                 spacing: Style.space(3)
 
-                // 2 GPU Models Grid (Identical structure to Subagents Fleet)
+                // 3 AI Workers Grid (Local dGPU Coder & Auditor + Groq Cloud Worker)
                 Grid {
-                  columns: 2
+                  columns: 3
                   Layout.fillWidth: true
                   spacing: Style.space(3)
 
@@ -1956,7 +1956,8 @@ BarWidget {
                         modelName: "qwen2.5-coder:7b",
                         desc: "qwen2.5-coder:7b",
                         icon: "󰘦",
-                        isWorking: (root.localAiInfo && (root.localAiInfo.coderWorking || root.localAiInfo.qwenWorking)) || false
+                        isWorking: (root.localAiInfo && (root.localAiInfo.coderWorking || root.localAiInfo.qwenWorking)) || false,
+                        isCloud: false
                       },
                       {
                         name: "auditor",
@@ -1965,13 +1966,27 @@ BarWidget {
                         modelName: "deepseek-r1:7b",
                         desc: "deepseek-r1:7b",
                         icon: "󰚩",
-                        isWorking: (root.localAiInfo && (root.localAiInfo.auditorWorking || root.localAiInfo.deepseekWorking)) || false
+                        isWorking: (root.localAiInfo && (root.localAiInfo.auditorWorking || root.localAiInfo.deepseekWorking)) || false,
+                        isCloud: false
+                      },
+                      {
+                        name: "groq",
+                        id: "groq",
+                        fallback: "qwen3.8:27b",
+                        modelName: "qwen3.8:27b",
+                        desc: "cloud 27b/120b",
+                        icon: "󰄛",
+                        isWorking: (root.localAiInfo && root.localAiInfo.groqWorking) || false,
+                        isCloud: true
                       }
                     ]
 
                     Rectangle {
                       readonly property bool isModelWorking: modelData.isWorking
                       readonly property bool isModelOnline: {
+                        if (modelData.isCloud) {
+                          return (root.localAiInfo && root.localAiInfo.groqOnline) || false
+                        }
                         if (!root.localAiInfo || root.localAiInfo.status !== "Online" || !root.localAiInfo.models) return false
                         var list = root.localAiInfo.models
                         var targets = [modelData.name, modelData.id, modelData.fallback, "arci-" + modelData.name, modelData.name + ":latest"]
@@ -1986,7 +2001,7 @@ BarWidget {
                         }
                         return false
                       }
-                      width: (parent.width - Style.space(3)) / 2
+                      width: (parent.width - Style.space(3) * 2) / 3
                       height: 42
                       radius: 6
                       color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)

@@ -252,7 +252,7 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
     operational = True
     start = time.perf_counter()
     try:
-        with socket.create_connection(("generativelanguage.googleapis.com", 443), timeout=0.2) as s:
+        with socket.create_connection(("generativelanguage.googleapis.com", 443), timeout=0.2):
             pass
         latency_ms = max(1, int((time.perf_counter() - start) * 1000))
     except Exception:
@@ -316,6 +316,9 @@ def check_gcp_api_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str
 def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, Any], bool]:
     qwen_working = False
     deepseek_working = False
+    groq_working = False
+    groq_key_path = os.path.expanduser("~/.config/ai-worker/groq.key")
+    groq_online = bool(os.environ.get("GROQ_API_KEY") or (os.path.exists(groq_key_path) and os.path.getsize(groq_key_path) > 10))
 
     # Check lock files from ai-worker
     try:
@@ -331,6 +334,8 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             or os.path.exists("/tmp/ai_worker_active_deepseek-r1:7b.lock")
         ):
             deepseek_working = True
+        if os.path.exists("/tmp/ai_worker_active_groq.lock"):
+            groq_working = True
     except Exception:
         pass
 
@@ -342,6 +347,8 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             qwen_working = True
         if "deepseek" in proc_out or "r1" in proc_out or "arci-auditor" in proc_out:
             deepseek_working = True
+        if "groq" in proc_out:
+            groq_working = True
     except Exception:
         pass
 
@@ -358,6 +365,8 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                             qwen_working = True
                         if "deepseek" in txt or "r1" in txt or "arci-auditor" in txt:
                             deepseek_working = True
+                        if "groq" in txt:
+                            groq_working = True
             except Exception:
                 pass
     except Exception:
@@ -365,12 +374,14 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
 
     # 3. Check running processes
     try:
-        res = subprocess.run(["pgrep", "-fa", "ai-worker (code|audit|query)"], capture_output=True, text=True, timeout=0.15)
+        res = subprocess.run(["pgrep", "-fa", "ai-worker (code|audit|query|groq)"], capture_output=True, text=True, timeout=0.15)
         out = res.stdout.lower()
         if "code" in out or "qwen" in out or "arci-coder" in out:
             qwen_working = True
         if "audit" in out or "deepseek" in out or "arci-auditor" in out:
             deepseek_working = True
+        if "groq" in out:
+            groq_working = True
     except Exception:
         pass
 
@@ -383,6 +394,8 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             res_data["deepseekWorking"] = deepseek_working
             res_data["coderWorking"] = qwen_working
             res_data["auditorWorking"] = deepseek_working
+            res_data["groqWorking"] = groq_working
+            res_data["groqOnline"] = groq_online
             return res_data, False
 
     local_ai_info = {
@@ -393,7 +406,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
         "qwenWorking": qwen_working,
         "deepseekWorking": deepseek_working,
         "coderWorking": qwen_working,
-        "auditorWorking": deepseek_working
+        "auditorWorking": deepseek_working,
+        "groqWorking": groq_working,
+        "groqOnline": groq_online
     }
     try:
         req = urllib.request.Request("http://127.0.0.1:11434/api/tags", headers={"User-Agent": "AntigravityScanner"})
@@ -410,7 +425,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                 "qwenWorking": qwen_working,
                 "deepseekWorking": deepseek_working,
                 "coderWorking": qwen_working,
-                "auditorWorking": deepseek_working
+                "auditorWorking": deepseek_working,
+                "groqWorking": groq_working,
+                "groqOnline": groq_online
             }
     except Exception:
         pass
