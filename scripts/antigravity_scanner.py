@@ -385,6 +385,15 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
     except Exception:
         pass
 
+    # 4. Arci AI Systems & Sentinel status
+    arci_active = False
+    try:
+        res_arci = subprocess.run(["pgrep", "-fa", "arci-scratchpad|hermes (chat|agent)"], capture_output=True, text=True, timeout=0.1)
+        arci_active = bool(res_arci.stdout.strip())
+    except Exception:
+        pass
+    sentinel_nominal = os.path.exists(os.path.expanduser("~/.hermes/scripts/sentinel_watchdog.sh"))
+
     cached_entry = cache.get("localAi")
     if isinstance(cached_entry, dict) and (now_ts - cached_entry.get("ts", 0) < 15.0):
         data = cached_entry.get("data")
@@ -396,6 +405,9 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             res_data["auditorWorking"] = deepseek_working
             res_data["groqWorking"] = groq_working
             res_data["groqOnline"] = groq_online
+            res_data["arciActive"] = arci_active
+            res_data["arciSentinel"] = "Nominal" if sentinel_nominal else "Inactive"
+            res_data["arciOnline"] = True
             return res_data, False
 
     local_ai_info = {
@@ -408,7 +420,10 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
         "coderWorking": qwen_working,
         "auditorWorking": deepseek_working,
         "groqWorking": groq_working,
-        "groqOnline": groq_online
+        "groqOnline": groq_online,
+        "arciActive": arci_active,
+        "arciSentinel": "Nominal" if sentinel_nominal else "Inactive",
+        "arciOnline": True,
     }
     try:
         req = urllib.request.Request("http://127.0.0.1:11434/api/tags", headers={"User-Agent": "AntigravityScanner"})
@@ -427,7 +442,10 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                 "coderWorking": qwen_working,
                 "auditorWorking": deepseek_working,
                 "groqWorking": groq_working,
-                "groqOnline": groq_online
+                "groqOnline": groq_online,
+                "arciActive": arci_active,
+                "arciSentinel": "Nominal" if sentinel_nominal else "Inactive",
+                "arciOnline": True,
             }
     except Exception:
         pass

@@ -2108,6 +2108,81 @@ BarWidget {
                   }
                 }
               }
+
+              // Arci AI Systems Architect & Scratchpad Banner
+              Rectangle {
+                width: parent.width
+                height: 38
+                radius: 6
+                color: Qt.rgba(root.foreground.r, root.foreground.g, root.foreground.b, 0.03)
+                border.width: 0
+
+                RowLayout {
+                  anchors.fill: parent
+                  anchors.leftMargin: Style.space(3)
+                  anchors.rightMargin: Style.space(3)
+                  spacing: Style.space(3)
+
+                  Rectangle {
+                    width: 26
+                    height: 26
+                    radius: 4
+                    color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.12)
+                    Text {
+                      anchors.centerIn: parent
+                      text: "⚡"
+                      font.pixelSize: Style.font.bodySmall
+                    }
+                  }
+
+                  Column {
+                    Layout.fillWidth: true
+                    spacing: 1
+                    Text {
+                      text: "Arci AI Systems Partner (Hermes Agent)"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                    }
+                    Text {
+                      text: "Sentinel: " + ((root.localAiInfo && root.localAiInfo.arciSentinel) ? root.localAiInfo.arciSentinel : "Nominal") + " (15m watchdog, 0 tokens)"
+                      color: root.dim
+                      font.family: root.fontFamily
+                      font.pixelSize: 8
+                    }
+                  }
+
+                  // Launch Scratchpad Button
+                  Rectangle {
+                    width: arciBtnText.implicitWidth + 14
+                    height: 26
+                    radius: 4
+                    color: arciBtnMouse.containsMouse ? root.primaryAccent : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.15)
+
+                    Text {
+                      id: arciBtnText
+                      anchors.centerIn: parent
+                      text: "󰆍 Super + A"
+                      color: arciBtnMouse.containsMouse ? root.background : root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: Style.font.caption
+                      font.bold: true
+                    }
+
+                    MouseArea {
+                      id: arciBtnMouse
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: {
+                        root.bar.run("/home/simonez/.local/bin/arci-scratchpad")
+                        root.close()
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
 
