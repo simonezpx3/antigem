@@ -2146,7 +2146,7 @@ BarWidget {
                       font.bold: true
                     }
                     Text {
-                      text: "Sentinel: " + ((root.localAiInfo && root.localAiInfo.arciSentinel) ? root.localAiInfo.arciSentinel : "Nominal") + " (15m watchdog, 0 tokens)"
+                      text: "AI Orchestrator & Development Partner"
                       color: root.dim
                       font.family: root.fontFamily
                       font.pixelSize: 8
