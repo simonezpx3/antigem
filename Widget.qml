@@ -2139,7 +2139,7 @@ BarWidget {
                     Layout.fillWidth: true
                     spacing: 1
                     Text {
-                      text: "Arci AI Systems Partner (Hermes Agent)"
+                      text: "Arci"
                       color: root.foreground
                       font.family: root.fontFamily
                       font.pixelSize: Style.font.caption
