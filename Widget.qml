@@ -181,6 +181,14 @@ BarWidget {
   readonly property color dim: Qt.darker(foreground, 1.45)
   readonly property string fontFamily: (bar && bar.fontFamily) ? bar.fontFamily : Style.font.family
 
+  // Responsive Typography with guaranteed floor >= 10px
+  readonly property int fontCaption: Math.max(10, Style.font.caption)
+  readonly property int fontSmall:   Math.max(10, Style.font.bodySmall)
+  readonly property int fontBody:    Math.max(11, Style.font.body)
+  readonly property int fontTitle:   Math.max(12, Style.font.title)
+  readonly property int fontHeading: Math.max(14, Style.font.heading)
+  readonly property int fontDisplay: Math.max(16, Style.font.display)
+
   // Tab navigation
   property int selectedTab: 0 // 0: Performance & Limits, 1: Sessions & Tools, 2: Settings
 
@@ -574,7 +582,7 @@ BarWidget {
         text: root.sessionGeminiPct + "%"
         color: root.isWorking ? root.uploadColor : (root.sessionGeminiPct > 80 ? root.criticalColor : root.foreground)
         font.family: root.fontFamily
-        font.pixelSize: Style.font.caption
+        font.pixelSize: root.fontCaption
         renderType: Text.NativeRendering
 
         SequentialAnimation {
@@ -612,8 +620,8 @@ BarWidget {
         root.requestRefresh()
       }
     }
-    contentWidth: panel.fittedContentWidth(Style.space(560))
-    contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Style.space(850))
+    contentWidth: panel.fittedContentWidth(Math.round(Style.space(560) * Math.max(1.0, Style.fontScale)))
+    contentHeight: panel.fittedContentHeight(mainCol.implicitHeight, Math.round(Style.space(850) * Math.max(1.0, Style.fontScale)))
 
     Flickable {
       id: flick
@@ -670,7 +678,7 @@ BarWidget {
                 text: "Antigravity"
                 color: root.foreground
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.heading
+                font.pixelSize: root.fontHeading
                 font.bold: true
               }
 
@@ -678,7 +686,7 @@ BarWidget {
                 text: root.tierLabel.toUpperCase() + " · TELEMETRY & QUOTAS"
                 color: root.dim
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.bodySmall
+                font.pixelSize: root.fontSmall
                 font.bold: true
               }
             }
@@ -719,7 +727,7 @@ BarWidget {
                 text: modelData.title
                 color: (root.selectedTab === modelData.tabIndex) ? root.foreground : (tabMouse.containsMouse ? root.foreground : root.dim)
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.body
+                font.pixelSize: root.fontBody
                 font.bold: root.selectedTab === modelData.tabIndex
               }
 
@@ -763,14 +771,14 @@ BarWidget {
 
               Text {
                 text: "🚨"
-                font.pixelSize: Style.font.body
+                font.pixelSize: root.fontBody
               }
 
               Text {
                 text: "CRITICAL LIMIT: Only " + (100 - root.weeklyGeminiPct) + "% weekly tokens left (" + root.weeklyTokensRemaining + ")! Reset in " + root.weeklyGeminiDetail
                 color: root.criticalColor
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.bodySmall
+                font.pixelSize: root.fontSmall
                 font.bold: true
                 Layout.fillWidth: true
                 elide: Text.ElideRight
@@ -817,7 +825,7 @@ BarWidget {
                   text: root.t("quotasTitle", "📊 GOOGLE AI PRO QUOTAS")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
                 }
@@ -838,8 +846,8 @@ BarWidget {
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "TODAY TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "TODAY TOKENS"; color: root.dim; font.pixelSize: root.fontCaption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.todayTokens; color: root.cpuColor; font.bold: true; font.pixelSize: root.fontSmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -853,8 +861,8 @@ BarWidget {
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "TODAY PROMPTS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: String(root.todayPrompts); color: root.primaryAccent; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "TODAY PROMPTS"; color: root.dim; font.pixelSize: root.fontCaption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: String(root.todayPrompts); color: root.primaryAccent; font.bold: true; font.pixelSize: root.fontSmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -868,8 +876,8 @@ BarWidget {
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "HEADROOM (7D)"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.weeklyTokensRemaining; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.uploadColor; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "HEADROOM (7D)"; color: root.dim; font.pixelSize: root.fontCaption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.weeklyTokensRemaining; color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.uploadColor; font.bold: true; font.pixelSize: root.fontSmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
 
@@ -883,8 +891,8 @@ BarWidget {
                   Column {
                     anchors.centerIn: parent
                     spacing: 1
-                    Text { text: "ALL-TIME TOKENS"; color: root.dim; font.pixelSize: Style.font.caption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: Style.font.bodySmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: "ALL-TIME TOKENS"; color: root.dim; font.pixelSize: root.fontCaption - 1; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: root.allTimeTokens; color: root.foreground; font.bold: true; font.pixelSize: root.fontSmall; font.family: root.fontFamily; anchors.horizontalCenter: parent.horizontalCenter }
                   }
                 }
               }
@@ -900,7 +908,7 @@ BarWidget {
                     text: "⏱ 5H SESSION QUOTA (2.5M CAP)"
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
+                    font.pixelSize: root.fontCaption
                     font.bold: true
                   }
                   Item { Layout.fillWidth: true }
@@ -908,7 +916,7 @@ BarWidget {
                     text: root.sessionTokensUsed + " / 2.5M (" + root.sessionGeminiPct + "%) · " + root.sessionGeminiDetail
                     color: root.cpuColor
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption - 1
+                    font.pixelSize: root.fontCaption - 1
                     font.bold: true
                   }
                 }
@@ -952,7 +960,7 @@ BarWidget {
                         text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
                         color: root.dim
                         font.family: root.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: root.fontCaption
                       }
                     }
                   }
@@ -970,7 +978,7 @@ BarWidget {
                     text: "📅 7D WEEKLY QUOTA (25.0M CAP)"
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
+                    font.pixelSize: root.fontCaption
                     font.bold: true
                   }
                   Item { Layout.fillWidth: true }
@@ -978,7 +986,7 @@ BarWidget {
                     text: root.weeklyTokensUsed + " / 25.0M (" + root.weeklyGeminiPct + "%) · " + root.weeklyGeminiDetail
                     color: root.weeklyGeminiPct >= 90 ? root.criticalColor : root.memoryColor
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption - 1
+                    font.pixelSize: root.fontCaption - 1
                     font.bold: true
                   }
                 }
@@ -1022,7 +1030,7 @@ BarWidget {
                         text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
                         color: root.dim
                         font.family: root.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: root.fontCaption
                       }
                     }
                   }
@@ -1053,7 +1061,7 @@ BarWidget {
                   text: root.t("activityTrendTitle", "📈 PROMPTS & TOOL CALLS TREND (7 DAYS)")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
                 }
@@ -1061,7 +1069,7 @@ BarWidget {
                   text: (root.todayPrompts || 0) + " today · " + (root.totalPrompts || 0) + " total"
                   color: root.primaryAccent
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -1159,7 +1167,7 @@ BarWidget {
                       }
                       color: (dayRow.days && index === dayRow.days.length - 1) ? root.primaryAccent : root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                       font.bold: (dayRow.days && index === dayRow.days.length - 1)
                     }
                   }
@@ -1202,7 +1210,7 @@ BarWidget {
                   text: root.t("contextBreakdownTitle", "🧠 1M CONTEXT WINDOW BREAKDOWN")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
                 }
@@ -1211,7 +1219,7 @@ BarWidget {
                   text: (root.contextMap && root.contextMap.usedStr ? root.contextMap.usedStr : root.contextTokensStr) + " / 1.0M (" + (root.contextMap && root.contextMap.usedPct ? root.contextMap.usedPct : root.contextPct) + "%)"
                   color: root.primaryAccent
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -1262,7 +1270,7 @@ BarWidget {
                       text: modelData.name + " (" + modelData.tokensStr + " · " + modelData.pct + "%)"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -1305,7 +1313,7 @@ BarWidget {
                   text: root.t("prodTitle", "⚡ DEV PRODUCTIVITY & TIME SAVED")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
                 }
@@ -1314,7 +1322,7 @@ BarWidget {
                   text: (root.productivityData && root.productivityData.timeSavedStr ? root.productivityData.timeSavedStr : "~271h saved") + " (" + (root.productivityData && root.productivityData.toolsExecuted ? root.productivityData.toolsExecuted : 6906) + " tools)"
                   color: root.uploadColor
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -1365,7 +1373,7 @@ BarWidget {
                       text: modelData.name + " (" + modelData.hoursStr + " · " + modelData.pct + "%)"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -1399,7 +1407,7 @@ BarWidget {
                   text: root.t("gcpTitle", "☁️ GOOGLE CLOUD & APIS")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
               }
@@ -1426,7 +1434,7 @@ BarWidget {
                       text: (root.gcpInfo && root.gcpInfo.latencyMs ? (root.gcpInfo.latencyMs + " ms") : "30 ms")
                       color: root.primaryAccent
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: root.fontSmall
                       font.bold: true
                     }
                     Text {
@@ -1434,7 +1442,7 @@ BarWidget {
                       text: "API Latency"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -1456,7 +1464,7 @@ BarWidget {
                       text: (root.gcpInfo && root.gcpInfo.region) ? root.gcpInfo.region : "europe-west (CZ)"
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: root.fontSmall
                       font.bold: true
                     }
                     Text {
@@ -1464,7 +1472,7 @@ BarWidget {
                       text: "Edge Region"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -1486,7 +1494,7 @@ BarWidget {
                       text: (root.gcpInfo && root.gcpInfo.uptime) ? root.gcpInfo.uptime : "99.98%"
                       color: root.uploadColor
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: root.fontSmall
                       font.bold: true
                     }
                     Text {
@@ -1494,7 +1502,7 @@ BarWidget {
                       text: "SLA Uptime"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -1539,7 +1547,7 @@ BarWidget {
                         text: modelData.name
                         color: root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.bodySmall
+                        font.pixelSize: root.fontSmall
                         font.bold: true
                         elide: Text.ElideRight
                         width: parent.width
@@ -1556,7 +1564,7 @@ BarWidget {
                         }
                         color: root.dim
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption - 1
+                        font.pixelSize: root.fontCaption - 1
                         elide: Text.ElideRight
                         width: parent.width
                       }
@@ -1575,7 +1583,7 @@ BarWidget {
                         text: modelData.latency || modelData.ping || "30 ms"
                         color: root.primaryAccent
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
+                        font.pixelSize: root.fontCaption
                         font.bold: true
                       }
                     }
@@ -1613,7 +1621,7 @@ BarWidget {
                   text: root.t("sessionsTitle", "󰆍 LATEST SESSIONS (1 CLI · 1 IDE)")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
                 Item { Layout.fillWidth: true }
@@ -1621,7 +1629,7 @@ BarWidget {
                   text: root.t("activeWorkspaces", "Active Workspaces")
                   color: root.dim
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                 }
               }
 
@@ -1656,14 +1664,14 @@ BarWidget {
                           text: modelData.type === "ide" ? "󰨞" : "󰆍"
                           color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
                           font.family: root.fontFamily
-                          font.pixelSize: Style.font.caption + 1
+                          font.pixelSize: root.fontCaption + 1
                         }
                         Text {
                           anchors.horizontalCenter: parent.horizontalCenter
                           text: modelData.type === "ide" ? "IDE" : "CLI"
                           color: modelData.type === "ide" ? root.gpuColor : root.cpuColor
                           font.family: root.fontFamily
-                          font.pixelSize: 8
+                          font.pixelSize: root.fontCaption
                           font.bold: true
                         }
                       }
@@ -1678,7 +1686,7 @@ BarWidget {
                         text: modelData.title || modelData.preview || (modelData.workspace ? String(modelData.workspace).replace(/^\/home\/[^\/]+/, "~") : "Session")
                         color: root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.bodySmall
+                        font.pixelSize: root.fontSmall
                         font.bold: true
                         elide: Text.ElideRight
                         width: parent.width
@@ -1688,7 +1696,7 @@ BarWidget {
                         text: (modelData.isActive ? "● Active" : "Finished") + (modelData.timeAgo ? (" · " + modelData.timeAgo) : "") + (modelData.promptCount > 0 ? (" · " + modelData.promptCount + " msg") : "") + (modelData.workspaceName ? (" · " + modelData.workspaceName) : "")
                         color: modelData.isActive ? root.primaryAccent : root.dim
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
+                        font.pixelSize: root.fontCaption
                         elide: Text.ElideRight
                         width: parent.width
                       }
@@ -1714,7 +1722,7 @@ BarWidget {
                         text: copyBtnBox.copied ? root.t("copied", "Copied!") : root.t("copy", "📋 Copy")
                         color: copyBtnBox.copied ? root.uploadColor : root.downloadColor
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.caption
+                        font.pixelSize: root.fontCaption
                         font.bold: true
                       }
 
@@ -1755,7 +1763,7 @@ BarWidget {
                         text: root.t("open", "Open")
                         color: root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.bodySmall
+                        font.pixelSize: root.fontSmall
                         font.bold: true
                       }
 
@@ -1802,7 +1810,7 @@ BarWidget {
                   text: root.t("subagentsFleetTitle", "🤖 SPECIALIZED SUBAGENTS FLEET")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
                 Item { Layout.fillWidth: true }
@@ -1810,7 +1818,7 @@ BarWidget {
                   text: root.t("agentsCount", "4 Agents")
                   color: root.gpuColor
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -1855,7 +1863,7 @@ BarWidget {
                           text: modelData.icon || "󰒃"
                           color: root.primaryAccent
                           font.family: root.fontFamily
-                          font.pixelSize: Style.font.bodySmall
+                          font.pixelSize: root.fontSmall
                         }
                       }
 
@@ -1866,7 +1874,7 @@ BarWidget {
                           text: modelData.name
                           color: root.foreground
                           font.family: root.fontFamily
-                          font.pixelSize: Style.font.caption
+                          font.pixelSize: root.fontCaption
                           font.bold: true
                           elide: Text.ElideRight
                           width: parent.width
@@ -1875,7 +1883,7 @@ BarWidget {
                           text: modelData.role
                           color: root.dim
                           font.family: root.fontFamily
-                          font.pixelSize: 8
+                          font.pixelSize: root.fontCaption
                           elide: Text.ElideRight
                           width: parent.width
                         }
@@ -1931,7 +1939,7 @@ BarWidget {
                   text: root.t("localGpuTitle", "🖥️ LOCAL GPU WORKERS (RTX 3070)")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
               }
@@ -2024,7 +2032,7 @@ BarWidget {
                             text: modelData.icon
                             color: root.primaryAccent
                             font.family: root.fontFamily
-                            font.pixelSize: Style.font.bodySmall
+                            font.pixelSize: root.fontSmall
                           }
                         }
 
@@ -2036,7 +2044,7 @@ BarWidget {
                             text: modelData.name
                             color: root.foreground
                             font.family: root.fontFamily
-                            font.pixelSize: Style.font.caption
+                            font.pixelSize: root.fontCaption
                             font.bold: true
                             elide: Text.ElideRight
                             width: parent.width
@@ -2046,7 +2054,7 @@ BarWidget {
                             text: modelData.desc
                             color: root.dim
                             font.family: root.fontFamily
-                            font.pixelSize: 8
+                            font.pixelSize: root.fontCaption
                             elide: Text.ElideRight
                             width: parent.width
                           }
@@ -2095,7 +2103,7 @@ BarWidget {
                       text: (root.localAiInfo && root.localAiInfo.vramAllocated) ? root.localAiInfo.vramAllocated : "4.7 GB / 8 GB"
                       color: root.primaryAccent
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                     }
                     Text {
@@ -2103,7 +2111,7 @@ BarWidget {
                       text: root.t("vramTitle", "RTX 3070 VRAM")
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -2131,7 +2139,7 @@ BarWidget {
                     Text {
                       anchors.centerIn: parent
                       text: "⚡"
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: root.fontSmall
                     }
                   }
 
@@ -2142,14 +2150,14 @@ BarWidget {
                       text: "Arci"
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                     }
                     Text {
                       text: "AI Orchestrator & Development Partner"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
 
@@ -2166,7 +2174,7 @@ BarWidget {
                       text: "󰆍 Super + A"
                       color: arciBtnMouse.containsMouse ? root.background : root.primaryAccent
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                     }
 
@@ -2216,7 +2224,7 @@ BarWidget {
                   text: root.t("subagentsBenchmarkTitle", "⏱️ SUBAGENTS BENCHMARK & LATENCY")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
                 Item { Layout.fillWidth: true }
@@ -2224,7 +2232,7 @@ BarWidget {
                   text: root.t("benchmarkMode", "Deterministic Metrics")
                   color: root.primaryAccent
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -2244,14 +2252,14 @@ BarWidget {
                       text: modelData.icon || "󰒃"
                       color: modelData.color || root.primaryAccent
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
 
                     Text {
                       text: modelData.name
                       color: root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                     }
 
@@ -2259,7 +2267,7 @@ BarWidget {
                       text: "· " + (modelData.runs || 0) + " runs"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
 
                     Item { Layout.fillWidth: true }
@@ -2278,7 +2286,7 @@ BarWidget {
                         text: "⚡ " + (modelData.avgLatency || "1.2s")
                         color: root.resolveSegmentColor(modelData, root.primaryAccent)
                         font.family: root.fontFamily
-                        font.pixelSize: 8
+                        font.pixelSize: root.fontCaption
                         font.bold: true
                       }
                     }
@@ -2287,7 +2295,7 @@ BarWidget {
                       text: (modelData.tokensSaved || "~100k") + " saved"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
 
@@ -2331,7 +2339,7 @@ BarWidget {
                   text: root.t("toolsTitle", "🛠️ TOOL CALLS BREAKDOWN")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
                 }
@@ -2339,7 +2347,7 @@ BarWidget {
                   text: root.t("total", "Total") + ": " + root.totalToolCalls + " " + root.t("totalCalls", "calls") + " (" + (root.toolsList ? root.toolsList.length : 0) + " types)"
                   color: root.primaryAccent
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.caption
+                  font.pixelSize: root.fontCaption
                   font.bold: true
                 }
               }
@@ -2390,7 +2398,7 @@ BarWidget {
                       text: modelData.name + " (" + modelData.count + " · " + Math.round((Number(modelData.count || 0) / Math.max(1, root.totalToolCalls)) * 100) + "%)"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: 8
+                      font.pixelSize: root.fontCaption
                     }
                   }
                 }
@@ -2417,13 +2425,13 @@ BarWidget {
                       text: "Top Tool:"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
                     Text {
                       text: (root.toolsList && root.toolsList.length > 0) ? (root.toolsList[0].name + " (" + root.toolsList[0].count + ")") : "—"
                       color: root.primaryAccent
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                       elide: Text.ElideRight
                       Layout.fillWidth: true
@@ -2447,13 +2455,13 @@ BarWidget {
                       text: "Unique Tools:"
                       color: root.dim
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                     }
                     Text {
                       text: String(root.toolsList ? root.toolsList.length : 0) + " types"
                       color: root.uploadColor
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.caption
+                      font.pixelSize: root.fontCaption
                       font.bold: true
                     }
                   }
@@ -2495,7 +2503,7 @@ BarWidget {
                   text: root.t("telemetryTitle", "⏱️ TELEMETRY & AUTO-REFRESH")
                   color: root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.body
+                  font.pixelSize: root.fontBody
                   font.bold: true
                 }
 
@@ -2515,7 +2523,7 @@ BarWidget {
                     text: root.refreshIntervalSec + "s interval"
                     color: root.primaryAccent
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
+                    font.pixelSize: root.fontCaption
                     font.bold: true
                   }
                 }
@@ -2525,7 +2533,7 @@ BarWidget {
                 text: "Controls background scanning frequency for sessions, active tools, and Google AI quota resets."
                 color: root.dim
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
+                font.pixelSize: root.fontCaption
                 width: parent.width
                 wrapMode: Text.WordWrap
               }
@@ -2556,7 +2564,7 @@ BarWidget {
                       text: modelData + "s"
                       color: (root.refreshIntervalSec === modelData) ? root.primaryAccent : root.foreground
                       font.family: root.fontFamily
-                      font.pixelSize: Style.font.bodySmall
+                      font.pixelSize: root.fontSmall
                       font.bold: root.refreshIntervalSec === modelData
                     }
 
@@ -2599,7 +2607,7 @@ BarWidget {
                     text: root.t("heartbeatTitle", "💓 WORKING HEARTBEAT ANIMATION")
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: root.fontBody
                     font.bold: true
                   }
 
@@ -2607,7 +2615,7 @@ BarWidget {
                     text: root.pulseEnabled ? ("(" + root.t("active", "Active") + ")") : ("(" + root.t("disabled", "Disabled") + ")")
                     color: root.pulseEnabled ? root.uploadColor : root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
+                    font.pixelSize: root.fontCaption
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                   }
@@ -2654,7 +2662,7 @@ BarWidget {
                 text: "Animates the tray icon and hero logo with an anatomical heartbeat rhythm during active agent code processing."
                 color: root.dim
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
+                font.pixelSize: root.fontCaption
                 width: parent.width
                 wrapMode: Text.WordWrap
               }
@@ -2671,14 +2679,14 @@ BarWidget {
                     text: root.t("pulseCadence", "🎚️ Pulse Cadence:")
                     color: root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
+                    font.pixelSize: root.fontSmall
                   }
                   Item { Layout.fillWidth: true }
                   Text {
                     text: root.pulseBpm + " BPM (" + (Math.round(60000 / root.pulseBpm) / 1000).toFixed(1) + " s/beat)"
                     color: root.primaryAccent
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.bodySmall
+                    font.pixelSize: root.fontSmall
                     font.bold: true
                   }
                 }
@@ -2714,7 +2722,7 @@ BarWidget {
                         text: modelData.name + " (" + modelData.bpm + ")"
                         color: (root.pulseBpm === modelData.bpm) ? root.primaryAccent : root.foreground
                         font.family: root.fontFamily
-                        font.pixelSize: Style.font.bodySmall
+                        font.pixelSize: root.fontSmall
                         font.bold: root.pulseBpm === modelData.bpm
                       }
 
@@ -2758,7 +2766,7 @@ BarWidget {
                     text: root.t("notifTitle", "🔔 TASK COMPLETION NOTIFICATIONS")
                     color: root.foreground
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.body
+                    font.pixelSize: root.fontBody
                     font.bold: true
                   }
 
@@ -2766,7 +2774,7 @@ BarWidget {
                     text: root.notificationsEnabled ? ("(" + root.t("enabled", "Enabled") + ")") : ("(" + root.t("muted", "Muted") + ")")
                     color: root.notificationsEnabled ? root.uploadColor : root.dim
                     font.family: root.fontFamily
-                    font.pixelSize: Style.font.caption
+                    font.pixelSize: root.fontCaption
                     font.bold: true
                     anchors.verticalCenter: parent.verticalCenter
                   }
@@ -2812,7 +2820,7 @@ BarWidget {
                 text: root.t("notifDesc", "Sends a discreet desktop notification via notify-send whenever an autonomous coding turn or background task finishes.")
                 color: root.dim
                 font.family: root.fontFamily
-                font.pixelSize: Style.font.caption
+                font.pixelSize: root.fontCaption
                 width: parent.width
                 wrapMode: Text.WordWrap
               }
@@ -3244,7 +3252,7 @@ BarWidget {
               text: root.currentModel + " · " + (root.activeVersion || root.serverVersion)
               color: root.dim
               font.family: root.fontFamily
-              font.pixelSize: Style.font.bodySmall
+              font.pixelSize: root.fontSmall
             }
 
             Item { Layout.fillWidth: true }
@@ -3271,7 +3279,7 @@ BarWidget {
                   text: "󰑐"
                   color: root.manualRefreshing ? root.primaryAccent : root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
+                  font.pixelSize: root.fontSmall
                   transformOrigin: Item.Center
                   RotationAnimator on rotation {
                     running: root.manualRefreshing
@@ -3287,7 +3295,7 @@ BarWidget {
                   text: root.manualRefreshing ? root.t("refreshing", "Refreshing…") : root.t("refresh", "Refresh")
                   color: root.manualRefreshing ? root.primaryAccent : root.foreground
                   font.family: root.fontFamily
-                  font.pixelSize: Style.font.bodySmall
+                  font.pixelSize: root.fontSmall
                   font.bold: root.manualRefreshing
                 }
               }
