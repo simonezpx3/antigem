@@ -176,6 +176,67 @@ def fetch_plan_quotas(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, A
         "weeklySeverity": "low"
     }
 
+    # Trigger non-blocking background quota update via AgyQuotas if older than 45s
+    agy_scanner_script = os.path.expanduser("~/Projects/AgyQuotas/scripts/quota_scanner.py")
+    if os.path.isfile(agy_scanner_script):
+        last_spawn = cache.get("last_agy_quota_spawn", 0)
+        if now_ts - last_spawn > 45.0:
+            cache["last_agy_quota_spawn"] = now_ts
+            try:
+                subprocess.Popen(
+                    ["python3", agy_scanner_script],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except Exception:
+                pass
+
+    # 1. Primary source: AgyQuotas live direct API cache
+    agy_cache_path = os.path.expanduser("~/.local/state/omarchy/agy_quotas_cache.json")
+    if os.path.isfile(agy_cache_path):
+        try:
+            with open(agy_cache_path, "r", encoding="utf-8") as f:
+                c_data = json.load(f)
+            if now_ts - float(c_data.get("timestamp", 0)) < 300.0:
+                acc_data = c_data.get("data", {})
+                acc = acc_data.get("account1") or (next(iter(acc_data.values())) if acc_data else None)
+                if acc and acc.get("connected"):
+                    gem = acc.get("gemini", {})
+                    s_quota = gem.get("session", {})
+                    w_quota = gem.get("weekly", {})
+
+                    s_pct = int(s_quota.get("usedPercent", 0))
+                    s_det = sanitize_plain_text(f"Resets {s_quota.get('resetFormatted', '')}", 80)
+                    s_sev = s_quota.get("severity", "low")
+
+                    w_pct = int(w_quota.get("usedPercent", 0))
+                    w_det = sanitize_plain_text(f"Resets {w_quota.get('resetFormatted', '')}", 80)
+                    w_sev = w_quota.get("severity", "critical" if w_pct >= 90 else ("warning" if w_pct >= 75 else "low"))
+
+                    quota_data["hasLiveQuota"] = True
+                    quota_data["plan"] = "Google AI Pro"
+                    quota_data["session"] = {
+                        "percent": s_pct,
+                        "detail": s_det,
+                        "severity": s_sev
+                    }
+                    quota_data["primaryPercent"] = s_pct
+                    quota_data["primaryDetail"] = s_det
+                    quota_data["weekly"] = {
+                        "percent": w_pct,
+                        "detail": w_det,
+                        "severity": w_sev
+                    }
+                    quota_data["weeklyPercent"] = w_pct
+                    quota_data["weeklyDetail"] = w_det
+                    quota_data["weeklySeverity"] = w_sev
+
+                    cache["quotas"] = {"ts": now_ts, "data": quota_data}
+                    return quota_data, True
+        except Exception:
+            pass
+
+    # 2. Secondary fallback: ai-usagebar CLI (requires active IDE language server)
     ai_bar_paths = [
         os.path.expanduser("~/.local/bin/ai-usagebar"),
         "/usr/local/bin/ai-usagebar",
@@ -385,14 +446,13 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
     except Exception:
         pass
 
-    # 4. Arci AI Systems & Sentinel status
+    # 4. Arci AI Systems status
     arci_active = False
     try:
-        res_arci = subprocess.run(["pgrep", "-fa", "arci-scratchpad|hermes (chat|agent)"], capture_output=True, text=True, timeout=0.1)
+        res_arci = subprocess.run(["pgrep", "-fa", "arci-scratchpad"], capture_output=True, text=True, timeout=0.1)
         arci_active = bool(res_arci.stdout.strip())
     except Exception:
         pass
-    sentinel_nominal = os.path.exists(os.path.expanduser("~/.hermes/scripts/sentinel_watchdog.sh"))
 
     cached_entry = cache.get("localAi")
     if isinstance(cached_entry, dict) and (now_ts - cached_entry.get("ts", 0) < 15.0):
@@ -406,7 +466,6 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
             res_data["groqWorking"] = groq_working
             res_data["groqOnline"] = groq_online
             res_data["arciActive"] = arci_active
-            res_data["arciSentinel"] = "Nominal" if sentinel_nominal else "Inactive"
             res_data["arciOnline"] = True
             return res_data, False
 
@@ -422,7 +481,6 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
         "groqWorking": groq_working,
         "groqOnline": groq_online,
         "arciActive": arci_active,
-        "arciSentinel": "Nominal" if sentinel_nominal else "Inactive",
         "arciOnline": True,
     }
     try:
@@ -444,7 +502,6 @@ def fetch_local_ai_status(cache: dict[str, Any], now_ts: float) -> tuple[dict[st
                 "groqWorking": groq_working,
                 "groqOnline": groq_online,
                 "arciActive": arci_active,
-                "arciSentinel": "Nominal" if sentinel_nominal else "Inactive",
                 "arciOnline": True,
             }
     except Exception:
