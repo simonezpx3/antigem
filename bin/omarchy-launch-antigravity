@@ -31,14 +31,22 @@ if [[ ! -d "$WORKSPACE" ]]; then
 fi
 
 if [[ "$MODE" == "cli" ]]; then
-  # Multi-account Auto Failover: check if account 1 quota is depleted
+  # Multi-account Auto Failover: check optimal account from quota selector
   CLI_CMD="agy"
   QUOTA_SELECTOR="${HOME}/.local/bin/agy-quota-selector"
   if [[ -x "$QUOTA_SELECTOR" ]]; then
-    OPT_ACC=$("$QUOTA_SELECTOR" 2>/dev/null | head -n1 || echo "1")
+    OPT_LINES=()
+    mapfile -t OPT_LINES < <("$QUOTA_SELECTOR" 2>/dev/null || echo "1")
+    OPT_ACC="${OPT_LINES[0]:-1}"
+    OPT_STATUS="${OPT_LINES[2]:-ok}"
     if [[ "$OPT_ACC" == "2" ]]; then
       CLI_CMD="agy2"
-      notify-send -u normal -a "Antigravity" -i "dialog-information" "Antigravity Auto-Failover" "Účet 1 vyčerpán ➔ Relace spuštěna pod Účtem 2 (agy2)." 2>/dev/null || true
+      agy-account switch 2 >/dev/null 2>&1 || true
+      if [[ "$OPT_STATUS" == "session_depleted" || "$OPT_STATUS" == "weekly_depleted" ]]; then
+        notify-send -u normal -a "Antigravity" -i "dialog-information" "Antigravity Auto-Failover" "Účet 1 vyčerpán ➔ Relace spuštěna pod Účtem 2 (agy2)." 2>/dev/null || true
+      fi
+    else
+      agy-account switch 1 >/dev/null 2>&1 || true
     fi
   fi
 
@@ -56,6 +64,12 @@ if [[ "$MODE" == "cli" ]]; then
 fi
 
 # MODE == "ide"
+QUOTA_SELECTOR="${HOME}/.local/bin/agy-quota-selector"
+if [[ -x "$QUOTA_SELECTOR" ]]; then
+  OPT_ACC=$("$QUOTA_SELECTOR" 2>/dev/null | head -n1 || echo "1")
+  agy-account switch "$OPT_ACC" >/dev/null 2>&1 || true
+fi
+
 ANTIGRAVITY_BIN="$(command -v antigravity || echo "${HOME}/.local/bin/antigravity")"
 WINDOW_ADDRESS=$(hyprctl clients -j 2>/dev/null | jq -r '.[] | select((.class | test("^antigravity$"; "i")) or (.initialClass | test("^antigravity$"; "i"))) | .address' 2>/dev/null | head -n1 || true)
 
