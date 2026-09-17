@@ -21,6 +21,7 @@ BarWidget {
   property string sessionGeminiDetail: "Resets in ~5h"
   property int weeklyGeminiPct: 0
   property string weeklyGeminiDetail: "Resets in ~7d"
+  property var autoFailoverInfo: null
 
   // Token Metrics & Headroom (Google AI Pro)
   property var tokensData: ({})
@@ -278,6 +279,9 @@ BarWidget {
         if (data.quotas.weekly) {
           root.weeklyGeminiPct = Number(data.quotas.weekly.percent || 0)
           root.weeklyGeminiDetail = String(data.quotas.weekly.detail || "")
+        }
+        if (data.quotas.autoFailover) {
+          root.autoFailoverInfo = data.quotas.autoFailover
         }
       }
     } catch (e) {
@@ -828,6 +832,34 @@ BarWidget {
                   font.pixelSize: root.fontBody
                   font.bold: true
                   elide: Text.ElideRight
+                }
+
+                Rectangle {
+                  visible: root.autoFailoverInfo !== null && root.autoFailoverInfo.enabled
+                  height: 20
+                  width: failoverRow.implicitWidth + 10
+                  radius: 4
+                  color: (root.autoFailoverInfo && root.autoFailoverInfo.isFailover) ? Qt.rgba(root.yellowColor.r, root.yellowColor.g, root.yellowColor.b, 0.15) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.1)
+                  border.color: (root.autoFailoverInfo && root.autoFailoverInfo.isFailover) ? root.yellowColor : root.primaryAccent
+                  border.width: 1
+
+                  RowLayout {
+                    id: failoverRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Text {
+                      text: (root.autoFailoverInfo && root.autoFailoverInfo.isFailover) ? "⚡" : "●"
+                      color: (root.autoFailoverInfo && root.autoFailoverInfo.isFailover) ? root.yellowColor : root.primaryAccent
+                      font.pixelSize: root.fontCaption - 1
+                    }
+                    Text {
+                      text: (root.autoFailoverInfo && root.autoFailoverInfo.badge) ? root.autoFailoverInfo.badge : "DUAL-ACC READY"
+                      color: (root.autoFailoverInfo && root.autoFailoverInfo.isFailover) ? root.yellowColor : root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: root.fontCaption - 1
+                      font.bold: true
+                    }
+                  }
                 }
               }
 
@@ -1625,6 +1657,51 @@ BarWidget {
                   font.bold: true
                 }
                 Item { Layout.fillWidth: true }
+
+                // Beads Kanban Quick Button (Task antigravity11-iox)
+                Rectangle {
+                  id: beadsKanbanBtn
+                  height: 22
+                  width: beadsKanbanRow.implicitWidth + 12
+                  radius: 4
+                  color: beadsKanbanMouse.containsMouse ? Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.2) : Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.08)
+                  border.color: Qt.rgba(root.primaryAccent.r, root.primaryAccent.g, root.primaryAccent.b, 0.3)
+                  border.width: 1
+
+                  RowLayout {
+                    id: beadsKanbanRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    Text {
+                      text: "󰄲"
+                      color: root.primaryAccent
+                      font.family: root.fontFamily
+                      font.pixelSize: root.fontCaption
+                      font.bold: true
+                    }
+                    Text {
+                      text: "Beads Kanban"
+                      color: root.foreground
+                      font.family: root.fontFamily
+                      font.pixelSize: root.fontCaption
+                      font.bold: true
+                    }
+                  }
+
+                  MouseArea {
+                    id: beadsKanbanMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      if (root.bar && typeof root.bar.run === "function") {
+                        root.bar.run("alacritty --title 'Beads Kanban' -e bv")
+                      }
+                      root.close()
+                    }
+                  }
+                }
+
                 Text {
                   text: root.t("activeWorkspaces", "Active Workspaces")
                   color: root.dim

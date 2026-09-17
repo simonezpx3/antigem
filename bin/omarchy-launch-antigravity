@@ -31,7 +31,18 @@ if [[ ! -d "$WORKSPACE" ]]; then
 fi
 
 if [[ "$MODE" == "cli" ]]; then
-  SHELL_SCRIPT='cd "$1" && if [[ -n "$2" ]]; then agy --conversation "$2"; else agy; fi; exec bash'
+  # Multi-account Auto Failover: check if account 1 quota is depleted
+  CLI_CMD="agy"
+  QUOTA_SELECTOR="${HOME}/.local/bin/agy-quota-selector"
+  if [[ -x "$QUOTA_SELECTOR" ]]; then
+    OPT_ACC=$("$QUOTA_SELECTOR" 2>/dev/null | head -n1 || echo "1")
+    if [[ "$OPT_ACC" == "2" ]]; then
+      CLI_CMD="agy2"
+      notify-send -u normal -a "Antigravity" -i "dialog-information" "Antigravity Auto-Failover" "Účet 1 vyčerpán ➔ Relace spuštěna pod Účtem 2 (agy2)." 2>/dev/null || true
+    fi
+  fi
+
+  SHELL_SCRIPT="cd \"\$1\" && if [[ -n \"\$2\" ]]; then $CLI_CMD --conversation \"\$2\"; else $CLI_CMD; fi; exec bash"
   if command -v xdg-terminal-exec >/dev/null 2>&1; then
     exec xdg-terminal-exec --dir="$WORKSPACE" bash -c "$SHELL_SCRIPT" _ "$WORKSPACE" "$CONV_ID"
   elif command -v foot >/dev/null 2>&1; then

@@ -231,6 +231,20 @@ def fetch_plan_quotas(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, A
                     quota_data["weeklyDetail"] = w_det
                     quota_data["weeklySeverity"] = w_sev
 
+                    # Multi-account Failover Telemetry
+                    acc2 = acc_data.get("account2", {})
+                    a2_w_pct = int(acc2.get("gemini", {}).get("weekly", {}).get("usedPercent", 0)) if acc2.get("connected") else 0
+                    active_acc = int(acc_data.get("activeAccount", 1))
+                    is_failover = (active_acc == 2) or (s_pct >= 98 or w_pct >= 98)
+                    quota_data["autoFailover"] = {
+                        "enabled": True,
+                        "activeAccount": active_acc,
+                        "isFailover": is_failover,
+                        "account1Used": w_pct,
+                        "account2Used": a2_w_pct,
+                        "badge": "FAILOVER: A2" if is_failover else "DUAL-ACC READY"
+                    }
+
                     cache["quotas"] = {"ts": now_ts, "data": quota_data}
                     return quota_data, True
         except Exception:
