@@ -2261,7 +2261,7 @@ BarWidget {
                       hoverEnabled: true
                       cursorShape: Qt.PointingHandCursor
                       onClicked: {
-                        root.bar.run("/home/simonez/.local/bin/arci-scratchpad")
+                        root.bar.run("arci-scratchpad")
                         root.close()
                       }
                     }
