@@ -39,7 +39,13 @@ if [[ "$MODE" == "cli" ]]; then
     mapfile -t OPT_LINES < <("$QUOTA_SELECTOR" 2>/dev/null || echo "1")
     OPT_ACC="${OPT_LINES[0]:-1}"
     OPT_STATUS="${OPT_LINES[2]:-ok}"
-    if [[ "$OPT_ACC" == "2" ]]; then
+    if [[ "$OPT_ACC" == "3" ]]; then
+      CLI_CMD="agy3"
+      agy-account switch 3 --sync-only >/dev/null 2>&1 || true
+      if [[ "$OPT_STATUS" == "session_depleted" || "$OPT_STATUS" == "weekly_depleted" ]]; then
+        notify-send -u normal -a "Antigravity" -i "dialog-information" "Antigravity Auto-Failover" "Předchozí kvóta vyčerpána ➔ Relace spuštěna pod Účtem 3 (agy3)." 2>/dev/null || true
+      fi
+    elif [[ "$OPT_ACC" == "2" ]]; then
       CLI_CMD="agy2"
       agy-account switch 2 --sync-only >/dev/null 2>&1 || true
       if [[ "$OPT_STATUS" == "session_depleted" || "$OPT_STATUS" == "weekly_depleted" ]]; then
