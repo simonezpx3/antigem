@@ -162,12 +162,12 @@ BarWidget {
   function resolveSegmentColor(item, fallback) {
     if (!item) return fallback || root.primaryAccent
     var name = String(item.name || item.id || "").toLowerCase()
-    if (name.indexOf("headroom") !== -1 || name.indexOf("volný") !== -1) return root.headroomColor
-    if (name.indexOf("code") !== -1 || name.indexOf("kód") !== -1 || name.indexOf("today") !== -1 || name.indexOf("dnes") !== -1 || name.indexOf("security") !== -1 || name.indexOf("sec-auditor") !== -1 || name.indexOf("chat") !== -1 || name.indexOf("history") !== -1) return root.uploadColor
-    if (name.indexOf("term") !== -1 || name.indexOf("command") !== -1 || name.indexOf("příkaz") !== -1 || name.indexOf("test") !== -1) return root.loadColor
-    if (name.indexOf("search") !== -1 || name.indexOf("hled") !== -1 || name.indexOf("navig") !== -1 || name.indexOf("tool") !== -1 || name.indexOf("nástroj") !== -1 || name.indexOf("mcp") !== -1 || name.indexOf("qml") !== -1 || name.indexOf("session") !== -1) return root.primaryAccent
-    if (name.indexOf("arch") !== -1 || name.indexOf("plan") !== -1 || name.indexOf("syst") !== -1 || name.indexOf("rule") !== -1 || name.indexOf("pravid") !== -1 || name.indexOf("doc") !== -1 || name.indexOf("prior") !== -1 || name.indexOf("minul") !== -1) return root.memoryColor
-    if (name.indexOf("file") !== -1 || name.indexOf("soubor") !== -1) return root.downloadColor
+    if (name.indexOf("headroom") !== -1 || name.indexOf("free") !== -1) return root.headroomColor
+    if (name.indexOf("code") !== -1 || name.indexOf("today") !== -1 || name.indexOf("security") !== -1 || name.indexOf("sec-auditor") !== -1 || name.indexOf("chat") !== -1 || name.indexOf("history") !== -1) return root.uploadColor
+    if (name.indexOf("term") !== -1 || name.indexOf("command") !== -1 || name.indexOf("cmd") !== -1 || name.indexOf("test") !== -1) return root.loadColor
+    if (name.indexOf("search") !== -1 || name.indexOf("find") !== -1 || name.indexOf("navig") !== -1 || name.indexOf("tool") !== -1 || name.indexOf("mcp") !== -1 || name.indexOf("qml") !== -1 || name.indexOf("session") !== -1) return root.primaryAccent
+    if (name.indexOf("arch") !== -1 || name.indexOf("plan") !== -1 || name.indexOf("syst") !== -1 || name.indexOf("rule") !== -1 || name.indexOf("doc") !== -1 || name.indexOf("prior") !== -1) return root.memoryColor
+    if (name.indexOf("file") !== -1) return root.downloadColor
     return item.color || fallback || root.primaryAccent
   }
 
@@ -254,7 +254,7 @@ BarWidget {
       // Feature 2: Task Completion Desktop Notification
       if (root.notificationsEnabled && wasWorking && !root.isWorking && root.activeStatus !== "Working") {
         if (root.bar && typeof root.bar.run === "function") {
-          root.bar.run("notify-send -a 'Antigravity' -i 'dialog-information' 'Antigravity AI' '✅ Úkol dokončen! Všechny změny a testy jsou hotové.'")
+          root.bar.run("notify-send -a 'Antigravity' -i 'dialog-information' 'Antigravity AI' '✅ Task complete! All changes and tests are finished.'")
         }
       }
 
@@ -1627,7 +1627,7 @@ BarWidget {
           }
         }
 
-        // 4. TAB 1: Sessions & Tools (Relace & Nástroje)
+        // 4. TAB 1: Sessions & Tools
         Column {
           visible: root.selectedTab === 1
           width: parent.width

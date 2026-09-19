@@ -87,7 +87,7 @@ Designed in strict compliance with Omarchy plugin guidelines
 
 ```
 antigem/
-├── manifest.json                  # Plugin definition & schema (v1.5.4)
+├── manifest.json                  # Plugin definition & schema (v1.5.7)
 ├── Widget.qml                     # Main QML Bar Widget & 3-Tab Dashboard
 ├── preview.png                    # Primary visual preview
 ├── assets/                        # SVG icons, anim banner & branding
