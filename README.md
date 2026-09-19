@@ -1,7 +1,7 @@
 # 🚀 Antigem (Antigravity) for Omarchy Linux
 
 <p align="left">
-  <img src="https://img.shields.io/badge/version-1.5.4-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.4">
+  <img src="https://img.shields.io/badge/version-1.5.7-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.7">
   <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
   <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
   <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
@@ -175,8 +175,7 @@ omarchy restart shell
 
 ## 👥 Authors & Creators
 
-* **Simonez** ([@simonezpx3](https://github.com/simonezpx3)) — Creator, Concept & Lead Developer
-* **Arci** — AI Orchestrator, Architecture & Co-Developer
+* **simonez & Arci** ([@simonezpx3](https://github.com/simonezpx3)) — Creators & Lead Developers
 
 ---
 
