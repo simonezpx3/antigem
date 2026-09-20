@@ -2,6 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/badge/version-1.5.7-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.7">
+  <a href="https://github.com/omacom/omarchy-plugin-marketplace/issues/7503"><img src="https://img.shields.io/badge/marketplace-issue_%237503-f59e0b?style=flat-square" alt="Marketplace Issue #7503"></a>
   <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
   <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
   <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
