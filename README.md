@@ -15,7 +15,7 @@ A native, high-performance telemetry dashboard, multi-agent fleet monitor, quota
 
 ---
 
-## 📸 Overview & Dashboard Tabs
+## Overview & Dashboard Tabs
 
 | ⚡ 1. Performance & Quotas | 📂 2. Sessions & Fleet | ⚙️ 3. Settings & Telemetry |
 | :---: | :---: | :---: |
