@@ -199,7 +199,8 @@ def fetch_plan_quotas(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, A
                 c_data = json.load(f)
             if now_ts - float(c_data.get("timestamp", 0)) < 300.0:
                 acc_data = c_data.get("data", {})
-                acc = acc_data.get("account1") or (next(iter(acc_data.values())) if acc_data else None)
+                active_acc = int(acc_data.get("activeAccount", 1))
+                acc = acc_data.get(f"account{active_acc}") or acc_data.get("account1") or (next(iter(acc_data.values())) if acc_data else None)
                 if acc and acc.get("connected"):
                     gem = acc.get("gemini", {})
                     s_quota = gem.get("session", {})
@@ -231,18 +232,21 @@ def fetch_plan_quotas(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, A
                     quota_data["weeklyDetail"] = w_det
                     quota_data["weeklySeverity"] = w_sev
 
-                    # Multi-account Failover Telemetry
+                    # Multi-account Failover Telemetry (Tri-Pool)
                     acc2 = acc_data.get("account2", {})
+                    acc3 = acc_data.get("account3", {})
                     a2_w_pct = int(acc2.get("gemini", {}).get("weekly", {}).get("usedPercent", 0)) if acc2.get("connected") else 0
-                    active_acc = int(acc_data.get("activeAccount", 1))
-                    is_failover = (active_acc == 2) or (s_pct >= 98 or w_pct >= 98)
+                    a3_w_pct = int(acc3.get("gemini", {}).get("weekly", {}).get("usedPercent", 0)) if acc3.get("connected") else 0
+                    is_failover = (active_acc in (2, 3)) or (s_pct >= 98 or w_pct >= 98)
+                    failover_badge = f"FAILOVER: A{active_acc}" if active_acc in (2, 3) else ("TRI-POOL READY" if acc3.get("connected") else "DUAL-ACC READY")
                     quota_data["autoFailover"] = {
                         "enabled": True,
                         "activeAccount": active_acc,
                         "isFailover": is_failover,
                         "account1Used": w_pct,
                         "account2Used": a2_w_pct,
-                        "badge": "FAILOVER: A2" if is_failover else "DUAL-ACC READY"
+                        "account3Used": a3_w_pct,
+                        "badge": failover_badge
                     }
 
                     cache["quotas"] = {"ts": now_ts, "data": quota_data}
