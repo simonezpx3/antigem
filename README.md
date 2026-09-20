@@ -1,186 +1,92 @@
-# 🚀 Antigem (Antigravity) for Omarchy Linux
+# Anti/Gem (`simonez.antigem`)
 
-<p align="left">
-  <img src="https://img.shields.io/badge/version-1.5.7-38bdf8?style=flat-square&logo=semver&logoColor=white" alt="Version 1.5.7">
-  <a href="https://github.com/omacom/omarchy-plugin-marketplace/issues/7503"><img src="https://img.shields.io/badge/marketplace-issue_%237503-f59e0b?style=flat-square" alt="Marketplace Issue #7503"></a>
-  <img src="https://img.shields.io/badge/license-MIT-4ade80?style=flat-square" alt="License MIT">
-  <img src="https://img.shields.io/badge/platform-Omarchy%20Linux-f97316?style=flat-square&logo=archlinux&logoColor=white" alt="Omarchy Linux">
-  <img src="https://img.shields.io/badge/UI-Quickshell%20%7C%20Qt6-c084fc?style=flat-square&logo=qt&logoColor=white" alt="Quickshell Qt6">
-  <img src="https://img.shields.io/badge/AI-Google%20Antigravity%20%7C%20Gemini-2dd4bf?style=flat-square&logo=google&logoColor=white" alt="Google Antigravity">
-</p>
+[![Version](https://img.shields.io/badge/version-1.5.7-3b82f6.svg)](https://github.com/simonezpx3/antigem/releases/tag/v1.5.7)
+[![Omarchy](https://img.shields.io/badge/omarchy-compatible-10b981.svg)](https://github.com/omacom/omarchy)
+[![Quickshell](https://img.shields.io/badge/quickshell-qt6-c084fc.svg)](https://github.com/outfoxxed/quickshell)
+[![Marketplace](https://img.shields.io/badge/marketplace-issue_%237503-f59e0b.svg)](https://github.com/omacom/omarchy-plugin-marketplace/issues/7503)
+[![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 
 A native, high-performance telemetry dashboard, multi-agent fleet monitor, quota tracker, and local GPU co-worker hub for **Google Antigravity** and **Gemini AI**, crafted specifically for **Omarchy Linux** (Quickshell / Qt6 / Hyprland).
 
-<p align="center">
-  <img src="assets/omarchy_anim.webp" alt="Omarchy ASCII Lightning Discharge Animation" width="180">
-</p>
-
-Designed in strict compliance with Omarchy plugin guidelines
+**Authors:** `simonez & Arci`  
+**Version:** `1.5.7`  
+**License:** MIT  
+**Marketplace:** [Issue #7503](https://github.com/omacom/omarchy-plugin-marketplace/issues/7503) (Automated Security Baseline: **PASSED**)
 
 ---
 
-## 📸 Screenshots & Tabs
+## 📸 Overview & Dashboard Tabs
 
-| ⚡ 1. Performance & Quotas | 📂 2. Sessions & Tools | ⚙️ 3. Settings & Controls |
+| ⚡ 1. Performance & Quotas | 📂 2. Sessions & Fleet | ⚙️ 3. Settings & Telemetry |
 | :---: | :---: | :---: |
-| <img src="screenshots/performance.png" alt="Performance Tab" width="280"> | <img src="screenshots/sessions.png" alt="Sessions Tab" width="280"> | <img src="screenshots/settings.png" alt="Settings Tab" width="280"> |
+| ![Performance Tab](screenshots/performance.png) | ![Sessions Tab](screenshots/sessions.png) | ![Settings Tab](screenshots/settings.png) |
 
 ---
 
-## ✨ Key Highlights in v1.5
+## 1. Core Architecture & Multi-Account Engine
 
-* 🎨 **100% Dynamic Omarchy System Theming:** Real-time reactivity to system themes (`omarchy theme set`). Progress bars, sparkline graphs, quotas, and tool chips dynamically bind to Omarchy system tokens (`uploadColor`, `primaryAccent`, `barTrack`, `headroomColor`) via live `colors.toml` observation.
-* 📊 **Segmented Breakdown Visualizations:**
-  * **Google AI Pro Quotas:** 5-Hour Session Quota (2.5M CAP) and 7-Day Weekly Quota (25M CAP) with Free Headroom gauges and reset countdowns.
-  * **1M Context Window Breakdown:** Granular horizontal stacked progress bar tracking System & Rules, Tool & MCP Schemas, File & Code Context, Conversation History, and Free Headroom.
-  * **Dev Productivity & Time Saved:** Segmented time & actions breakdown (Code Generation, Terminal & Commands, Search & Navigation, Architecture & Planning).
-* 📈 **Smooth 7-Day Sparkline Trend:** Custom Canvas trend curve with translucent gradient fill, continuous polyline, and glowing data points.
-* ☁️ **Real Google Cloud & APIs Status:** Live connection checks and ping latency (~14 ms) for the services actively used daily:
-  * Gemini 3.8 Flash / Pro (Interactions API)
-  * Google Grounding & Web Search
-  * Codebase Embeddings & Semantic Index (Vector RAG)
-  * Cloud Code & Multi-Agent Fleet
-* 🤖 **Specialized Subagents Fleet & Profiler:** Live monitoring of autonomous subagents (`sec-auditor`, `qml-designer-reviewer`, `test-runner`, `doc-researcher`) with latency badges, speed scores, and cumulative cloud tokens saved (`~585k+ saved`).
-* 🖥️ **Local GPU Workers :** Real-time status for zero-token local inference co-workers:
-  * `coder`
-  * `auditor`
-  * Dedicated 8 GB VRAM allocation gauge.
-* 🛠️ **Stacked Tool Calls Breakdown:** Sleek stacked horizontal bar and chip grid showing real-world tool execution distribution (`view_file`, `run_command`, `replace_file_content`, `grep_search`, etc.).
-* 🏷️ **Clean Status Bar:** Displays the exact active model (**`Gemini 3.8 Flash`**) and the client version currently in use (**`CLI v1.1.26`** or `IDE`).
-* 🔒 **Security & Bounded I/O Hardening:**
-  * Strict memory ceilings (Bounded I/O: 2 MB / 512 KB / 64 KB).
-  * Path traversal protection (`.is_relative_to()`).
-  * Context-managed network socket pings (zero file descriptor leaks).
-  * Enforced file permissions (`0644` files, `0755` executables, `0700` cache dir, `0600` cache data).
+* **Minimalist Top Bar Slot:**
+  * Clean status badge matching native Omarchy bar widgets (`10px` typography, compact footprint).
+  * Live heartbeat pulse animation active exclusively while the AI agent is thinking/generating code, with instantaneous idle reset upon turn completion.
+* **Multi-Account Auto Failover (Tri-Pool):**
+  * Automatic seamless failover between 3 Google AI Pro accounts (`agy`, `agy2`, `agy3`) upon individual quota exhaustion.
+  * Instant account state synchronization and interactive account switcher in both the dashboard and launcher.
+* **Bounded I/O & Memory Ceilings:**
+  * Strict memory ceilings (`2 MB / 512 KB / 64 KB`) preventing buffer overruns.
+  * Path traversal protection (`.is_relative_to()`) and leak-free socket connections for GCP latency pings.
+  * Algorithmic DNA `s&A` (`0x732641`) embedded into subpixel sparkline calibration and subagent slot geometry.
 
 ---
 
-## 🌟 Core Architecture & Tabs
+## 2. Key Dashboard Features
 
-### 1. 🖥️ Minimalist Top Bar Slot
-* **Compact Footprint:** Matches surrounding system widgets (`Style.font.caption` / 10px, logo 10×10px).
-* **Live Heartbeat Telemetry:** Dual-stage organic heartbeat animation active exclusively while the AI agent is thinking/generating code.
-* **Instant Idle Reset:** Scale resets immediately when the turn completes and the agent waits for user input.
+### ⚡ Performance & Quotas (Tab 0)
+* **Google AI Pro Quota Gauges:** Real-time 5-Hour Session Quota (2.5M CAP) and 7-Day Weekly Quota (25M CAP) with live Free Headroom gauges and reset countdowns.
+* **1M Context Window Breakdown:** Stacked horizontal meter visualizing System & Rules, Tool & MCP Schemas, File & Code Context, Conversation History, and Free Headroom.
+* **7-Day Sparkline Trend:** Custom Canvas trend curve with translucent gradient fill, continuous polyline, and glowing data points.
+* **Google Cloud Edge Latency:** Live connection checks and ping latency (~14 ms) for Gemini Interactions API, Grounding/Search, Codebase Embeddings, and Agent Fleet.
 
-### 2. 📊 3-Tab Dashboard Panel
-1. **Performance (`Tab 0`):**
-   * Overview stat badges: Today Tokens, Today Prompts, Free Headroom, All-Time Tokens.
-   * 5-Hour Session Quota gauge & 7-Day Weekly Quota gauge.
-   * 7-Day Prompt & Tool Calls Trend sparkline.
-   * 1M Context Window Breakdown with interactive chips.
-   * Dev Productivity & Time Saved breakdown.
-   * Google Cloud & Active APIs health and edge latency monitor.
-2. **Sessions & Tools (`Tab 1`):**
-   * Recent Sessions list with 1-click **Copy ID** and **Open** launcher (`omarchy-launch-antigravity`).
-   * Specialized Subagents Fleet indicators.
-   * Local GPU Workers inference locks and VRAM usage.
-   * Subagents Benchmark & Latency Profiler.
-   * Tool Calls Breakdown stacked meter.
-3. **Settings (`Tab 2`):**
-   * Auto-refresh interval presets (`10s`, `30s`, `60s`, `120s`, `300s`).
-   * Working Heartbeat Animation toggle and BPM cadence presets (**Sleep 40**, **Rest 60**, **Walk 85**, **Sprint 130**).
-   * Task completion desktop notifications (`notify-send`).
-   * Interactive procedural Omarchy ASCII banner with lightning discharge animations.
+### 📂 Sessions & Autonomous Fleet (Tab 1)
+* **Recent Sessions Manager:** History of recent conversation sessions with 1-click **Copy ID** and instant **Resume/Open** launcher.
+* **Local GPU Co-Workers:** Zero-token local inference co-worker monitoring on NVIDIA RTX 3070 CUDA (`coder`, `auditor`, `bonsai`) and Groq Cloud fast inference.
+* **Subagents Fleet Profiler:** Real-time metrics for autonomous subagents (`sec-auditor`, `qml-designer-reviewer`, `test-runner`, `doc-researcher`) with latency badges, speed scores, and cumulative cloud tokens saved.
+* **Stacked Tool Calls Breakdown:** Granular distribution meter of real-world tool executions (`view_file`, `run_command`, `replace_file_content`, `grep_search`).
+* **Beads Rust Integration:** Dedicated quick-action button launching the interactive TUI Kanban and DAG project graph (`bv`).
+
+### ⚙️ Settings & Controls (Tab 2)
+* **Auto-refresh Presets:** Configurable scan frequency (`10s`, `30s`, `60s`, `120s`, `300s`).
+* **Working Pulse Toggle & BPM:** Heartbeat animation toggle and customizable cadence presets (**Sleep 40**, **Rest 60**, **Walk 85**, **Sprint 130** BPM).
+* **Desktop Notifications:** Native Wayland notifications (`notify-send`) upon task completion.
 
 ---
 
-## 📦 Project Structure
+## 3. Installation & Removal
 
-```
-antigem/
-├── manifest.json                  # Plugin definition & schema (v1.5.7)
-├── Widget.qml                     # Main QML Bar Widget & 3-Tab Dashboard
-├── preview.png                    # Primary visual preview
-├── assets/                        # SVG icons, anim banner & branding
-├── screenshots/                   # HD tab screenshots
-│   ├── performance.png
-│   ├── sessions.png
-│   └── settings.png
-├── scripts/
-│   └── antigravity_scanner.py     # High-performance telemetry scanner (~0.16s)
-├── bin/
-│   └── omarchy-launch-antigravity # Wayland session restorer & CLI/IDE launcher
-├── install.sh                     # 1-click installer & permission hardener
-├── uninstall.sh                   # 1-click uninstaller & cleanup
-├── LICENSE                        # MIT License
-└── README.md                      # Documentation
+### Installation
+```bash
+cd ~/Projects/Antigravity1.1
+./install.sh
 ```
 
----
-
-## 🚀 Installation & Setup
-
-### Method 1: Using Omarchy Plugin Manager (Recommended)
+*Or via Omarchy Plugin Marketplace:*
 ```bash
 omarchy plugin add https://github.com/simonezpx3/antigem.git --enable
 ```
 
-### Method 2: Manual Local Installation
-1. Clone the repository and run the installer:
+### Removal
 ```bash
-git clone https://github.com/simonezpx3/antigem.git
-cd antigem
-./install.sh
-```
-
-2. In `~/.config/omarchy/shell.json`, ensure `"simonez.antigem"` is added to `bar.layout.right`:
-```json
-{
-  "id": "simonez.antigem",
-  "refreshIntervalSec": 60,
-  "pulseEnabled": true,
-  "pulseBpm": 60
-}
-```
-
-3. Reload the shell:
-```bash
-omarchy restart shell
-```
-
----
-
-## 🗑️ Uninstallation & Removal
-
-### Method 1: Using Omarchy Plugin Manager
-```bash
-omarchy plugin remove simonez.antigem
-omarchy restart shell
-```
-
-### Method 2: One-Click Uninstaller Script
-If you cloned the repository or have the source directory:
-```bash
+cd ~/Projects/Antigravity1.1
 ./uninstall.sh
 ```
 
-### Method 3: Manual Removal
-To completely remove the deployed files, companion launcher, and cache:
+---
+
+## 4. Companion Launcher (`omarchy-launch-antigravity`)
+
+The plugin includes a dedicated Wayland launcher script for instant session recovery and account dispatching:
+
 ```bash
-# 1. Remove deployed plugin files
-rm -rf ~/.config/omarchy/plugins/simonez.antigem
-
-# 2. Remove companion launcher binary
-rm -f ~/.local/bin/omarchy-launch-antigravity
-
-# 3. Remove cache data
-rm -rf ~/.cache/omarchy/antigem
-
-# 4. Remove "simonez.antigem" from ~/.config/omarchy/shell.json (in bar.layout.right)
-
-# 5. Restart Omarchy Shell to apply changes
-omarchy restart shell
+omarchy-launch-antigravity                  # Launch interactive Antigravity session
+omarchy-launch-antigravity resume <id>      # Resume specific conversation by session ID
+omarchy-launch-antigravity --status         # Display current quotas and active model
 ```
-
----
-
-## 👥 Authors & Creators
-
-* **simonez & Arci** ([@simonezpx3](https://github.com/simonezpx3)) — Creators & Lead Developers
-
----
-
-## 🛡️ License
-
-Released under the **MIT License**. Crafted with precision for Omarchy Linux.
-
