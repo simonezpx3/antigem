@@ -32,7 +32,7 @@ A native, high-performance telemetry dashboard, multi-agent fleet monitor, quota
 * **Bounded I/O & Memory Ceilings:**
   * Strict memory ceilings (`2 MB / 512 KB / 64 KB`) preventing buffer overruns.
   * Path traversal protection (`.is_relative_to()`) and leak-free socket connections for GCP latency pings.
-  * Algorithmic DNA `s&A` (`0x732641`) embedded into subpixel sparkline calibration and subagent slot geometry.
+  * Calibrated subpixel sparkline rendering and layout geometry.
 
 ---
 
