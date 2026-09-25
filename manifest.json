@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "simonez.antigem",
   "name": "Anti/Gem",
-  "version": "1.5.7",
+  "version": "1.6.0",
   "author": "simonez & Arci",
   "license": "MIT",
   "description": "Antigravity & Gemini system monitor dashboard with performance tabs, quota gauges, activity history graph, session manager, and live heartbeat telemetry.",
@@ -10,7 +10,7 @@
     "bar-widget"
   ],
   "entryPoints": {
-    "barWidget": "Widget.qml"
+    "barWidget": "BarWidget.qml"
   },
   "barWidget": {
     "displayName": "Anti/Gem",

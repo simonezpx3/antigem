@@ -1,6 +1,6 @@
 # Anti/Gem (`simonez.antigem`)
 
-[![Version](https://img.shields.io/badge/version-1.5.7-3b82f6.svg)](https://github.com/simonezpx3/antigem/releases/tag/v1.5.7)
+[![Version](https://img.shields.io/badge/version-1.6.0-3b82f6.svg)](https://github.com/simonezpx3/antigem/releases/tag/v1.6.0)
 [![Omarchy](https://img.shields.io/badge/omarchy-compatible-10b981.svg)](https://github.com/omacom/omarchy)
 [![Quickshell](https://img.shields.io/badge/quickshell-qt6-c084fc.svg)](https://github.com/outfoxxed/quickshell)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
@@ -8,7 +8,7 @@
 A native, high-performance telemetry dashboard, multi-agent fleet monitor, quota tracker, and local GPU co-worker hub for **Google Antigravity** and **Gemini AI**, crafted specifically for **Omarchy Linux** (Quickshell / Qt6 / Hyprland).
 
 **Authors:** `simonez & Arci`  
-**Version:** `1.5.7`  
+**Version:** `1.6.0`  
 **License:** MIT
 
 ---

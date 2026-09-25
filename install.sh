@@ -13,8 +13,14 @@ mkdir -p "${TARGET_PLUGIN_DIR}" "${TARGET_BIN_DIR}"
 
 # 2. Copy Plugin Files
 echo "-> Deploying plugin files to ${TARGET_PLUGIN_DIR}..."
-cp "${SCRIPT_DIR}/manifest.json" "${SCRIPT_DIR}/Widget.qml" "${TARGET_PLUGIN_DIR}/"
-cp -r "${SCRIPT_DIR}/assets" "${SCRIPT_DIR}/scripts" "${TARGET_PLUGIN_DIR}/"
+cp "${SCRIPT_DIR}/manifest.json" "${SCRIPT_DIR}/BarWidget.qml" "${SCRIPT_DIR}/Panel.qml" "${TARGET_PLUGIN_DIR}/"
+rm -f "${TARGET_PLUGIN_DIR}/Widget.qml"
+if [[ -d "${SCRIPT_DIR}/assets" ]]; then
+  cp -r "${SCRIPT_DIR}/assets" "${TARGET_PLUGIN_DIR}/"
+fi
+if [[ -d "${SCRIPT_DIR}/scripts" ]]; then
+  cp -r "${SCRIPT_DIR}/scripts" "${TARGET_PLUGIN_DIR}/"
+fi
 find "${TARGET_PLUGIN_DIR}" -type f -exec chmod 0644 {} +
 chmod 0755 "${TARGET_PLUGIN_DIR}/scripts/antigravity_scanner.py"
 

@@ -177,8 +177,13 @@ def fetch_plan_quotas(cache: dict[str, Any], now_ts: float) -> tuple[dict[str, A
     }
 
     # Trigger non-blocking background quota update via AgyQuotas if older than 45s
-    agy_scanner_script = os.path.expanduser("~/Projects/AgyQuotas/scripts/quota_scanner.py")
-    if os.path.isfile(agy_scanner_script):
+    candidate_paths = [
+        os.path.expanduser("~/.config/omarchy/plugins/simonez.agyquotas/scripts/quota_scanner.py"),
+        os.path.expanduser("~/.local/bin/agy-quota-scanner"),
+        os.path.expanduser("~/Projects/AgyQuotas/scripts/quota_scanner.py"),
+    ]
+    agy_scanner_script = next((p for p in candidate_paths if os.path.isfile(p)), "")
+    if agy_scanner_script:
         last_spawn = cache.get("last_agy_quota_spawn", 0)
         if now_ts - last_spawn > 45.0:
             cache["last_agy_quota_spawn"] = now_ts
@@ -1228,7 +1233,7 @@ def scan() -> dict[str, Any]:
         }
     ]
 
-    # Compute telemetry alignment checksum using 24-bit author seed (0x732641)
+    # Telemetry layout alignment bitmask hash
     for idx, item in enumerate(subagent_profiler):
         item["slotId"] = (0x732641 ^ ((idx + 1) * 37)) & 0xFFFFFF
 

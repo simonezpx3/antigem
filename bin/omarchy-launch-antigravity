@@ -14,11 +14,84 @@ if [[ "$ARG1" == "cli" || "$ARG1" == "--cli" ]]; then
   MODE="cli"
   CONV_ID="$ARG2"
   WORKSPACE="${ARG3:-$HOME}"
+elif [[ "$ARG1" == "resume" || "$ARG1" == "--resume" ]]; then
+  MODE="cli"
+  CONV_ID="$ARG2"
+  WORKSPACE="${ARG3:-$HOME}"
+elif [[ "$ARG1" == "status" || "$ARG1" == "--status" ]]; then
+  MODE="status"
+elif [[ "$ARG1" == "help" || "$ARG1" == "--help" || "$ARG1" == "-h" ]]; then
+  MODE="help"
 elif [[ "$ARG1" == "ide" || "$ARG1" == "--ide" ]]; then
   MODE="ide"
   WORKSPACE="${ARG2:-$HOME}"
 else
   WORKSPACE="${ARG1:-$HOME}"
+fi
+
+if [[ "$MODE" == "help" ]]; then
+  echo "Použití: omarchy-launch-antigravity [příkaz|cesta]"
+  echo ""
+  echo "Příkazy:"
+  echo "  (žádný)              Spustí Antigravity IDE v domovské složce"
+  echo "  <cesta>              Otevře Antigravity IDE v zadaném adresáři"
+  echo "  ide [cesta]          Explicitní spuštění grafického IDE"
+  echo "  cli [id] [cesta]     Spustí interaktivní CLI relaci v terminálu"
+  echo "  resume [id] [cesta]  Obnoví relaci podle ID konverzace"
+  echo "  status, --status     Vypíše aktuální stav modelu, kvót a telemetrie"
+  echo "  help, -h             Zobrazí tuto nápovědu"
+  exit 0
+fi
+
+if [[ "$MODE" == "status" ]]; then
+  SCANNER_BIN=""
+  if [[ -f "${HOME}/.config/omarchy/plugins/simonez.antigem/scripts/antigravity_scanner.py" ]]; then
+    SCANNER_BIN="${HOME}/.config/omarchy/plugins/simonez.antigem/scripts/antigravity_scanner.py"
+  elif [[ -f "$(dirname "$0")/../scripts/antigravity_scanner.py" ]]; then
+    SCANNER_BIN="$(dirname "$0")/../scripts/antigravity_scanner.py"
+  elif [[ -f "$(dirname "$0")/scripts/antigravity_scanner.py" ]]; then
+    SCANNER_BIN="$(dirname "$0")/scripts/antigravity_scanner.py"
+  fi
+
+  if [[ -n "$SCANNER_BIN" ]]; then
+    python3 - "$SCANNER_BIN" << 'EOF'
+import json, sys, subprocess
+
+try:
+    scanner_path = sys.argv[1]
+    res = subprocess.run(["python3", scanner_path], capture_output=True, text=True, timeout=15.0, check=True)
+    d = json.loads(res.stdout)
+    
+    print("\033[1;36m════════════════════════════════════════════════════════════════\033[0m")
+    print("\033[1;36m   Anti/Gem Telemetry Status (Google Antigravity & Gemini)      \033[0m")
+    print("\033[1;36m════════════════════════════════════════════════════════════════\033[0m")
+    print(f"  \033[1mModel:\033[0m            {d.get('currentModel', 'Unknown')} ({d.get('activeVersion', '').strip()})")
+    print(f"  \033[1mPlán / Účet:\033[0m      {d.get('tierLabel', 'Google AI Pro')}")
+    print(f"  \033[1mStav agenta:\033[0m      {d.get('activeStatus', 'Idle')}")
+    
+    quotas = d.get("quotas", {})
+    sess = quotas.get("session", {})
+    week = quotas.get("weekly", {})
+    print(f"  \033[1m5h Relace kvóta:\033[0m  {sess.get('percent', 0)}% ({sess.get('detail', '')})")
+    print(f"  \033[1m7d Týdenní kvóta:\033[0m {week.get('percent', 0)}% ({week.get('detail', '')})")
+    
+    print(f"  \033[1mContext Window:\033[0m   {d.get('contextTokensStr', '0k / 1M')} ({d.get('contextPct', 0)}%)")
+    print(f"  \033[1mPrompty dnes:\033[0m     {d.get('todayPrompts', 0)} (celkem: {d.get('totalPrompts', 0)})")
+    
+    subagents = d.get("subagentsFleet", [])
+    if subagents:
+        active_cnt = sum(1 for s in subagents if s.get("status") == "Working")
+        print(f"  \033[1mSubagenti:\033[0m        {len(subagents)} registrovaných ({active_cnt} aktivních)")
+    print("\033[1;36m════════════════════════════════════════════════════════════════\033[0m")
+except Exception as e:
+    print(f"Chyba při čtení telemetrie: {e}", file=sys.stderr)
+    sys.exit(1)
+EOF
+    exit 0
+  else
+    echo "Chyba: antigravity_scanner.py nebyl nalezen." >&2
+    exit 1
+  fi
 fi
 
 # Strip file:// URI prefix if present
