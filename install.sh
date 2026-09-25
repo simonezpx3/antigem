@@ -29,6 +29,10 @@ omarchy plugin validate "${TARGET_PLUGIN_DIR}"
 
 # 5. Reload / Restart Shell
 echo "-> Restarting Omarchy Shell..."
-omarchy restart shell || true
+if [[ -x "/usr/share/omarchy/bin/omarchy-restart-shell" ]]; then
+  /usr/share/omarchy/bin/omarchy-restart-shell || true
+elif command -v omarchy-shell >/dev/null 2>&1; then
+  omarchy-shell shell rescanPlugins || true
+fi
 
 echo "=== Antigravity 1.1 installed successfully! ==="

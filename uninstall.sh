@@ -34,17 +34,20 @@ fi
 
 # 4. Remove from shell.json if present
 if [[ -f "${SHELL_CONFIG}" ]] && command -v jq >/dev/null 2>&1; then
-  if jq -e '.bar.layout.right[] | select((.id? == "simonez.antigem") or (. == "simonez.antigem"))' "${SHELL_CONFIG}" >/dev/null 2>&1; then
+  if jq -e '.bar.layout.right[]? | select((if type == "object" then .id == "simonez.antigem" else . == "simonez.antigem" end))' "${SHELL_CONFIG}" >/dev/null 2>&1; then
     echo "-> Removing simonez.antigem from shell.json..."
     tmp_json=$(mktemp)
-    jq '.bar.layout.right = [.bar.layout.right[] | select((.id? != "simonez.antigem") and (. != "simonez.antigem"))]' "${SHELL_CONFIG}" > "${tmp_json}" && mv "${tmp_json}" "${SHELL_CONFIG}"
+    chmod 0600 "${tmp_json}"
+    jq '.bar.layout.right = [.bar.layout.right[]? | select((if type == "object" then .id != "simonez.antigem" else . != "simonez.antigem" end))]' "${SHELL_CONFIG}" > "${tmp_json}" && mv "${tmp_json}" "${SHELL_CONFIG}"
   fi
 fi
 
 # 5. Restart Omarchy Shell
-if command -v omarchy >/dev/null 2>&1; then
-  echo "-> Restarting Omarchy Shell..."
-  omarchy restart shell || true
+echo "-> Restarting Omarchy Shell..."
+if [[ -x "/usr/share/omarchy/bin/omarchy-restart-shell" ]]; then
+  /usr/share/omarchy/bin/omarchy-restart-shell || true
+elif command -v omarchy-shell >/dev/null 2>&1; then
+  omarchy-shell shell rescanPlugins || true
 fi
 
 echo "=== Anti/Gem uninstalled successfully! ==="
