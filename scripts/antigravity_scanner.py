@@ -22,7 +22,9 @@ from pathlib import Path
 from typing import Any
 
 
-CACHE_DIR = Path(os.path.expanduser("~/.cache/antigravity-scanner"))
+_UID = os.getuid()
+_RUN_DIR = Path(f"/run/user/{_UID}")
+CACHE_DIR = (_RUN_DIR / "antigravity_scanner") if _RUN_DIR.is_dir() else Path(os.path.expanduser("~/.cache/antigravity-scanner"))
 CACHE_FILE = CACHE_DIR / "scanner_cache.json"
 
 
